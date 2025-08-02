@@ -1,7 +1,9 @@
 import { Action, ActionReducerMap, createReducer, on } from "@ngrx/store";
 import * as StoreActions from './store.actions';
-import { ClassContainer } from "../interfaces/class-container.interface";
+import { ClassContainer } from "../interfaces/container-class.interface";
 import { WorkflowState } from "../interfaces/workflow-state.enum";
+import { AttributeTypeContainer } from "../interfaces/container-attributetype.interface";
+import { NotebookContainer } from "../interfaces/container-notebook.interface";
 
 export const STORE = 'STORE';
 
@@ -16,23 +18,27 @@ export const appReducer: ActionReducerMap<AppState> = {
 
 export interface State {
     classesState: WorkflowState;
+    notebookState: WorkflowState;
     attributesState: WorkflowState;
     attributeTypesState: WorkflowState;
     notAuthorized: boolean;
     repositoryClasses: ClassContainer;
+    notebooks: NotebookContainer;
     attributes: Object[];
-    attributeTypes: Object[];
+    attributeTypes: AttributeTypeContainer;
     errorMessage?: string;
 };
 
 const initialState: State = {
     classesState: WorkflowState.NotPresent,
+    notebookState: WorkflowState.NotPresent,
     attributesState: WorkflowState.NotPresent,
     attributeTypesState: WorkflowState.NotPresent,
     notAuthorized: true,
     repositoryClasses: {},
+    notebooks: {},
     attributes: [],
-    attributeTypes: [],
+    attributeTypes: {},
 };
 
 export function storeReducer(appState: State | undefined, appAction: Action) {
@@ -55,6 +61,11 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
             classesState: WorkflowState.ErrorOccured,
             errorMessage: action.errorMessage,
         })),
+        on(StoreActions.NotebooksLoadingFailed, (state, action) => ({
+            ...state,
+            notebookState: WorkflowState.ErrorOccured,
+            errorMessage: action.errorMessage,
+        })),
         on(StoreActions.AttributesLoadingFailed, (state, action) => ({
             ...state,
             attributesState: WorkflowState.ErrorOccured,
@@ -69,6 +80,16 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
             ...state,
             classesState: WorkflowState.Loaded,
             repositoryClasses: action.classContainer,
+        })),
+        on(StoreActions.AttributeTypesLoaded, (state, action) => ({
+            ...state,
+            attributeTypesState: WorkflowState.Loaded,
+            attributeTypes: action.attributeTypes,
+        })),
+        on(StoreActions.NotebooksLoaded, (state, action) => ({
+            ...state,
+            notebookState: WorkflowState.Loaded,
+            notebooks: action.notebookContainer,
         })),
     )(appState, appAction);
 }

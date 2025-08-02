@@ -14,10 +14,15 @@
         </div>
     } @else {
         <div class="content buttonlist">
-            @for (ci of (classes | async); track ci.class.id) {
+            @for (c of (classes | async); track c.id) {
                 <p>
-                    <button [title]="ci.class.infoText ? ci.class.infoText.de : ''" (click)="selectButton_click(ci)" [ngClass]="{selected: ci.class.id === selectedClass?.class?.id}">
-                        {{ci.class.displayNames.de}} ({{ ci.class.metaName }}):
+                    <button
+                        [title]="c.infoText ? c.infoText.de : ''"
+                        (click)="selectButton_click(c)"
+                        [ngClass]="{selected: c.id === selectedClass?.id}"
+                        [disabled]="(notebooksReady | async) === false"
+                    >
+                        {{c.displayNames.de}} ({{ c.metaName }}):
                     </button>
                     <!--img [src]="imageUrl(cl.class.rest_links)"-->
                 </p>
@@ -25,9 +30,9 @@
         </div>
         @if (selectedClass) {
             <div>
-                <h2>{{selectedClass.class.displayNames.de}} ({{selectedClass.class.metaName}}: {{selectedClass.class.id}})</h2>
+                <h2>{{selectedClass.displayNames.de}} ({{selectedClass.metaName}}: {{selectedClass.id.substring(1, selectedClass.id.length - 1)}})</h2>
                 <form [formGroup]="attributeForm!" class="content attributelist">
-                    @for (chapter of selectedClass.notebook.chapters; track chapter.id) {
+                    @for (chapter of (selectedNotebook | async)?.chapters; track chapter.id) {
                         <ul class="chapter">
                             <li>
                                 <h3>{{chapter.displayNames.de}}</h3>

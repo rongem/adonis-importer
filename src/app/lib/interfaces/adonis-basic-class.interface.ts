@@ -1,6 +1,6 @@
-import { AdonisBasicType } from "./adonis-basic-type.interface";
+import { AdonisBasicNamedType } from "./adonis-basic-type.interface";
 
-export interface AdonisBasicClass extends AdonisBasicType {
+export interface AdonisBasicClass extends AdonisBasicNamedType {
     repositoryClass: boolean;
     visible: boolean;
     abstract: boolean;

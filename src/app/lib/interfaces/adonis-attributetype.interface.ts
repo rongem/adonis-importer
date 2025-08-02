@@ -1,15 +1,15 @@
-import { AdonisBasicType } from "./adonis-basic-type.interface";
+import { AdonisBasicNamedType } from "./adonis-basic-type.interface";
 import { AdonisDisplayName } from "./adonis-displayname.interface";
 
 interface Colums {
     id: string;
     displayNames: AdonisDisplayName;
-    type: AdonisBasicType;
+    type: AdonisBasicNamedType;
     defaultValues: AdonisDisplayName;
     width: number;
 };
 
-export interface AdonisAttributeType {
+export interface AdonisAttributeType extends AdonisBasicNamedType {
     complexData?: {
         columns: Colums[];
     };

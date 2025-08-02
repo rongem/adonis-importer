@@ -3,12 +3,13 @@ import { AsyncPipe, NgClass } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { Login } from "./login/login";
-import { ClassInformation } from './lib/interfaces/class-container.interface';
+import { ClassContainer } from './lib/interfaces/container-class.interface';
 import { Children } from "./children/children";
 import { AdonisNotebookGroup, AttributeOrRelation } from './lib/interfaces/adonis-notebook-elements.interface';
 import { createXML } from './lib/helpers/xml.function';
 import { createXLFile } from './lib/helpers/xlsx.functions';
 import * as Selectors from './lib/store/store.selectors';
+import { AdonisClass } from './lib/interfaces/adonis-class.interface';
 
 
 @Component({
@@ -18,29 +19,31 @@ import * as Selectors from './lib/store/store.selectors';
   styleUrl: './app.scss'
 })
 export class App {
-  protected readonly title = signal('import-generator');
+  protected readonly title = signal('ADONIS Import-Generator');
   constructor(private store: Store) {}
 
-  selectedClass?: ClassInformation = undefined;
+  selectedClass?: AdonisClass = undefined;
   selectedClassesProperties?: AttributeOrRelation[];
   formSubmitted = false;
   xmlText = '';
 
   attributeForm?: FormGroup;
 
-  selectButton_click(ci: ClassInformation) {
+  selectButton_click(ci: AdonisClass) {
     this.selectedClass = ci;
-    this.selectedClassesProperties = ci.notebook.chapters.map(chapter => {
-      let properties: AttributeOrRelation[] = chapter.children.filter(c => c.type === 'GROUP').map(g => (g as AdonisNotebookGroup).children).flat();
-      properties.push(...chapter.children.filter(c => c.type !== 'GROUP').map(p => (p as AttributeOrRelation)));
-      properties = properties.filter(p => p.properties.READONLY !== 'true');
-      return properties;
-    }).flat();
-    const formGroupObject: {[key: string]: FormControl} = {};
-    this.selectedClassesProperties.forEach(p => {
-      formGroupObject[p.id] = new FormControl<boolean>({ value: p.metaName === 'NAME', disabled: p.metaName === 'NAME' });
+    this.selectedNotebook.subscribe(notebook => {
+      this.selectedClassesProperties = notebook.chapters.map(chapter => {
+        let properties: AttributeOrRelation[] = chapter.children.filter(c => c.type === 'GROUP').map(g => (g as AdonisNotebookGroup).children).flat();
+        properties.push(...chapter.children.filter(c => c.type !== 'GROUP').map(p => (p as AttributeOrRelation)));
+        properties = properties.filter(p => p.properties.READONLY !== 'true');
+        return properties;
+      }).flat();
+      const formGroupObject: {[key: string]: FormControl} = {};
+      this.selectedClassesProperties?.forEach(p => {
+        formGroupObject[p.id] = new FormControl<boolean>({ value: p.metaName === 'NAME', disabled: p.metaName === 'NAME' });
+      });
+      this.attributeForm = new FormGroup(formGroupObject);
     });
-    this.attributeForm = new FormGroup(formGroupObject);
   }
 
   submitForm() {
@@ -53,8 +56,8 @@ export class App {
         selectedProperties.push(property);
       }
     });
-    this.xmlText = createXML(this.selectedClass!.class, selectedProperties);
-    createXLFile(this.selectedClass!.class, selectedProperties);
+    // this.xmlText = createXML(this.selectedClass!.class, selectedProperties);
+    // createXLFile(this.selectedClass!, selectedProperties);
   }
 
   resetForm() {
@@ -63,6 +66,10 @@ export class App {
 
   get classesReady() {
     return this.store.select(Selectors.classesReady);
+  }
+
+  get notebooksReady() {
+    return this.store.select(Selectors.notebooksReady);
   }
 
   get working() {
@@ -75,6 +82,10 @@ export class App {
 
   copyToClipboard(text: string) {
     navigator.clipboard.writeText(text);
+  }
+
+  get selectedNotebook() {
+    return this.store.select(Selectors.notebook(this.selectedClass!.id));
   }
 
 }
