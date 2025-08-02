@@ -1,0 +1,24 @@
+.parent {
+    display: flex;
+
+    .content {
+        padding: 1rem;
+    }
+
+    button {
+        width: 100%;
+    }
+}
+
+.selected {
+    outline: 4px solid black;
+}
+
+.form-control {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    button {
+        width: 45%;
+    }
+}

@@ -13,7 +13,8 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "target": "ES2022",
-    "module": "preserve"
+    "module": "preserve",
+    "useDefineForClassFields": false /* because of runtime error with @ngrx/effects */
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

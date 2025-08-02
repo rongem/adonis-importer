@@ -1,0 +1,18 @@
+input.ng-invalid {
+    outline: 0.25rem solid red;
+}
+
+.formfield {
+    display: flex;
+    padding: 0.25rem;
+
+    label {
+        min-width: max(25%, 17rem);
+        text-align: right;
+        padding: 0.25rem 0.5rem;
+    }
+
+    span {
+        padding: 0.25rem 0.5rem;
+    }
+}

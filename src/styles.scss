@@ -1,1 +1,31 @@
-/* You can add global styles to this file, and also import other style files */
+.chapter {
+    border: 2px solid black;
+    li {
+        list-style-type: none;
+        padding: 0.25rem;
+    }
+
+    h3 {
+        margin-block-start: 0.5rem;
+        margin-block-end: 0.25rem;
+    }
+}
+
+.group {
+    border: 1px solid darkgray;
+    
+    li {
+        list-style-type: none;
+        padding: 0.25rem;
+    }
+
+    h4 {
+        margin-block-start: 0.5rem;
+        margin-block-end: 0.25rem;
+    }
+}
+
+.xml-result {
+    width: 50vw;
+    height: 50vh;
+}

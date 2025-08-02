@@ -1,0 +1,27 @@
+import { Component, Input } from '@angular/core';
+import { NgClass } from '@angular/common';
+import {AttributeOrGroupOrRelation, AdonisNotebookGroup, AdonisNotebookAttribute} from '../lib/interfaces/adonis-notebook-elements.interface'
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+
+@Component({
+  selector: 'app-children',
+  imports: [NgClass, ReactiveFormsModule],
+  templateUrl: './children.html',
+  styleUrl: './children.scss'
+})
+export class Children {
+  @Input({required: true}) children!: AttributeOrGroupOrRelation[];
+  @Input({required: true}) formGroup!: FormGroup;
+
+  nodeChildren(nodeChild: AttributeOrGroupOrRelation) {
+    const c = nodeChild as AdonisNotebookGroup;
+    if (c.children) {
+      return c.children;
+    }
+    return [];
+  }
+
+  attribute = (child: AttributeOrGroupOrRelation) => child as AdonisNotebookAttribute;
+
+  controlExists = (id: string) => !!this.formGroup.get(id);
+}

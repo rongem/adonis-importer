@@ -1,0 +1,41 @@
+<ng-container [formGroup]="formGroup">
+    @for (child of children; track child.id) {
+        <li [ngClass]="{group: child.type === 'GROUP'}">
+            @switch (child.type) {
+                @case ('GROUP') {
+                    <h4>Gruppe: {{child.displayNames.de}}</h4>
+                    <ul>
+                        @for (grandchild of nodeChildren(child); track grandchild.id) {
+                            @switch (grandchild.type) {
+                                @case ('ATTRDEF') {
+                                    @if (controlExists(grandchild.id)) {
+                                        <li>
+                                            <input type="checkbox" [id]="grandchild.metaName" [name]="grandchild.metaName" [formControlName]="grandchild.id">
+                                            Attribut: {{grandchild.displayNames.de}} ({{ grandchild.metaName }}: {{grandchild.ctrlType}})
+                                        </li>
+                                    }
+                                }
+                                @case ('RELATIONS') {
+                                    <li>
+                                        <input type="checkbox" [id]="grandchild.metaName" [name]="grandchild.metaName" [formControlName]="grandchild.id">
+                                        Beziehung: {{grandchild.displayNames.de}} ({{ grandchild.metaName }})
+                                    </li>
+                                }
+                            }
+                        }
+                    </ul>
+                }
+                @case ('ATTRDEF') {
+                    @if (controlExists(child.id)) {
+                        <input type="checkbox" [id]="child.metaName" [name]="child.metaName" [formControlName]="child.id">
+                        Attribut: {{child.displayNames.de}} ({{ child.metaName }}: {{attribute(child).ctrlType}})
+                    }
+                }
+                @case ('RELATIONS') {
+                    <input type="checkbox" [id]="child.metaName" [name]="child.metaName" [formControlName]="child.id">
+                    Beziehung: {{child.displayNames.de}} ({{ child.metaName }})
+                }
+            }
+        </li>
+    }
+</ng-container>
