@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { forkJoin, map, mergeMap, Observable, take } from 'rxjs';
+import { forkJoin, map, mergeMap, Observable, take, tap } from 'rxjs';
 import { AdonisClassList } from '../interfaces/adonis-list-class.interface';
 import { AdonisClass } from '../interfaces/adonis-class.interface';
 import { AdonisNoteBook } from '../interfaces/adonis-notebook.interface';
@@ -14,6 +14,8 @@ import { AttributeTypeContainer } from '../interfaces/container-attributetype.in
 import { AdonisBasicAttributeType } from '../interfaces/adonis-basic-attributetype.interface';
 import { NotebookContainer } from '../interfaces/container-notebook.interface';
 import { AdonisAttribute } from '../interfaces/adonis-attribute.interface';
+import { AdonisAttributeList } from '../interfaces/adonis-list-attribute.interface';
+import { AttributeContainer } from '../interfaces/container-attribute.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -73,13 +75,34 @@ export class DataAccess {
   };
 
   retrieveAttributesForClasses = (classes: AdonisClass[]) => {
+    const attributeContainer: {[key: string]: string} = {};
     const attributes = classes.map(c => {
       const attributesUrl = c.rest_links.find(l => l.rel === 'attributes')!.href;
-      return this.getUrl<AdonisAttribute[]>(attributesUrl).pipe(
-        map(p => ({ [c.id]: p })),
+      return this.getUrl<AdonisAttributeList>(attributesUrl).pipe(
+        map(al => {
+          const attributeIds = al.attributes.map(a => a.id);
+          const attributeUrl = al.attributes.map(a => a.rest_links.find(l => l.rel === 'self')!.href);
+          for (let index = 0; index < attributeIds.length; index++) {
+            if (!attributeContainer[attributeIds[index]]) {
+              attributeContainer[attributeIds[index]] = attributeUrl[index];
+            }
+          }
+        }),
       );
     });
-    return forkJoin(attributes);
+    return forkJoin(attributes).pipe(
+      mergeMap(() => {
+        const attributes = Object.keys(attributeContainer).map(k => this.getUrl<AdonisAttribute>(attributeContainer[k]));
+        return forkJoin(attributes);
+      }),
+      map(attributes => {
+        const container: AttributeContainer = {};
+        attributes.forEach(a => {
+          container[a.id] = a;
+        });
+        return container;
+      }),
+    );
   };
 
   private retrieveAttributeTypeList = () => (this.getUrl<AdonisAttributeTypeList>(this.baseUrl + '4.0/metamodel/attrtypes'));

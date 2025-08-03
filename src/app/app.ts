@@ -1,10 +1,10 @@
 import { Component, signal } from '@angular/core';
-import { AsyncPipe } from '@angular/common';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { AsyncPipe, NgClass } from '@angular/common';
+import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { Login } from "./login/login";
 import { ClassContent } from "./class-content/class-content";
-import { AdonisNotebookGroup, AttributeOrRelation } from './lib/interfaces/adonis-notebook-elements.interface';
+import { AttributeOrRelation } from './lib/interfaces/adonis-notebook-elements.interface';
 import * as Selectors from './lib/store/store.selectors';
 import { AdonisClass } from './lib/interfaces/adonis-class.interface';
 import { ExportFiles } from "./export-files/export-files";
@@ -13,7 +13,7 @@ import { ClassList } from "./class-list/class-list";
 
 @Component({
   selector: 'app-root',
-  imports: [AsyncPipe, ReactiveFormsModule, Login, ExportFiles, ClassContent, ClassList],
+  imports: [AsyncPipe, NgClass, ReactiveFormsModule, Login, ExportFiles, ClassContent, ClassList],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
@@ -49,12 +49,32 @@ export class App {
     return this.store.select(Selectors.working);
   }
 
+  get classesState() {
+    return this.store.select(Selectors.classesState);
+  }
+
+  get notebookState() {
+    return this.store.select(Selectors.notebookState);
+  }
+
+  get attributesState() {
+    return this.store.select(Selectors.attributesState);
+  }  
+
+  get attributeTypesState() {
+    return this.store.select(Selectors.attributeTypesState);
+  }
+
   get classes() {
     return this.store.select(Selectors.classes);
   }
 
   get selectedNotebook() {
     return this.store.select(Selectors.notebook(this.selectedClass!.id));
+  }
+
+  get attributes() {
+    return this.store.select(Selectors.attributes);
   }
 
 }

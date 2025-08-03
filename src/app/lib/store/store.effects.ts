@@ -71,14 +71,7 @@ export class StoreEffects {
     retrieveAttributes$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.LoadAttributes),
         switchMap(action => this.dataAccess.retrieveAttributesForClasses(action.classes).pipe(
-            map(properties => {
-                const attributesContainer: AttributeContainer = {};
-                properties.forEach(p => {
-                    const key = Object.keys(p)[0];
-                    attributesContainer[key] = p[key];
-                });
-                return StoreActions.AttributesLoaded({attributesContainer});
-            }),
+            map(attributesContainer => StoreActions.AttributesLoaded({attributesContainer})),
             catchError((error: HttpErrorResponse) => {
                 console.error(error);
                 return of(StoreActions.AttributesLoadingFailed({errorMessage: error.message}));

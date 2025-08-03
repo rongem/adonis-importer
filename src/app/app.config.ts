@@ -4,6 +4,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { provideRouter } from '@angular/router';
 import { provideStore, provideState } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
+import { provideStoreDevtools } from '@ngrx/store-devtools';
 
 import { authInterceptor } from './lib/interceptors/auth-interceptor';
 import { routes } from './app.routes';
@@ -20,6 +21,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     importProvidersFrom(ReactiveFormsModule),
     provideStore(),
+    provideStoreDevtools(),
     provideState({ name: STORE, reducer: storeReducer }),
     provideEffects(StoreEffects),
   ]

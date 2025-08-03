@@ -1,22 +1,23 @@
 import { XMLBuilder } from 'fast-xml-parser';
 import { AttributeOrRelation } from '../interfaces/adonis-notebook-elements.interface';
 import { AdonisClass } from '../interfaces/adonis-class.interface';
+import { AttributeContainer } from '../interfaces/container-attribute.interface';
 
-export function createXML(adonisClass: AdonisClass, attributes: AttributeOrRelation[]) {
+export function createXML(adonisClass: AdonisClass, properties: AttributeOrRelation[], attributes: AttributeContainer) {
     const b = new XMLBuilder({ignoreAttributes: false, format: true});
     const out = {
         conf: {
             sheet: {
                 '@_data_row': "2",
-                '@_relation': attributes.some(a => a.type === 'RELATION') ? 'TRUE' : undefined,
+                '@_relation': properties.some(a => a.type === 'RELATION') ? 'TRUE' : undefined,
                 '@_id': "1",
                 '@_classname': adonisClass.metaName,
                 '@_name': adonisClass.displayNames.de,
-                attribute: attributes.map((value, index) => ({
+                attribute: properties.map((value, index) => ({
                     '@_name': value.metaName,
                     '@_column': (index + 1).toString(),
                     '@_context': 'de',
-                    ...getAttributeType(value),
+                    ...getAttributeType(value, attributes),
                 })),
             }
         }
@@ -27,7 +28,7 @@ export function createXML(adonisClass: AdonisClass, attributes: AttributeOrRelat
 const simpleAttributes = ['NAME', 'ADOSTRING', 'INTEGER', 'DOUBLE', 'SHORTSTRING', 'LONGSTRING', 'UNSIGNED INTEGER', 'STRING', 'STRING_MULTILINE'];
 const dateAttributes = ['DATE', 'UTC'];
 
-function getAttributeType(property: AttributeOrRelation) {
+function getAttributeType(property: AttributeOrRelation, attributes: AttributeContainer) {
     switch (property.type) {
         case 'ATTRDEF':
             if (simpleAttributes.includes(property.ctrlType)){
@@ -43,20 +44,20 @@ function getAttributeType(property: AttributeOrRelation) {
                 case 'ENUM':
                     return {
                         '@_type': 'enum',
-                        '@_domain_mapping': '',
-                        '@_separator_domain_mapping': '|',
+                        '@_domain_mapping': getEnumContent(property, attributes),
+                        '@_separator_domain_mapping': '@',
                     };
                 case 'ENUMLIST':
                     return {
                         '@_type': 'enum_list',
-                        '@_separator': '|',
-                        '@_domain_mapping': '',
+                        '@_separator': '@',
+                        '@_domain_mapping': getEnumContent(property, attributes),
                         '@_separator_domain_mapping': '@',
                     };
                 case 'ENUMLIST_TREE':
                     return {
                         '@_type': 'treeenumlist',
-                        '@_separator': '|',
+                        '@_separator': '@',
                     };
                 case 'BOOL':
                     return {
@@ -92,4 +93,12 @@ function getTimeZoneOffset() {
     const offSetHours = Math.abs(offset / 60);
     const offsetMinutes = offset - 60 * offSetHours;
     return { '@_utc_offset_hours': offSetHours.toString(), '@_utc_offset_minutes': offsetMinutes.toString() };
+}
+
+function getEnumContent(property: AttributeOrRelation, attributes: AttributeContainer) {
+    const attribute = attributes[property.id];
+    const values = attribute.constraints.de.split('@');
+    const returnvalue = values.map((v, i) => v + '@v' + i.toString()).join('@');
+    console.log(returnvalue);
+    return returnvalue;
 }

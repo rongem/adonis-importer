@@ -4,6 +4,7 @@ import { ClassContainer } from "../interfaces/container-class.interface";
 import { WorkflowState } from "../interfaces/workflow-state.enum";
 import { AttributeTypeContainer } from "../interfaces/container-attributetype.interface";
 import { NotebookContainer } from "../interfaces/container-notebook.interface";
+import { AttributeContainer } from "../interfaces/container-attribute.interface";
 
 export const STORE = 'STORE';
 
@@ -24,7 +25,7 @@ export interface State {
     notAuthorized: boolean;
     repositoryClasses: ClassContainer;
     notebooks: NotebookContainer;
-    attributes: Object[];
+    attributes: AttributeContainer;
     attributeTypes: AttributeTypeContainer;
     errorMessage?: string;
 };
@@ -37,7 +38,7 @@ const initialState: State = {
     notAuthorized: true,
     repositoryClasses: {},
     notebooks: {},
-    attributes: [],
+    attributes: {},
     attributeTypes: {},
 };
 
@@ -47,6 +48,10 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
         on(StoreActions.LoadClasses, (state, action) => ({
             ...state,
             classesState: WorkflowState.Loading,
+        })),
+        on(StoreActions.LoadNotebooks, (state, action) => ({
+            ...state,
+            notebookState: WorkflowState.Loading,
         })),
         on(StoreActions.LoadAttributes, (state, action) => ({
             ...state,
@@ -81,15 +86,20 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
             classesState: WorkflowState.Loaded,
             repositoryClasses: action.classContainer,
         })),
-        on(StoreActions.AttributeTypesLoaded, (state, action) => ({
-            ...state,
-            attributeTypesState: WorkflowState.Loaded,
-            attributeTypes: action.attributeTypes,
-        })),
         on(StoreActions.NotebooksLoaded, (state, action) => ({
             ...state,
             notebookState: WorkflowState.Loaded,
             notebooks: action.notebookContainer,
+        })),
+        on(StoreActions.AttributesLoaded, (state, action) => ({
+            ...state,
+            attributesState: WorkflowState.Loaded,
+            attributes: action.attributesContainer,
+        })),
+        on(StoreActions.AttributeTypesLoaded, (state, action) => ({
+            ...state,
+            attributeTypesState: WorkflowState.Loaded,
+            attributeTypes: action.attributeTypes,
         })),
     )(appState, appAction);
 }

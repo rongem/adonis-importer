@@ -2,6 +2,31 @@ body {
     background-color: darkgray;
 }
 
+.parent {
+    display: flex;
+
+    .content {
+        padding: 1rem;
+    }
+
+    button {
+        width: 100%;
+    }
+}
+
+.selected {
+    outline: 4px solid black;
+}
+
+.form-control {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    button {
+        width: 45%;
+    }
+}
+
 .chapter {
     border: 2px solid black;
 
@@ -39,7 +64,7 @@ body {
     display: block;
     width: 8px;
     height: 8px;
-    position: relative;
+    position: absolute;
     left: 50vw;
     top: 30vh;
     border-radius: 50%;
@@ -66,4 +91,20 @@ body {
             0 0 0 20px rgba(255, 255, 255, 0.6),
             0 0 0 0px rgba(255, 255, 255, 1)
     }
+}
+
+.indicator {
+    background-color: lightgray;
+}
+
+.yellow {
+    background-color: yellow !important;
+}
+
+.red, .error {
+    background-color: coral !important;
+}
+
+.green {
+    background-color: green !important;
 }

@@ -1,11 +1,13 @@
 <div class="parent">
 @if (classesReady | async) {
     @if (formSubmitted) {
-        <app-export-files [selectedClass]="selectedClass!" [selectedProperties]="selectedProperties!"></app-export-files>
+        <app-export-files [selectedClass]="selectedClass!" [selectedProperties]="selectedProperties!" [attibutes]="(attributes | async)!"></app-export-files>
     } @else {
-        <app-class-list [classes]="(classes | async)!" [notebooksReady]="(notebooksReady | async)!" (classSelected)="classSelected($event)"></app-class-list>
         @if (selectedClass) {
-            <app-class-content [selectedClass]="selectedClass!" [selectedNotebook]="(selectedNotebook | async)!" (propertiesSelected)="propertiesSelected($event)"></app-class-content>
+            <app-class-content [selectedClass]="selectedClass!" [selectedNotebook]="(selectedNotebook | async)!" (propertiesSelected)="propertiesSelected($event)">
+            </app-class-content>
+        } @else {
+            <app-class-list [classes]="(classes | async)!" [notebooksReady]="(notebooksReady | async)!" (classSelected)="classSelected($event)"></app-class-list>
         }
     }
 } @else {
@@ -17,4 +19,10 @@
 @if ((working | async) === true)
 {
     <span class="loader"></span>
+    <div style="position: absolute; top: 0px; left: 0px;">
+        <span class="indicator" [ngClass]="{yellow: (classesState | async) === 1, green: (classesState | async) === 2, red: (classesState | async) === 3}">C</span>
+        <span class="indicator" [ngClass]="{yellow: (notebookState | async) === 1, green: (notebookState | async) === 2, red: (notebookState | async) === 3}">N</span>
+        <span class="indicator" [ngClass]="{yellow: (attributesState | async) === 1, green: (attributesState | async) === 2, red: (attributesState | async) === 3}">A</span>
+        <span class="indicator" [ngClass]="{yellow: (attributeTypesState | async) === 1, green: (attributeTypesState | async) === 2, red: (attributeTypesState | async) === 3}">T</span>
+    </div>
 }

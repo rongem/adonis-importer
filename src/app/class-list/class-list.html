@@ -7,7 +7,17 @@
                 [ngClass]="{selected: c.id === selectedClassId}"
                 [disabled]="notebooksReady() === false"
             >
-                {{c.displayNames.de}} ({{ c.metaName }}):
+                <h4>
+                    {{c.displayNames.de}}
+                </h4>
+                <p>
+                     ({{ c.metaName }})
+                </p>
+                @if (c.infoText) {
+                    <p>
+                        {{c.infoText.de}}
+                    </p>
+                }
             </button>
         </p>
     }
