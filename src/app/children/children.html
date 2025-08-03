@@ -1,5 +1,5 @@
-<ng-container [formGroup]="formGroup">
-    @for (child of children; track child.id) {
+<ng-container [formGroup]="formGroup()">
+    @for (child of children(); track child.id) {
         <li [ngClass]="{group: child.type === 'GROUP'}">
             @switch (child.type) {
                 @case ('GROUP') {

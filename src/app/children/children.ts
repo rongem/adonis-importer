@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { NgClass } from '@angular/common';
 import {AttributeOrGroupOrRelation, AdonisNotebookGroup, AdonisNotebookAttribute} from '../lib/interfaces/adonis-notebook-elements.interface'
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -10,8 +10,8 @@ import { FormGroup, ReactiveFormsModule } from '@angular/forms';
   styleUrl: './children.scss'
 })
 export class Children {
-  @Input({required: true}) children!: AttributeOrGroupOrRelation[];
-  @Input({required: true}) formGroup!: FormGroup;
+  readonly children = input.required<AttributeOrGroupOrRelation[]>();
+  readonly formGroup = input.required<FormGroup>();
 
   nodeChildren(nodeChild: AttributeOrGroupOrRelation) {
     const c = nodeChild as AdonisNotebookGroup;
@@ -23,5 +23,5 @@ export class Children {
 
   attribute = (child: AttributeOrGroupOrRelation) => child as AdonisNotebookAttribute;
 
-  controlExists = (id: string) => !!this.formGroup.get(id);
+  controlExists = (id: string) => !!this.formGroup().get(id);
 }

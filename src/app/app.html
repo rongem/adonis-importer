@@ -5,7 +5,7 @@
     } @else {
         <app-class-list [classes]="(classes | async)!" [notebooksReady]="(notebooksReady | async)!" (classSelected)="classSelected($event)"></app-class-list>
         @if (selectedClass) {
-            <app-class-content [selectedClass]="selectedClass!" [selectedNotebook]="(selectedNotebook | async)!"></app-class-content>
+            <app-class-content [selectedClass]="selectedClass!" [selectedNotebook]="(selectedNotebook | async)!" (propertiesSelected)="propertiesSelected($event)"></app-class-content>
         }
     }
 } @else {

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { AdonisClass } from '../lib/interfaces/adonis-class.interface';
 
@@ -9,9 +9,9 @@ import { AdonisClass } from '../lib/interfaces/adonis-class.interface';
   styleUrl: './class-list.scss'
 })
 export class ClassList {
-  @Input({required: true}) classes!: AdonisClass[];
-  @Input({required: true}) notebooksReady!: boolean;
-  @Output() classSelected = new EventEmitter<AdonisClass>();
+  readonly classes = input.required<AdonisClass[]>();
+  readonly notebooksReady = input.required<boolean>();
+  readonly classSelected = output<AdonisClass>();
 
   selectedClassId = '';
 

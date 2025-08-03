@@ -30,35 +30,11 @@ export class App {
 
   classSelected(ci: AdonisClass) {
     this.selectedClass = ci;
-    this.selectedNotebook.subscribe(notebook => {
-      this.selectedClassesProperties = notebook.chapters.map(chapter => {
-        let properties: AttributeOrRelation[] = chapter.children.filter(c => c.type === 'GROUP').map(g => (g as AdonisNotebookGroup).children).flat();
-        properties.push(...chapter.children.filter(c => c.type !== 'GROUP').map(p => (p as AttributeOrRelation)));
-        properties = properties.filter(p => p.properties.READONLY !== 'true');
-        return properties;
-      }).flat();
-      const formGroupObject: {[key: string]: FormControl} = {};
-      this.selectedClassesProperties?.forEach(p => {
-        formGroupObject[p.id] = new FormControl<boolean>({ value: p.metaName === 'NAME', disabled: p.metaName === 'NAME' });
-      });
-      this.attributeForm = new FormGroup(formGroupObject);
-    });
   }
 
-  submitForm() {
-    const nameProperty = this.selectedClassesProperties!.find(a => a.metaName === 'NAME')!;
-    this.attributeForm!.get(nameProperty.id)!.enable();
-    this.selectedProperties = [nameProperty];
-    this.selectedClassesProperties!.forEach(property => {
-      if (property.id !== nameProperty.id && this.attributeForm!.value[property.id] && property) {
-        this.selectedProperties!.push(property);
-      }
-    });
+  propertiesSelected(properties: AttributeOrRelation[]) {
+    this.selectedProperties = properties;
     this.formSubmitted = true;
-  }
-
-  resetForm() {
-    this.attributeForm!.reset();
   }
 
   get classesReady() {
