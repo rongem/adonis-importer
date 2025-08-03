@@ -1,50 +1,11 @@
 <div class="parent">
 @if (classesReady | async) {
     @if (formSubmitted) {
-        <div>
-            <div>
-                <label for="xmlContent">XML-Konfiguration:</label>
-            </div>
-            <div>
-                <textarea id="xmlContent" #xmlContent [textContent]="xmlText" class="xml-result" readonly></textarea>
-            </div>
-            <div>
-                <button type="button" (click)="copyToClipboard(xmlContent.textContent!)">XML in die Zwischenablage kopieren</button>
-            </div>
-        </div>
+        <app-export-files [selectedClass]="selectedClass!" [selectedProperties]="selectedProperties!"></app-export-files>
     } @else {
-        <div class="content buttonlist">
-            @for (c of (classes | async); track c.id) {
-                <p>
-                    <button
-                        [title]="c.infoText ? c.infoText.de : ''"
-                        (click)="selectButton_click(c)"
-                        [ngClass]="{selected: c.id === selectedClass?.id}"
-                        [disabled]="(notebooksReady | async) === false"
-                    >
-                        {{c.displayNames.de}} ({{ c.metaName }}):
-                    </button>
-                    <!--img [src]="imageUrl(cl.class.rest_links)"-->
-                </p>
-            }
-        </div>
+        <app-class-list [classes]="(classes | async)!" [notebooksReady]="(notebooksReady | async)!" (classSelected)="classSelected($event)"></app-class-list>
         @if (selectedClass) {
-            <div>
-                <h2>{{selectedClass.displayNames.de}} ({{selectedClass.metaName}}: {{selectedClass.id.substring(1, selectedClass.id.length - 1)}})</h2>
-                <form [formGroup]="attributeForm!" class="content attributelist">
-                    @for (chapter of (selectedNotebook | async)?.chapters; track chapter.id) {
-                        <ul class="chapter">
-                            <li>
-                                <h3>{{chapter.displayNames.de}}</h3>
-                                <app-children [children]="chapter.children" [formGroup]="attributeForm!"></app-children>
-                            </li>
-                        </ul>
-                    }
-                </form>
-                <div class="form-control">
-                    <button type="submit" (click)="submitForm()">Auswählen</button> <button type="reset" (click)="resetForm()">Auswahl löschen</button>
-                </div>
-            </div>
+            <app-class-content [selectedClass]="selectedClass!" [selectedNotebook]="(selectedNotebook | async)!"></app-class-content>
         }
     }
 } @else {
@@ -53,3 +14,7 @@
     }
 }
 </div>
+@if ((working | async) === true)
+{
+    <span class="loader"></span>
+}

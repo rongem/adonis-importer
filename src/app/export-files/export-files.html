@@ -1,0 +1,12 @@
+<div>
+    <div>
+        <label for="xmlContent">XML-Konfiguration:</label>
+    </div>
+    <div>
+        <textarea id="xmlContent" #xmlContent [textContent]="xmlText" class="xml-result" readonly></textarea>
+    </div>
+    <div>
+        <button type="button" (click)="copyToClipboard(xmlContent.textContent!)">XML in die Zwischenablage kopieren</button>
+    </div>
+</div>
+

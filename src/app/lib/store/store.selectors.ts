@@ -5,8 +5,8 @@ import { WorkflowState } from '../interfaces/workflow-state.enum';
 
 const appState = createFeatureSelector<State>(STORE);
 
-export const working = createSelector(appState,
-    state => state.classesState === WorkflowState.Loading ||
+export const working = createSelector(appState, state =>
+    state.classesState === WorkflowState.Loading ||
     state.notebookState === WorkflowState.Loading ||
     state.attributesState === WorkflowState.Loading ||
     state.attributeTypesState === WorkflowState.Loading

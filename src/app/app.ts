@@ -1,20 +1,19 @@
 import { Component, signal } from '@angular/core';
-import { AsyncPipe, NgClass } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { Login } from "./login/login";
-import { ClassContainer } from './lib/interfaces/container-class.interface';
-import { Children } from "./children/children";
+import { ClassContent } from "./class-content/class-content";
 import { AdonisNotebookGroup, AttributeOrRelation } from './lib/interfaces/adonis-notebook-elements.interface';
-import { createXML } from './lib/helpers/xml.function';
-import { createXLFile } from './lib/helpers/xlsx.functions';
 import * as Selectors from './lib/store/store.selectors';
 import { AdonisClass } from './lib/interfaces/adonis-class.interface';
+import { ExportFiles } from "./export-files/export-files";
+import { ClassList } from "./class-list/class-list";
 
 
 @Component({
   selector: 'app-root',
-  imports: [AsyncPipe, ReactiveFormsModule, NgClass, Login, Children],
+  imports: [AsyncPipe, ReactiveFormsModule, Login, ExportFiles, ClassContent, ClassList],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
@@ -24,12 +23,12 @@ export class App {
 
   selectedClass?: AdonisClass = undefined;
   selectedClassesProperties?: AttributeOrRelation[];
+  selectedProperties?: AttributeOrRelation[];
   formSubmitted = false;
-  xmlText = '';
 
   attributeForm?: FormGroup;
 
-  selectButton_click(ci: AdonisClass) {
+  classSelected(ci: AdonisClass) {
     this.selectedClass = ci;
     this.selectedNotebook.subscribe(notebook => {
       this.selectedClassesProperties = notebook.chapters.map(chapter => {
@@ -49,15 +48,13 @@ export class App {
   submitForm() {
     const nameProperty = this.selectedClassesProperties!.find(a => a.metaName === 'NAME')!;
     this.attributeForm!.get(nameProperty.id)!.enable();
-    this.formSubmitted = true;
-    const selectedProperties = [nameProperty];
+    this.selectedProperties = [nameProperty];
     this.selectedClassesProperties!.forEach(property => {
       if (property.id !== nameProperty.id && this.attributeForm!.value[property.id] && property) {
-        selectedProperties.push(property);
+        this.selectedProperties!.push(property);
       }
     });
-    // this.xmlText = createXML(this.selectedClass!.class, selectedProperties);
-    // createXLFile(this.selectedClass!, selectedProperties);
+    this.formSubmitted = true;
   }
 
   resetForm() {
@@ -78,10 +75,6 @@ export class App {
 
   get classes() {
     return this.store.select(Selectors.classes);
-  }
-
-  copyToClipboard(text: string) {
-    navigator.clipboard.writeText(text);
   }
 
   get selectedNotebook() {
