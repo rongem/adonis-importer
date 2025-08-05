@@ -2,12 +2,14 @@
     <h2>{{selectedClass().displayNames.de}} ({{selectedClass().metaName}}: {{selectedClass().id.substring(1, selectedClass().id.length - 1)}})</h2>
     <form [formGroup]="attributeForm()" class="content attributelist">
         @for (chapter of selectedNotebook().chapters; track chapter.id) {
-            <ul class="chapter">
-                <li>
-                    <h3>{{chapter.displayNames.de}}</h3>
-                    <app-children [children]="chapter.children" [formGroup]="attributeForm()"></app-children>
-                </li>
-            </ul>
+            @if (chapter.children.length > 0) {
+                <ul class="chapter">
+                    <li>
+                        <h3>{{chapter.displayNames.de}}</h3>
+                        <app-children [children]="chapter.children" [formGroup]="attributeForm()"></app-children>
+                    </li>
+                </ul>
+            }
         }
     </form>
     <div class="form-control">

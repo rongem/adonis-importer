@@ -1,5 +1,5 @@
 import { XMLBuilder } from 'fast-xml-parser';
-import { AttributeOrRelation } from '../interfaces/adonis-notebook-elements.interface';
+import { AdonisNotebookRelations, AttributeOrRelation } from '../interfaces/adonis-notebook-elements.interface';
 import { AdonisClass } from '../interfaces/adonis-class.interface';
 import { AttributeContainer } from '../interfaces/container-attribute.interface';
 
@@ -25,7 +25,7 @@ export function createXML(adonisClass: AdonisClass, properties: AttributeOrRelat
     return b.build(out).toString();
 };
 
-const simpleAttributes = ['NAME', 'ADOSTRING', 'INTEGER', 'DOUBLE', 'SHORTSTRING', 'LONGSTRING', 'UNSIGNED INTEGER', 'STRING', 'STRING_MULTILINE'];
+const simpleAttributes = ['NAME', 'ADOSTRING', 'INTEGER', 'DOUBLE', 'SHORTSTRING', 'LONGSTRING', 'UNSIGNED INTEGER', 'STRING', 'STRING_MULTILINE', 'COLOR'];
 const dateAttributes = ['DATE', 'UTC'];
 
 function getAttributeType(property: AttributeOrRelation, attributes: AttributeContainer) {
@@ -45,14 +45,14 @@ function getAttributeType(property: AttributeOrRelation, attributes: AttributeCo
                     return {
                         '@_type': 'enum',
                         '@_domain_mapping': getEnumContent(property, attributes),
-                        '@_separator_domain_mapping': '@',
+                        '@_separator_domain_mapping': '|',
                     };
                 case 'ENUMLIST':
                     return {
                         '@_type': 'enum_list',
                         '@_separator': '@',
                         '@_domain_mapping': getEnumContent(property, attributes),
-                        '@_separator_domain_mapping': '@',
+                        '@_separator_domain_mapping': '|',
                     };
                 case 'ENUMLIST_TREE':
                     return {
@@ -68,13 +68,14 @@ function getAttributeType(property: AttributeOrRelation, attributes: AttributeCo
                     return {'@_type': 'error ' + property.ctrlType};
             }
         case 'RELATIONS':
+            const p = property as unknown as AdonisNotebookRelations;
             return {
                 '@_type': 'relation',
                 '@_separator': '|',
                 '@_attr_separator': '@',
-                '@_lookup_attr_name': '',
-                '@_direction': '', // FROM | TO
-                '@_target_class': '',
+                '@_lookup_attr_name': 'NAME',
+                '@_direction': p.incoming ? 'FROM' : 'TO',
+                '@_target_class': p.relClass.targetInformations[0].metaName,
                 '@_strategy': 'overwrite',
             };
         case 'FILE_POINTER':
@@ -98,7 +99,7 @@ function getTimeZoneOffset() {
 function getEnumContent(property: AttributeOrRelation, attributes: AttributeContainer) {
     const attribute = attributes[property.id];
     const values = attribute.constraints.de.split('@');
-    const returnvalue = values.map((v, i) => v + '@v' + i.toString()).join('@');
+    const returnvalue = values.map((v, i) => v + '|v' + i.toString()).join('|');
     console.log(returnvalue);
     return returnvalue;
 }

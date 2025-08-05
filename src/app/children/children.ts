@@ -1,11 +1,10 @@
 import { Component, input } from '@angular/core';
-import { NgClass } from '@angular/common';
 import {AttributeOrGroupOrRelation, AdonisNotebookGroup, AdonisNotebookAttribute} from '../lib/interfaces/adonis-notebook-elements.interface'
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-children',
-  imports: [NgClass, ReactiveFormsModule],
+  imports: [ReactiveFormsModule],
   templateUrl: './children.html',
   styleUrl: './children.scss'
 })

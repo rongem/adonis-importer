@@ -6,7 +6,7 @@ import { AdonisClass } from '../interfaces/adonis-class.interface';
 import { AdonisNoteBook } from '../interfaces/adonis-notebook.interface';
 import { ClassContainer } from '../interfaces/container-class.interface';
 import { AppSettings } from '../app-settings';
-import { AdonisNotebookGroup } from '../interfaces/adonis-notebook-elements.interface';
+import { AdonisNotebookGroup, AttributeOrGroupOrRelation, AttributeOrRelation } from '../interfaces/adonis-notebook-elements.interface';
 import { AdonisBasicClass } from '../interfaces/adonis-basic-class.interface';
 import { AdonisAttributeTypeList } from '../interfaces/adonis-list-attributetype.interface';
 import { AdonisAttributeType } from '../interfaces/adonis-attributetype.interface';
@@ -54,6 +54,9 @@ export class DataAccess {
     return forkJoin(classDetails);
   };
 
+  private filterChildren = (p: AttributeOrRelation) => p.properties.READONLY !== 'true' && p.ctrlType !== 'RECORD' && p.ctrlType !== 'FILE_POINTER';
+  private filterChapterChildren = (p: AttributeOrGroupOrRelation) => p.type === 'GROUP' || this.filterChildren(p as AttributeOrRelation);
+
   retrieveNotebooksForClasses = (classes: AdonisClass[]) => {
     const notebooks = classes.map(c => {
       const notebookUrl = c.rest_links.find(l => l.rel === 'notebook')!.href;
@@ -65,8 +68,12 @@ export class DataAccess {
               if (g.children.filter(chi => chi.id === ch.id).length > 1) {
                 g.children.splice(index, 1);
               }
-            })
+            });
           });
+          groups.forEach(g => { // remove non-importable attributes
+            g.children = g.children.filter(this.filterChildren);
+          })
+          n.chapters.forEach(ch => ch.children = ch.children.filter(this.filterChapterChildren));
           return { [c.id]: n } as NotebookContainer;
         }),
       );

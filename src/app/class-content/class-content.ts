@@ -17,13 +17,12 @@ export class ClassContent {
   readonly propertiesSelected = output<AttributeOrRelation[]>();
 
   selectedClassesProperties = computed(() => this.selectedNotebook().chapters.map(chapter => {
-      let properties: AttributeOrRelation[] = chapter.children.filter(c => c.type === 'GROUP').map(g => (g as AdonisNotebookGroup).children).flat();
+      const properties: AttributeOrRelation[] = chapter.children.filter(c => c.type === 'GROUP').map(g => (g as AdonisNotebookGroup).children).flat();
       properties.push(...chapter.children.filter(c => c.type !== 'GROUP').map(p => (p as AttributeOrRelation)));
-      properties = properties.filter(p => p.properties.READONLY !== 'true');
       return properties;
     }).flat()
   );
-  
+
   attributeForm = computed(() => {
     const formGroupObject: {[key: string]: FormControl} = {};
     this.selectedClassesProperties().forEach(p => {
