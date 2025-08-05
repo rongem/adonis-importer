@@ -21,6 +21,7 @@ export const classesReady = createSelector(appState, state => state.classesState
 export const notebooksReady = createSelector(appState, state => state.notebookState === WorkflowState.Loaded);
 
 export const errorPresent = createSelector(appState, state => !!state.errorMessage);
+export const errorMessage = createSelector(appState, state => state.errorMessage);
 
 export const classes = createSelector(appState, state => Object.values(state.repositoryClasses).sort((a, b) => a.displayNames.de > b.displayNames.de ? 1 : -1));
 

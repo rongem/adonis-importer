@@ -1,5 +1,5 @@
 <div>
-    <h2>{{selectedClass().displayNames.de}} ({{selectedClass().metaName}}: {{selectedClass().id.substring(1, selectedClass().id.length - 1)}})</h2>
+    <h2>{{selectedClass().displayNames.de}} ({{selectedClass().metaName}})</h2>
     <form [formGroup]="attributeForm()" class="content attributelist">
         @for (chapter of selectedNotebook().chapters; track chapter.id) {
             @if (chapter.children.length > 0) {

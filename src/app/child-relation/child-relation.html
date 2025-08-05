@@ -1,0 +1,8 @@
+<ul [formGroup]="formGroup()">
+    @for (rel of child().relClass.targetInformations; track rel.id) {
+        <li>
+            <input type="checkbox" [id]="child().metaName + '|' + rel.metaName" [name]="child().metaName + '|' + rel.metaName" [formControlName]="rel.id">
+            {{ (getClassForId(rel.id) | async)?.displayNames?.de }} ({{rel.metaName}})
+        </li>    
+    }
+</ul>

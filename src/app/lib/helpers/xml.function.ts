@@ -2,6 +2,7 @@ import { XMLBuilder } from 'fast-xml-parser';
 import { AdonisNotebookRelations, AttributeOrRelation } from '../interfaces/adonis-notebook-elements.interface';
 import { AdonisClass } from '../interfaces/adonis-class.interface';
 import { AttributeContainer } from '../interfaces/container-attribute.interface';
+import { ATTRDEF, RELATIONS } from '../string.constants';
 
 export function createXML(adonisClass: AdonisClass, properties: AttributeOrRelation[], attributes: AttributeContainer) {
     const b = new XMLBuilder({ignoreAttributes: false, format: true});
@@ -30,7 +31,7 @@ const dateAttributes = ['DATE', 'UTC'];
 
 function getAttributeType(property: AttributeOrRelation, attributes: AttributeContainer) {
     switch (property.type) {
-        case 'ATTRDEF':
+        case ATTRDEF:
             if (simpleAttributes.includes(property.ctrlType)){
                 return {'@_type': 'simple'};
             }
@@ -67,7 +68,7 @@ function getAttributeType(property: AttributeOrRelation, attributes: AttributeCo
                 default:
                     return {'@_type': 'error ' + property.ctrlType};
             }
-        case 'RELATIONS':
+        case RELATIONS:
             const p = property as unknown as AdonisNotebookRelations;
             return {
                 '@_type': 'relation',

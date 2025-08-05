@@ -48,6 +48,7 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
         on(StoreActions.LoadClasses, (state, action) => ({
             ...state,
             classesState: WorkflowState.Loading,
+            errorMessage: undefined,
         })),
         on(StoreActions.LoadNotebooks, (state, action) => ({
             ...state,

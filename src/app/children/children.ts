@@ -1,10 +1,12 @@
 import { Component, input } from '@angular/core';
-import {AttributeOrGroupOrRelation, AdonisNotebookGroup, AdonisNotebookAttribute} from '../lib/interfaces/adonis-notebook-elements.interface'
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {AttributeOrGroupOrRelation, AdonisNotebookGroup, AdonisNotebookAttribute, AdonisNotebookRelations, AttributeOrRelation} from '../lib/interfaces/adonis-notebook-elements.interface'
+import { ChildRelation } from "../child-relation/child-relation";
+import * as Constants from '../lib/string.constants';
 
 @Component({
   selector: 'app-children',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, ChildRelation],
   templateUrl: './children.html',
   styleUrl: './children.scss'
 })
@@ -20,7 +22,27 @@ export class Children {
     return [];
   }
 
+  RELATIONS = Constants.RELATIONS;
+  ATTRDEF = Constants.ATTRDEF;
+
   attribute = (child: AttributeOrGroupOrRelation) => child as AdonisNotebookAttribute;
 
+  relation = (child: AttributeOrGroupOrRelation | AttributeOrRelation) => child as AdonisNotebookRelations;
+
   controlExists = (id: string) => !!this.formGroup().get(id);
+
+  controlIsSelected = (id: string) => this.formGroup().get(id)!.value;
+
+  relationsChange = (id: string) => {
+    const formControl = this.formGroup().get(id) as FormControl;
+    if (formControl.value === true) {
+      this.getChildFormGroup(id).enable();
+    } else {
+      this.getChildFormGroup(id).disable();
+    }
+  };
+
+  getChildFormGroup = (id: string) => {
+    return this.formGroup().get(id + Constants.rel) as FormGroup;
+  }
 }

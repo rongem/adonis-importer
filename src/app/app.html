@@ -26,3 +26,9 @@
         <span class="indicator" [ngClass]="{yellow: (attributeTypesState | async) === 1, green: (attributeTypesState | async) === 2, red: (attributeTypesState | async) === 3}">T</span>
     </div>
 }
+
+@if ((errorPresent | async) === true) {
+    <div class="error">
+        {{errorMessage | async}}
+    </div>
+}

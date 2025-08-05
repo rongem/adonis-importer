@@ -77,4 +77,12 @@ export class App {
     return this.store.select(Selectors.attributes);
   }
 
+  get errorPresent() {
+    return this.store.select(Selectors.errorPresent)
+  }
+
+  get errorMessage() {
+    return this.store.select(Selectors.errorMessage)
+  }
+
 }
