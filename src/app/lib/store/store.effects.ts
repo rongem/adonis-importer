@@ -8,6 +8,7 @@ import { DataAccess } from '../data-access/data-access';
 import * as StoreActions from './store.actions';
 import { ClassContainer } from '../interfaces/container-class.interface';
 import { NotebookContainer } from '../interfaces/container-notebook.interface';
+import { ExportAction } from '../enums/export-action.enum';
 
 const getClasses = (classContainer: ClassContainer) => Object.values(classContainer);
 
@@ -102,6 +103,27 @@ export class StoreEffects {
     selectClass$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.ClassSelected),
         tap(action => this.router.navigate(['classes', action.selectedClass.metaName])),
+    ), {dispatch: false});
+
+    selectProperties$ = createEffect(() => this.actions$.pipe(
+        ofType(StoreActions.PropertiesSelected),
+        tap(() => this.router.navigate(['choose-export-import'])),
+    ), {dispatch: false});
+
+    selectAction$ = createEffect(() => this.actions$.pipe(
+        ofType(StoreActions.ActionSelected),
+        tap((action) => {
+            switch (action.action) {
+                case ExportAction.ExportFiles:
+                    this.router.navigate(['export-files']);
+                    break;
+                case ExportAction.ImportViaRest:
+                    this.router.navigate(['import-rest']);
+                    break;
+                default:
+                    this.router.navigateByUrl('/');
+            }
+        }),
     ), {dispatch: false});
 
     constructor(private actions$: Actions, private dataAccess: DataAccess, private router: Router) {}

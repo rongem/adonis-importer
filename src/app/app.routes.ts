@@ -5,9 +5,9 @@ import { CloakClassContent } from './cloaks/cloak-class-content/cloak-class-cont
 import { canActivateClasses } from './lib/guards/classes-auth-guard';
 import { ChooseImport } from './choose-import/choose-import';
 import { CloakExportFiles } from './cloaks/cloak-export-files/cloak-export-files';
+import { canActivateChoice } from './lib/guards/choice-auth-guard';
 import { canActivateExport } from './lib/guards/export-auth-guard';
 import { canActivateImport } from './lib/guards/import-auth-guard';
-import { canActivateChoice } from './lib/guards/choice-auth-guard';
 
 export const routes: Routes = [
     { path: '', pathMatch: 'full', redirectTo: 'login' },
@@ -16,7 +16,7 @@ export const routes: Routes = [
         { path: '', pathMatch: 'full', component: CloakClassList },
         { path: ':id', component: CloakClassContent },
     ]},
-    { path: 'choice', component: ChooseImport, canActivate: [canActivateChoice] },
+    { path: 'choose-export-import', component: ChooseImport, canActivate: [canActivateChoice] },
     { path: 'export-files', component: CloakExportFiles, canActivate: [canActivateExport] },
-    { path: 'import-rest', canActivate: [canActivateImport] },
+    // { path: 'import-rest', canActivate: [canActivateImport] },
 ];
