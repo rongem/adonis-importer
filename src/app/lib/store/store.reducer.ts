@@ -1,7 +1,7 @@
 import { Action, ActionReducerMap, createReducer, on } from "@ngrx/store";
 import * as StoreActions from './store.actions';
 import { ClassContainer } from "../interfaces/container-class.interface";
-import { WorkflowState } from "../interfaces/workflow-state.enum";
+import { WorkflowState } from "../enums/workflow-state.enum";
 import { NotebookContainer } from "../interfaces/container-notebook.interface";
 import { AttributeContainer } from "../interfaces/container-attribute.interface";
 import { CellContent } from "../models/cellcontent.model";
@@ -9,6 +9,9 @@ import { Column } from "../models/rest-backend/column.model";
 import { ErrorList } from "../models/rest-backend/errorlist.model";
 import { AdonisRepository } from "../interfaces/adonis-repository.interface";
 import { AdonisObjectGroup } from "../interfaces/adonis-object-group.interface";
+import { AdonisClass } from "../interfaces/adonis-class.interface";
+import { AttributeOrRelation } from "../interfaces/adonis-notebook-elements.interface";
+import { ExportAction } from "../enums/export-action.enum";
 
 export const STORE = 'STORE';
 
@@ -22,18 +25,28 @@ export const appReducer: ActionReducerMap<AppState> = {
 
 
 export interface State {
+    authenticated: boolean;
+
     classesState: WorkflowState;
     notebookState: WorkflowState;
     attributesState: WorkflowState;
     repositoryState: WorkflowState;
     objectGroupState: WorkflowState;
+
     notAuthorized: boolean;
+
     repositoryClasses: ClassContainer;
     notebooks: NotebookContainer;
     attributes: AttributeContainer;
+    selectedClass?: AdonisClass;
+    selectedProperties?: AttributeOrRelation[];
+
     repositories?: AdonisRepository[];
     selectedRepositoryId?: string;
     objectGroups?: AdonisObjectGroup;
+
+    exportAction?: ExportAction;
+
     columnDefinitions?: Column[];
     cellContents: CellContent[];
     columnMapping: number[];
@@ -44,15 +57,20 @@ export interface State {
 };
 
 const initialState: State = {
+    authenticated: false,
+
     classesState: WorkflowState.NotPresent,
     notebookState: WorkflowState.NotPresent,
     attributesState: WorkflowState.NotPresent,
     repositoryState: WorkflowState.NotPresent,
     objectGroupState: WorkflowState.NotPresent,
+
     notAuthorized: true,
+
     repositoryClasses: {},
     notebooks: {},
     attributes: {},
+
     cellContents: [],
     columnMapping: [],
     rowErrors: [],
@@ -64,6 +82,7 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
         initialState,
         on(StoreActions.LoadClasses, (state, action) => ({
             ...state,
+            authenticated: true,
             classesState: WorkflowState.Loading,
             errorMessage: undefined,
         })),
@@ -85,6 +104,7 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
         })),
         on(StoreActions.ClassesLoadingFailed, (state, action) => ({
             ...state,
+            authenticated: false,
             classesState: WorkflowState.ErrorOccured,
             errorMessage: action.errorMessage,
         })),
@@ -132,6 +152,18 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
             ...state,
             objectGroupState: WorkflowState.Loaded,
             objectGroups: action.objectGroup,
+        })),
+        on(StoreActions.ClassSelected, (state, action) => ({
+            ...state,
+            selectedClass: action.selectedClass,
+        })),
+        on(StoreActions.PropertiesSelected, (state, action) => ({
+            ...state,
+            selectedProperties: action.properties,
+        })),
+        on(StoreActions.ActionSelected, (state, action) => ({
+            ...state,
+            exportAction: action.action,
         })),
         on(StoreActions.columnsLoaded, (state, action) => ({
             ...state,

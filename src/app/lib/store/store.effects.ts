@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, iif, map, of, switchMap, tap } from 'rxjs';
-import { DataAccess } from '../data-access/data-access';
+import { Router } from '@angular/router';
 
+import { DataAccess } from '../data-access/data-access';
 import * as StoreActions from './store.actions';
 import { ClassContainer } from '../interfaces/container-class.interface';
 import { NotebookContainer } from '../interfaces/container-notebook.interface';
@@ -26,6 +27,7 @@ export class StoreEffects {
     startLoadingNotebooks$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.ClassesLoaded),
         map((action) => StoreActions.LoadNotebooks({classes: getClasses(action.classContainer)})),
+        tap(() => this.router.navigateByUrl('/classes')),
     ));
 
     startLoadingAttributes$ = createEffect(() => this.actions$.pipe(
@@ -86,7 +88,7 @@ export class StoreEffects {
         ),
     ));
 
-    selectRepository = createEffect(() => this.actions$.pipe(
+    selectRepository$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.SelectRepository),
         switchMap((action) => this.dataAccess.retrieveObjectGroupStructure(action.repositoryId).pipe(
             map(objectGroupList => StoreActions.ObjectGroupsLoaded({objectGroup: objectGroupList.group})),
@@ -97,5 +99,10 @@ export class StoreEffects {
         )),
     ));
 
-    constructor(private actions$: Actions, private dataAccess: DataAccess) {}
+    selectClass$ = createEffect(() => this.actions$.pipe(
+        ofType(StoreActions.ClassSelected),
+        tap(action => this.router.navigate(['classes', action.selectedClass.metaName])),
+    ), {dispatch: false});
+
+    constructor(private actions$: Actions, private dataAccess: DataAccess, private router: Router) {}
 }

@@ -1,21 +1,7 @@
 <div class="parent">
-@if (classesReady | async) {
-    @if (formSubmitted) {
-        <app-export-files [selectedClass]="selectedClass!" [selectedProperties]="selectedProperties!" [attibutes]="(attributes | async)!"></app-export-files>
-    } @else {
-        @if (selectedClass) {
-            <app-class-content [selectedClass]="selectedClass!" [selectedNotebook]="(selectedNotebook | async)!" (propertiesSelected)="propertiesSelected($event)">
-            </app-class-content>
-        } @else {
-            <app-class-list [classes]="(classes | async)!" [notebooksReady]="(notebooksReady | async)!" (classSelected)="classSelected($event)"></app-class-list>
-        }
-    }
-} @else {
-    @if ((working | async) === false) {
-        <app-login></app-login>
-    }
-}
+    <router-outlet></router-outlet>
 </div>
+
 @if ((working | async) === true)
 {
     <span class="loader"></span>

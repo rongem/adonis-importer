@@ -8,6 +8,8 @@ import { RowContainer } from '../models/rest-backend/row-container.model';
 import { Column } from '../models/rest-backend/column.model';
 import { AdonisRepoList } from '../interfaces/adonis-list-repos.interface';
 import { AdonisObjectGroup } from '../interfaces/adonis-object-group.interface';
+import { AttributeOrRelation } from '../interfaces/adonis-notebook-elements.interface';
+import { ExportAction } from '../enums/export-action.enum';
 
 export const LoadClasses = createAction('[App] Start loading Classes.');
 
@@ -37,6 +39,18 @@ export const NotebooksLoadingFailed = createAction('[App] Loading Notebooks fail
 );
 export const AttributesLoadingFailed = createAction('[App] Loading Attributes failed.',
     props<{errorMessage: string}>()
+);
+
+export const ClassSelected = createAction('[Classes] Selected a class.',
+    props<{selectedClass: AdonisClass}>()
+);
+
+export const PropertiesSelected = createAction('[Classes] Selected properties of a class.',
+    props<{properties: AttributeOrRelation[]}>()
+);
+
+export const ActionSelected = createAction('[Classes] How the app should proceed.',
+    props<{action: ExportAction}>()
 );
 
 export const setError = createAction('[Error] Set error',

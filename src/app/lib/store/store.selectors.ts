@@ -1,7 +1,7 @@
 import { createSelector, createFeatureSelector } from '@ngrx/store';
 
 import { State, STORE } from './store.reducer';
-import { WorkflowState } from '../interfaces/workflow-state.enum';
+import { WorkflowState } from '../enums/workflow-state.enum';
 import { CellInformation } from '../models/cellinformation.model';
 
 const appState = createFeatureSelector<State>(STORE);
@@ -27,8 +27,14 @@ export const errorMessage = createSelector(appState, state => state.errorMessage
 export const classes = createSelector(appState, state => Object.values(state.repositoryClasses).sort((a, b) => a.displayNames.de > b.displayNames.de ? 1 : -1));
 
 export const repositoryClass = (id: string) => createSelector(appState, state => state.repositoryClasses[id]);
+export const selectedClass = createSelector(appState, state => state.selectedClass);
 export const notebook = (id: string) => createSelector(appState, state => state.notebooks[id]);
+export const selectedNotebook = createSelector(appState, selectedClass, (state, cls) => state.notebooks[cls!.id]);
 export const attributes = createSelector(appState, state => state.attributes);
+
+export const selectedProperties = createSelector(appState, state => state.selectedProperties);
+
+export const selectedAction = createSelector(appState, state => state.exportAction);
 
 export const repositories = createSelector(appState, state => {
     const returnValue: {[key: string]: string} = {};
