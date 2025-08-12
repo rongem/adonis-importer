@@ -1,7 +1,6 @@
 import { AdonisBasicClass } from "./adonis-basic-class.interface";
-import { AdonisLink } from "./adonis-link.interface";
+import { AdonisRestObject } from "./adonis-basic-type.interface";
 
-export interface AdonisClassList {
-    rest_links: AdonisLink[];
+export interface AdonisClassList extends AdonisRestObject {
     classes: AdonisBasicClass[];
 }

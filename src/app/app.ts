@@ -61,9 +61,9 @@ export class App {
     return this.store.select(Selectors.attributesState);
   }  
 
-  get attributeTypesState() {
-    return this.store.select(Selectors.attributeTypesState);
-  }
+  get repositoryState() {
+    return this.store.select(Selectors.repositoryState);
+  }  
 
   get classes() {
     return this.store.select(Selectors.classes);

@@ -2,9 +2,13 @@ import { Action, ActionReducerMap, createReducer, on } from "@ngrx/store";
 import * as StoreActions from './store.actions';
 import { ClassContainer } from "../interfaces/container-class.interface";
 import { WorkflowState } from "../interfaces/workflow-state.enum";
-import { AttributeTypeContainer } from "../interfaces/container-attributetype.interface";
 import { NotebookContainer } from "../interfaces/container-notebook.interface";
 import { AttributeContainer } from "../interfaces/container-attribute.interface";
+import { CellContent } from "../models/cellcontent.model";
+import { Column } from "../models/rest-backend/column.model";
+import { ErrorList } from "../models/rest-backend/errorlist.model";
+import { AdonisRepository } from "../interfaces/adonis-repository.interface";
+import { AdonisObjectGroup } from "../interfaces/adonis-object-group.interface";
 
 export const STORE = 'STORE';
 
@@ -21,25 +25,38 @@ export interface State {
     classesState: WorkflowState;
     notebookState: WorkflowState;
     attributesState: WorkflowState;
-    attributeTypesState: WorkflowState;
+    repositoryState: WorkflowState;
+    objectGroupState: WorkflowState;
     notAuthorized: boolean;
     repositoryClasses: ClassContainer;
     notebooks: NotebookContainer;
     attributes: AttributeContainer;
-    attributeTypes: AttributeTypeContainer;
+    repositories?: AdonisRepository[];
+    selectedRepositoryId?: string;
+    objectGroups?: AdonisObjectGroup;
+    columnDefinitions?: Column[];
+    cellContents: CellContent[];
+    columnMapping: number[];
     errorMessage?: string;
+    rowErrors: ErrorList[];
+    canImport: boolean;
+    importedRows?: number;
 };
 
 const initialState: State = {
     classesState: WorkflowState.NotPresent,
     notebookState: WorkflowState.NotPresent,
     attributesState: WorkflowState.NotPresent,
-    attributeTypesState: WorkflowState.NotPresent,
+    repositoryState: WorkflowState.NotPresent,
+    objectGroupState: WorkflowState.NotPresent,
     notAuthorized: true,
     repositoryClasses: {},
     notebooks: {},
     attributes: {},
-    attributeTypes: {},
+    cellContents: [],
+    columnMapping: [],
+    rowErrors: [],
+    canImport: false,
 };
 
 export function storeReducer(appState: State | undefined, appAction: Action) {
@@ -58,9 +75,13 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
             ...state,
             attributesState: WorkflowState.Loading,
         })),
-        on(StoreActions.LoadAttributeTypes, (state, action) => ({
+        on(StoreActions.LoadRepositories, (state, action) => ({
             ...state,
-            attributeTypesState: WorkflowState.Loading,
+            repositoryState: WorkflowState.Loading,
+        })),
+        on(StoreActions.LoadObjectGroups, (state, action) => ({
+            ...state,
+            objectGroupState: WorkflowState.Loading,
         })),
         on(StoreActions.ClassesLoadingFailed, (state, action) => ({
             ...state,
@@ -77,9 +98,14 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
             attributesState: WorkflowState.ErrorOccured,
             errorMessage: action.errorMessage,
         })),
-        on(StoreActions.AttributeTypesLoadingFailed, (state, action) => ({
+        on(StoreActions.RepositoryLoadingFailed, (state, action) => ({
             ...state,
-            attributeTypesState: WorkflowState.ErrorOccured,
+            repositoryState: WorkflowState.ErrorOccured,
+            errorMessage: action.errorMessage,
+        })),
+        on(StoreActions.ObjectGroupLoadingFailed, (state, action) => ({
+            ...state,
+            objectGroupState: WorkflowState.ErrorOccured,
             errorMessage: action.errorMessage,
         })),
         on(StoreActions.ClassesLoaded, (state, action) => ({
@@ -97,10 +123,66 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
             attributesState: WorkflowState.Loaded,
             attributes: action.attributesContainer,
         })),
-        on(StoreActions.AttributeTypesLoaded, (state, action) => ({
+        on(StoreActions.RepositoriesLoaded, (state, action) => ({
             ...state,
-            attributeTypesState: WorkflowState.Loaded,
-            attributeTypes: action.attributeTypes,
+            repositoryState: WorkflowState.Loaded,
+            repositories: action.repositoryList.repos,
+        })),
+        on(StoreActions.ObjectGroupsLoaded, (state, action) => ({
+            ...state,
+            objectGroupState: WorkflowState.Loaded,
+            objectGroups: action.objectGroup,
+        })),
+        on(StoreActions.columnsLoaded, (state, action) => ({
+            ...state,
+            columnDefinitions: [...action.columns],
+            cellContents: [],
+            columnMapping: Array.from(Array(action.columns.length).keys()),
+            working: false,
+            rowErrors: [],
+            canImport: false,
+        })),
+        on(StoreActions.changeColumnOrder, (state, action) => ({
+            ...state,
+            columnMapping: [...action.columnMappings],
+            working: false,
+            rowErrors: [],
+            canImport: false,
+        })),
+        on(StoreActions.setCellContents, (state, action) => ({
+            ...state,
+            cellContents: [...action.contents],
+            rowErrors: [],
+        })),
+        on(StoreActions.testRowsInBackend, (state, action) => ({
+            ...state,
+            working: true,
+            rowErrors: [],
+            canImport: false,
+        })),
+        on(StoreActions.importRowsInBackend, (state, action) => ({
+            ...state,
+            working: true,
+            rowErrors: [],
+        })),
+        on(StoreActions.setRowErrors, (state, action) => ({
+            ...state,
+            working: false,
+            // rowErrors: [...action.errors],
+            // canImport: action.errors.length === 0,
+        })),
+        on(StoreActions.backendTestSuccessful, (state, action) => ({
+            ...state,
+            canImport: true,
+            working: false,
+        })),
+        on(StoreActions.importSuccessful, (state, action) => ({
+            ...state,
+            cellContents: [],
+            rowErrors: [],
+            working: false,
+            canImport: false,
+            importedRows: action.importedRows
         })),
     )(appState, appAction);
 }

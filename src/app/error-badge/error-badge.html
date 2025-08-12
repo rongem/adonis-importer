@@ -1,0 +1,9 @@
+<button class="error-sign" (click)="visibleText = !visibleText">!</button>
+<span class="visually-hidden" i18n>
+    This line contains data causing errors.
+</span>
+@if (visibleText) {
+  <div class="error position-absolute">
+    {{errorDescription()}}
+  </div>
+}

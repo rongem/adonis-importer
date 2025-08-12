@@ -1,7 +1,6 @@
-import { AdonisLink } from "./adonis-link.interface"
+import { AdonisRestObject } from "./adonis-basic-type.interface"
 import { AdonisNotebookChapter } from "./adonis-notebook-elements.interface"
 
-export interface AdonisNoteBook {
-    rest_links: AdonisLink[],
+export interface AdonisNoteBook extends AdonisRestObject {
     chapters: AdonisNotebookChapter[],
 }

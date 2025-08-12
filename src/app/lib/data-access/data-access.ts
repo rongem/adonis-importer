@@ -8,14 +8,12 @@ import { ClassContainer } from '../interfaces/container-class.interface';
 import { AppSettings } from '../app-settings';
 import { AdonisNotebookGroup, AttributeOrGroupOrRelation, AttributeOrRelation } from '../interfaces/adonis-notebook-elements.interface';
 import { AdonisBasicClass } from '../interfaces/adonis-basic-class.interface';
-import { AdonisAttributeTypeList } from '../interfaces/adonis-list-attributetype.interface';
-import { AdonisAttributeType } from '../interfaces/adonis-attributetype.interface';
-import { AttributeTypeContainer } from '../interfaces/container-attributetype.interface';
-import { AdonisBasicAttributeType } from '../interfaces/adonis-basic-attributetype.interface';
 import { NotebookContainer } from '../interfaces/container-notebook.interface';
 import { AdonisAttribute } from '../interfaces/adonis-attribute.interface';
 import { AdonisAttributeList } from '../interfaces/adonis-list-attribute.interface';
 import { AttributeContainer } from '../interfaces/container-attribute.interface';
+import { AdonisGroupContainer } from '../interfaces/adonis-group.interface';
+import { AdonisRepoList } from '../interfaces/adonis-list-repos.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -112,25 +110,8 @@ export class DataAccess {
     );
   };
 
-  private retrieveAttributeTypeList = () => (this.getUrl<AdonisAttributeTypeList>(this.baseUrl + '4.0/metamodel/attrtypes'));
+  retrieveRepositories = () => this.getUrl<AdonisRepoList>(this.baseUrl + '4.0/repos');
 
-  retrieveAttributeTypes = () => this.retrieveAttributeTypeList().pipe(
-    map(attributeTypesList => attributeTypesList.attrTypes.filter(at => at.metaName !== 'PAGELAYOUT')),
-    mergeMap(this.retrieveAttributeTypeDetail),
-    map(attributeTypes => {
-      const attributeTypesContainer: AttributeTypeContainer = {};
-      attributeTypes.forEach(at => {
-        attributeTypesContainer[at.id] = at;
-      });
-      return attributeTypesContainer;
-    })
-  );
+  retrieveObjectGroupStructure = (repoId: string) => this.getUrl<AdonisGroupContainer>(this.baseUrl + '4.0/repos/' + repoId + '/root');
 
-  private retrieveAttributeTypeDetail = (attrTypes: AdonisBasicAttributeType[]) => {
-      const attributeTypes = attrTypes.map(at => {
-        const at_url = at.rest_links.find(l => l.rel === 'self')!.href;
-        return this.getUrl<AdonisAttributeType>(at_url)
-      });
-      return forkJoin(attributeTypes);
-    };
 }

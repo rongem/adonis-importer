@@ -1,13 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, of, switchMap, tap } from 'rxjs';
+import { catchError, iif, map, of, switchMap, tap } from 'rxjs';
 import { DataAccess } from '../data-access/data-access';
 
 import * as StoreActions from './store.actions';
 import { ClassContainer } from '../interfaces/container-class.interface';
 import { NotebookContainer } from '../interfaces/container-notebook.interface';
-import { AttributeContainer } from '../interfaces/container-attribute.interface';
 
 const getClasses = (classContainer: ClassContainer) => Object.values(classContainer);
 
@@ -24,30 +23,19 @@ export class StoreEffects {
         )),
     ));
 
-    loadAttributeTypes$ = createEffect(() => this.actions$.pipe(
-        ofType(StoreActions.ClassesLoaded),
-        map(() => StoreActions.LoadAttributeTypes()),
-    ));
-
-    loadNotebooks$ = createEffect(() => this.actions$.pipe(
+    startLoadingNotebooks$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.ClassesLoaded),
         map((action) => StoreActions.LoadNotebooks({classes: getClasses(action.classContainer)})),
     ));
 
-    loadAttributes$ = createEffect(() => this.actions$.pipe(
+    startLoadingAttributes$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.ClassesLoaded),
         map((action) => StoreActions.LoadAttributes({classes: getClasses(action.classContainer)})),
     ));
 
-    retrieveAttributeTypes$ = createEffect(() => this.actions$.pipe(
-        ofType(StoreActions.LoadAttributeTypes),
-        switchMap(() => this.dataAccess.retrieveAttributeTypes().pipe(
-            map(attributeTypes => StoreActions.AttributeTypesLoaded({attributeTypes})),
-            catchError((error: HttpErrorResponse) => {
-                console.error(error);
-                return of(StoreActions.AttributeTypesLoadingFailed({errorMessage: error.message}));
-            }),
-        )),
+    startLoadingRepositories$ = createEffect(() => this.actions$.pipe(
+        ofType(StoreActions.ClassesLoaded),
+        map(() => StoreActions.LoadRepositories()),
     ));
 
     retrieveNotebooks$ = createEffect(() => this.actions$.pipe(
@@ -75,6 +63,36 @@ export class StoreEffects {
             catchError((error: HttpErrorResponse) => {
                 console.error(error);
                 return of(StoreActions.AttributesLoadingFailed({errorMessage: error.message}));
+            }),
+        )),
+    ));
+
+    retrieveRepositories$ = createEffect(() => this.actions$.pipe(
+        ofType(StoreActions.LoadRepositories),
+        switchMap(() => this.dataAccess.retrieveRepositories().pipe(
+            map(repositoryList => StoreActions.RepositoriesLoaded({repositoryList})),
+            catchError((error: HttpErrorResponse) => {
+                console.error(error);
+                return of(StoreActions.RepositoryLoadingFailed({errorMessage: error.message}));
+            }),
+        )),
+    ));
+
+    checkAndSetRepo$ = createEffect(() => this.actions$.pipe(
+        ofType(StoreActions.RepositoriesLoaded),
+        switchMap((action) => iif(() => action.repositoryList.repos.length === 1,
+            of(StoreActions.SelectRepository({repositoryId: action.repositoryList.repos[0].id})),
+            of(StoreActions.noAction()))
+        ),
+    ));
+
+    selectRepository = createEffect(() => this.actions$.pipe(
+        ofType(StoreActions.SelectRepository),
+        switchMap((action) => this.dataAccess.retrieveObjectGroupStructure(action.repositoryId).pipe(
+            map(objectGroupList => StoreActions.ObjectGroupsLoaded({objectGroup: objectGroupList.group})),
+            catchError((error: HttpErrorResponse) => {
+                console.error(error);
+                return of(StoreActions.ObjectGroupLoadingFailed({errorMessage: error.message}));
             }),
         )),
     ));
