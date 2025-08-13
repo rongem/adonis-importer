@@ -4,12 +4,12 @@ import { ActionSelected } from '../lib/store/store.actions';
 import { ExportAction } from '../lib/enums/export-action.enum';
 
 @Component({
-  selector: 'app-choose-import',
+  selector: 'app-choose-import-export',
   imports: [],
-  templateUrl: './choose-import.html',
-  styleUrl: './choose-import.scss'
+  templateUrl: './choose-import-export.html',
+  styleUrl: './choose-import-export.scss'
 })
-export class ChooseImport {
+export class ChooseImportExport {
     constructor(private store: Store) {}
     selectImport() {
       this.store.dispatch(ActionSelected({action: ExportAction.ImportViaRest}));

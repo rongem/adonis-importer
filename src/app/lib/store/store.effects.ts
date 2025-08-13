@@ -107,7 +107,7 @@ export class StoreEffects {
 
     selectProperties$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.PropertiesSelected),
-        tap(() => this.router.navigate(['choose-export-import'])),
+        tap(() => this.router.navigate(['choose-import-export'])),
     ), {dispatch: false});
 
     selectAction$ = createEffect(() => this.actions$.pipe(
