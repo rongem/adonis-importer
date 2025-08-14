@@ -165,6 +165,10 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
             ...state,
             exportAction: action.action,
         })),
+        on(StoreActions.SelectRepository, (state, action) => ({
+            ...state,
+            selectedRepositoryId: action.repositoryId,
+        })),
         on(StoreActions.columnsLoaded, (state, action) => ({
             ...state,
             columnDefinitions: [...action.columns],

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, iif, map, of, switchMap, tap } from 'rxjs';
+import { catchError, iif, map, of, switchMap, tap, withLatestFrom } from 'rxjs';
 import { Router } from '@angular/router';
 
 import { DataAccess } from '../data-access/data-access';
@@ -9,6 +9,8 @@ import * as StoreActions from './store.actions';
 import { ClassContainer } from '../interfaces/container-class.interface';
 import { NotebookContainer } from '../interfaces/container-notebook.interface';
 import { ExportAction } from '../enums/export-action.enum';
+import { selectObjectGroups } from './store.selectors';
+import { Store } from '@ngrx/store';
 
 const getClasses = (classContainer: ClassContainer) => Object.values(classContainer);
 
@@ -81,6 +83,7 @@ export class StoreEffects {
         )),
     ));
 
+    // if only one repository is present, directly load objectgroup structure. Otherwise, choose repository first
     checkAndSetRepo$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.RepositoriesLoaded),
         switchMap((action) => iif(() => action.repositoryList.repos.length === 1,
@@ -112,13 +115,18 @@ export class StoreEffects {
 
     selectAction$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.ActionSelected),
-        tap((action) => {
+        withLatestFrom(this.store.select(selectObjectGroups)),
+        tap(([action, objectGroups]) => {
             switch (action.action) {
                 case ExportAction.ExportFiles:
                     this.router.navigate(['export-files']);
                     break;
                 case ExportAction.ImportViaRest:
-                    this.router.navigate(['import-rest']);
+                    if (objectGroups) {
+                        this.router.navigate(['import-rest']);
+                    } else {
+                        this.router.navigate(['choose-objectgroup']);
+                    }
                     break;
                 default:
                     this.router.navigateByUrl('/');
@@ -126,5 +134,5 @@ export class StoreEffects {
         }),
     ), {dispatch: false});
 
-    constructor(private actions$: Actions, private dataAccess: DataAccess, private router: Router) {}
+    constructor(private actions$: Actions, private dataAccess: DataAccess, private router: Router, private store: Store) {}
 }

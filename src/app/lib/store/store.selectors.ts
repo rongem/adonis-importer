@@ -42,6 +42,8 @@ export const repositories = createSelector(appState, state => {
     return returnValue;
 });
 
+export const selectObjectGroups = createSelector(appState, state => state.objectGroups);
+
 export const columnDefinitions = createSelector(appState, state => state.columnDefinitions?.sort((a, b) => a.ordinalPosition - b.ordinalPosition) ?? []);
 
 export const columnDefinition = (columnPosition: number) => createSelector(columnDefinitions, columns => columns.find(c => c.ordinalPosition === columnPosition + 1));
