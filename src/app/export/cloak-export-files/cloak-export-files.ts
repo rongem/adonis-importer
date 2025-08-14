@@ -1,7 +1,7 @@
 import { AsyncPipe } from '@angular/common';
 import { Component } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { ExportFiles } from '../../export-files/export-files';
+import { ExportFiles } from '../export-files/export-files';
 import * as Selectors from '../../lib/store/store.selectors';
 
 @Component({

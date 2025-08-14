@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { Store } from '@ngrx/store';
 import * as Selectors from '../../lib/store/store.selectors';
-import { Login } from '../../login/login';
+import { Login } from '../login/login';
 
 @Component({
   selector: 'app-cloak-login',

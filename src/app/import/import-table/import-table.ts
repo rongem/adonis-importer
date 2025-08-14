@@ -4,15 +4,15 @@ import { Store } from '@ngrx/store';
 import { Actions, ofType } from '@ngrx/effects';
 import { Subscription, firstValueFrom, map, withLatestFrom } from 'rxjs';
 
-import * as StoreSelectors from '../lib/store/store.selectors';
-import * as StoreActions from '../lib/store/store.actions';
-import { ClipboardHelper } from '../lib/clipboard-helper.model';
-import { CellContent } from '../lib/models/cellcontent.model';
-import { Row } from '../lib/models/rest-backend/row.model';
-import { CellInformation } from '../lib/models/cellinformation.model';
-import { RowContainer } from '../lib/models/rest-backend/row-container.model';
+import * as StoreSelectors from '../../lib/store/store.selectors';
+import * as StoreActions from '../../lib/store/store.actions';
+import { ClipboardHelper } from '../../lib/clipboard-helper.model';
+import { CellContent } from '../../lib/models/cellcontent.model';
+import { Row } from '../../lib/models/rest-backend/row.model';
+import { CellInformation } from '../../lib/models/cellinformation.model';
+import { RowContainer } from '../../lib/models/rest-backend/row-container.model';
 import { NgClass, AsyncPipe } from '@angular/common';
-import { ErrorBadge } from '../error-badge/error-badge';
+import { ErrorBadge } from '../../error-badge/error-badge';
 
 
 @Component({

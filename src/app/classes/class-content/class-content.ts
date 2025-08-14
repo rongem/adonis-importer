@@ -1,10 +1,10 @@
 import { Component, computed, input, output } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Children } from "../children/children";
-import { AdonisClass } from '../lib/interfaces/adonis-class.interface';
-import { AdonisNoteBook } from '../lib/interfaces/adonis-notebook.interface';
-import { AdonisNotebookGroup, AdonisNotebookRelations, AttributeOrRelation } from '../lib/interfaces/adonis-notebook-elements.interface';
-import { ATTRDEF, rel, RELATIONS } from '../lib/string.constants';
+import { AdonisClass } from '../../lib/interfaces/adonis-class.interface';
+import { AdonisNoteBook } from '../../lib/interfaces/adonis-notebook.interface';
+import { AdonisNotebookGroup, AdonisNotebookRelations, AttributeOrRelation } from '../../lib/interfaces/adonis-notebook-elements.interface';
+import { ATTRDEF, rel, RELATIONS } from '../../lib/string.constants';
 
 @Component({
   selector: 'app-class-content',

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { Store } from '@ngrx/store';
-import { ClassContent } from '../../class-content/class-content';
+import { ClassContent } from '../../classes/class-content/class-content';
 import * as Selectors from '../../lib/store/store.selectors';
 import { AttributeOrRelation } from '../../lib/interfaces/adonis-notebook-elements.interface';
 import { PropertiesSelected } from '../../lib/store/store.actions';

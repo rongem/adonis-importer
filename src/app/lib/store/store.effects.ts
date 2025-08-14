@@ -1,16 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, iif, map, of, switchMap, tap, withLatestFrom } from 'rxjs';
 import { Router } from '@angular/router';
+import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { Store } from '@ngrx/store';
+import { catchError, iif, map, of, switchMap, tap, withLatestFrom } from 'rxjs';
 
 import { DataAccess } from '../data-access/data-access';
-import * as StoreActions from './store.actions';
 import { ClassContainer } from '../interfaces/container-class.interface';
 import { NotebookContainer } from '../interfaces/container-notebook.interface';
 import { ExportAction } from '../enums/export-action.enum';
-import { selectObjectGroups } from './store.selectors';
-import { Store } from '@ngrx/store';
+import * as StoreActions from './store.actions';
+import * as Selectors from './store.selectors';
 
 const getClasses = (classContainer: ClassContainer) => Object.values(classContainer);
 
@@ -115,7 +115,7 @@ export class StoreEffects {
 
     selectAction$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.ActionSelected),
-        withLatestFrom(this.store.select(selectObjectGroups)),
+        withLatestFrom(this.store.select(Selectors.selectObjectGroups)),
         tap(([action, objectGroups]) => {
             switch (action.action) {
                 case ExportAction.ExportFiles:
@@ -123,9 +123,9 @@ export class StoreEffects {
                     break;
                 case ExportAction.ImportViaRest:
                     if (objectGroups) {
-                        this.router.navigate(['import-rest']);
-                    } else {
                         this.router.navigate(['choose-objectgroup']);
+                    } else {
+                        this.router.navigate(['choose-repository']);
                     }
                     break;
                 default:

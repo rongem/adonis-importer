@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Store } from '@ngrx/store';
-import { AppSettings } from '../lib/app-settings';
-import * as StoreActions from '../lib/store/store.actions';
+import { AppSettings } from '../../lib/app-settings';
+import * as StoreActions from '../../lib/store/store.actions';
 
 @Component({
   selector: 'app-login',

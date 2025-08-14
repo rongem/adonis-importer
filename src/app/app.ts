@@ -38,6 +38,10 @@ export class App {
     return this.store.select(Selectors.repositoryState);
   }  
 
+  get objectGroupsState() {
+    return this.store.select(Selectors.objectGroupsState);
+  }  
+
   get errorPresent() {
     return this.store.select(Selectors.errorPresent)
   }

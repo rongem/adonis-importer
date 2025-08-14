@@ -2,8 +2,8 @@ import { Component, input } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { AdonisNotebookRelations } from '../lib/interfaces/adonis-notebook-elements.interface';
-import { repositoryClass } from '../lib/store/store.selectors';
+import { AdonisNotebookRelations } from '../../lib/interfaces/adonis-notebook-elements.interface';
+import { repositoryClass } from '../../lib/store/store.selectors';
 
 @Component({
   selector: 'app-child-relation',

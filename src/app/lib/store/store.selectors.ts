@@ -10,13 +10,15 @@ export const working = createSelector(appState, state =>
     state.classesState === WorkflowState.Loading ||
     state.notebookState === WorkflowState.Loading ||
     state.attributesState === WorkflowState.Loading ||
-    state.repositoryState === WorkflowState.Loading
+    state.repositoryState === WorkflowState.Loading ||
+    state.objectGroupState === WorkflowState.Loading
 );
 
 export const classesState = createSelector(appState, state => state.classesState);
 export const notebookState = createSelector(appState, state => state.notebookState);
 export const attributesState = createSelector(appState, state => state.attributesState);
 export const repositoryState = createSelector(appState, state => state.repositoryState);
+export const objectGroupsState = createSelector(appState, state => state.objectGroupState);
 
 export const classesReady = createSelector(appState, state => state.classesState === WorkflowState.Loaded);
 export const notebooksReady = createSelector(appState, state => state.notebookState === WorkflowState.Loaded);
@@ -36,11 +38,7 @@ export const selectedProperties = createSelector(appState, state => state.select
 
 export const selectedAction = createSelector(appState, state => state.exportAction);
 
-export const repositories = createSelector(appState, state => {
-    const returnValue: {[key: string]: string} = {};
-    state.repositories?.forEach(r => returnValue[r.id] = r.name);
-    return returnValue;
-});
+export const repositories = createSelector(appState, state => (state.repositories ?? []).slice().sort((a, b) => a.name > b.name ? 1 : -1));
 
 export const selectObjectGroups = createSelector(appState, state => state.objectGroups);
 

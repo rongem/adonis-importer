@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { Store } from '@ngrx/store';
-import { ClassList } from '../../class-list/class-list';
+import { ClassList } from '../../classes/class-list/class-list';
 import * as Selectors from '../../lib/store/store.selectors';
 import { AdonisClass } from '../../lib/interfaces/adonis-class.interface';
 import { ClassSelected } from '../../lib/store/store.actions';

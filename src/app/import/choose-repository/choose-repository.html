@@ -1,0 +1,14 @@
+<h2>Direkter Import nach ADONIS</h2>
+<p>
+    Sie wollen direkt nach ADONIS importieren. Ihr Benutzerkonto hat Zugriff auf mehr als ein Repository.
+    Bitte wählen Sie aus, in welches der unten aufgeführten Repositories Sie importieren möchten
+</p>
+<p>
+    <label for="reposelect">Repository zum Importieren:</label>
+    <select id="reposelect" name="reposelect" #reposelect>
+        @for (repo of (repositories | async); track repo.name) {
+            <option [value]="repo.id">{{repo.name}}</option>
+        }
+    </select>
+    <button (click)="chooseRepository(reposelect.value)">Auswählen</button>
+</p>

@@ -10,6 +10,7 @@
         <span class="indicator" [ngClass]="{yellow: (notebookState | async) === 1, green: (notebookState | async) === 2, red: (notebookState | async) === 3}">N</span>
         <span class="indicator" [ngClass]="{yellow: (attributesState | async) === 1, green: (attributesState | async) === 2, red: (attributesState | async) === 3}">A</span>
         <span class="indicator" [ngClass]="{yellow: (repositoryState | async) === 1, green: (repositoryState | async) === 2, red: (repositoryState | async) === 3}">R</span>
+        <span class="indicator" [ngClass]="{yellow: (objectGroupsState | async) === 1, green: (objectGroupsState | async) === 2, red: (objectGroupsState | async) === 3}">O</span>
     </div>
 }
 

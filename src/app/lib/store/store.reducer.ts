@@ -168,6 +168,8 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
         on(StoreActions.SelectRepository, (state, action) => ({
             ...state,
             selectedRepositoryId: action.repositoryId,
+            objectGroupState: WorkflowState.Loading,
+            objectGroups: undefined,
         })),
         on(StoreActions.columnsLoaded, (state, action) => ({
             ...state,

@@ -1,8 +1,8 @@
 import { Component, input } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import {AttributeOrGroupOrRelation, AdonisNotebookGroup, AdonisNotebookAttribute, AdonisNotebookRelations, AttributeOrRelation} from '../lib/interfaces/adonis-notebook-elements.interface'
+import {AttributeOrGroupOrRelation, AdonisNotebookGroup, AdonisNotebookAttribute, AdonisNotebookRelations, AttributeOrRelation} from '../../lib/interfaces/adonis-notebook-elements.interface'
 import { ChildRelation } from "../child-relation/child-relation";
-import * as Constants from '../lib/string.constants';
+import * as Constants from '../../lib/string.constants';
 
 @Component({
   selector: 'app-children',

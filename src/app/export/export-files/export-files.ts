@@ -1,9 +1,9 @@
 import { Component, OnInit, input } from '@angular/core';
-import { AdonisClass } from '../lib/interfaces/adonis-class.interface';
-import { AttributeOrRelation } from '../lib/interfaces/adonis-notebook-elements.interface';
-import { createXML } from '../lib/helpers/xml.function';
-import { createXLFile } from '../lib/helpers/xlsx.functions';
-import { AttributeContainer } from '../lib/interfaces/container-attribute.interface';
+import { AdonisClass } from '../../lib/interfaces/adonis-class.interface';
+import { AttributeOrRelation } from '../../lib/interfaces/adonis-notebook-elements.interface';
+import { createXML } from '../../lib/helpers/xml.function';
+import { createXLFile } from '../../lib/helpers/xlsx.functions';
+import { AttributeContainer } from '../../lib/interfaces/container-attribute.interface';
 
 @Component({
   selector: 'app-export-files',
