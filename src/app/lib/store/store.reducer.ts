@@ -44,6 +44,7 @@ export interface State {
     repositories?: AdonisRepository[];
     selectedRepositoryId?: string;
     objectGroups?: AdonisObjectGroup;
+    selectedObjectGroup?: AdonisObjectGroup;
 
     exportAction?: ExportAction;
 
@@ -170,6 +171,10 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
             selectedRepositoryId: action.repositoryId,
             objectGroupState: WorkflowState.Loading,
             objectGroups: undefined,
+        })),
+        on(StoreActions.SelectObjectGroup, (state, action) => ({
+            ...state,
+            selectedObjectGroup: action.objectGroup,
         })),
         on(StoreActions.columnsLoaded, (state, action) => ({
             ...state,

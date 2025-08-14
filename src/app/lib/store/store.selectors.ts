@@ -41,6 +41,7 @@ export const selectedAction = createSelector(appState, state => state.exportActi
 export const repositories = createSelector(appState, state => (state.repositories ?? []).slice().sort((a, b) => a.name > b.name ? 1 : -1));
 export const selectedRepository = createSelector(appState, state => state.repositories?.find(r => r.id === state.selectedRepositoryId));
 export const objectGroups = createSelector(appState, state => state.objectGroups);
+export const selectedObjectGroup = createSelector(appState, state => state.selectedObjectGroup);
 
 export const columnDefinitions = createSelector(appState, state => state.columnDefinitions?.sort((a, b) => a.ordinalPosition - b.ordinalPosition) ?? []);
 

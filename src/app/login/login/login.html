@@ -12,5 +12,5 @@
         <label for="password">Kennwort: </label>
         <input id="password" type="password" formControlName="password">
     </div>
-    <button type="submit" [disabled]="!loginForm.valid" (click)="retrieveLoginData()">Start</button>
+    <button class="content-button" type="submit" [disabled]="!loginForm.valid" (click)="retrieveLoginData()">Start</button>
 </form>

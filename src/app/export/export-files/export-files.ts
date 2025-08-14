@@ -23,7 +23,7 @@ export class ExportFiles implements OnInit {
     createXLFile(this.selectedClass(), this.selectedProperties());
   }
 
-  copyToClipboard(text: string) {
-    navigator.clipboard.writeText(text);
+  copyToClipboard() {
+    navigator.clipboard.writeText(this.xmlText);
   }
 }

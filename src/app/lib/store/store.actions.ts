@@ -81,6 +81,10 @@ export const ObjectGroupLoadingFailed = createAction('[ObjectGroup] Loading Obje
     props<{errorMessage: string}>()
 );
 
+export const SelectObjectGroup = createAction('[ObjectGroup] Select Object Group.',
+    props<{objectGroup: AdonisObjectGroup}>()
+);
+
 export const columnsLoaded = createAction('[Columns] Finished loading columns',
     props<{columns: Column[]}>()
 );

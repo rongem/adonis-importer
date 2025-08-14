@@ -7,3 +7,4 @@ export const login_url = 'login';
 export const classes_url = 'classes';
 export const export_files_url = 'export-files';
 export const choose_import_location_url = 'choose-import-location';
+export const import_url = 'import';

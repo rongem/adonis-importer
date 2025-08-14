@@ -4,7 +4,7 @@
             <button
                 [title]="c.infoText ? c.infoText.de : ''"
                 (click)="selectButton_click(c)"
-                [ngClass]="{selected: c.id === selectedClassId}"
+                class="content-button"
                 [disabled]="notebooksReady() === false"
             >
                 <h4>

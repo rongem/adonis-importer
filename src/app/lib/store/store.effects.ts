@@ -2,16 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { Store } from '@ngrx/store';
-import { catchError, iif, map, of, switchMap, tap, withLatestFrom } from 'rxjs';
+import { catchError, iif, map, of, switchMap, tap } from 'rxjs';
 
 import { DataAccess } from '../data-access/data-access';
 import { ClassContainer } from '../interfaces/container-class.interface';
 import { NotebookContainer } from '../interfaces/container-notebook.interface';
 import { ExportAction } from '../enums/export-action.enum';
+import { choose_import_location_url, classes_url, export_files_url, import_url } from '../string.constants';
 import * as StoreActions from './store.actions';
-import * as Selectors from './store.selectors';
-import { choose_import_location_url, classes_url, export_files_url } from '../string.constants';
 
 const getClasses = (classContainer: ClassContainer) => Object.values(classContainer);
 
@@ -125,5 +123,10 @@ export class StoreEffects {
         }),
     ), {dispatch: false});
 
-    constructor(private actions$: Actions, private dataAccess: DataAccess, private router: Router, private store: Store) {}
+    selectObjectGroup$ = createEffect(() => this.actions$.pipe(
+        ofType(StoreActions.SelectObjectGroup),
+        tap(() => this.router.navigate([import_url])),
+    ), {dispatch: false});
+
+    constructor(private actions$: Actions, private dataAccess: DataAccess, private router: Router) {}
 }

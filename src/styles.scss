@@ -9,18 +9,11 @@ body {
 
 .content {
     margin: 0 1rem;
+    padding: 1rem;
 }
 
-.parent {
-    display: flex;
-
-    .content {
-        padding: 1rem;
-    }
-
-    button {
-        width: 100%;
-    }
+button.content-button {
+    width: 100%;
 }
 
 .buttonlist button {
@@ -464,3 +457,56 @@ footer {
     width: 1px;
 }
 
+.tree {
+  --spacing: 1.5rem;
+  --radius: 10px;
+
+    li {
+        display: block;
+        position: relative;
+        border-left: 2px solid black;
+        padding-left: calc(2 * var(--spacing) - var(--radius) - 2px);
+        
+        button {
+            border-radius: 20%;
+
+            &:hover {
+                background-color: white;
+            }
+        }
+
+        &:not(:has(details)) button {
+            translate: calc(var(--spacing) - var(--radius));
+        }
+        
+        &::before {
+            content: '';
+            display: block;
+            position: absolute;
+            top: calc(var(--spacing) / -2);
+            left: -2px;
+            width: calc(var(--spacing) + 2px);
+            height: calc(var(--spacing) + 1px);
+            border: solid black;
+            border-width: 0 0 2px 2px;
+        }
+
+        &:last-child {
+            border-color: transparent;
+        }    
+    }    
+
+    ul {
+        margin-left: calc(var(--radius) - var(--spacing));
+        padding-left: 0;
+
+        li {
+            translate: calc(var(--spacing) - 0.7 * var(--radius));
+        }
+    }
+
+    summary {
+        cursor: pointer;
+    }    
+
+}

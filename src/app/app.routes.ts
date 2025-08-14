@@ -5,7 +5,7 @@ import { CloakClassContent } from './classes/cloak-class-content/cloak-class-con
 import { canActivateClasses } from './lib/guards/classes-auth-guard';
 import { CloakExportFiles } from './export/cloak-export-files/cloak-export-files';
 import { canActivateExport } from './lib/guards/export-auth-guard';
-import { canActivateImport } from './lib/guards/import-auth-guard';
+import { canActivateImport } from './lib/guards/activate-import-auth-guard';
 import { ChooseRepository } from './import/choose-repository/choose-repository';
 import { choose_import_location_url, classes_url, export_files_url, login_url } from './lib/string.constants';
 
@@ -18,5 +18,5 @@ export const routes: Routes = [
     ]},
     { path: export_files_url, component: CloakExportFiles, canActivate: [canActivateExport] },
     { path: choose_import_location_url, component: ChooseRepository, canActivate: [canActivateImport] },
-    // { path: 'import-rest', canActivate: [canActivateImport] },
+    // { path: import_url, canActivate: [canActivateImport] },
 ];

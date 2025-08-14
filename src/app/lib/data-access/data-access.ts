@@ -112,6 +112,6 @@ export class DataAccess {
 
   retrieveRepositories = () => this.getUrl<AdonisRepoList>(this.baseUrl + '4.0/repos');
 
-  retrieveObjectGroupStructure = (repoId: string) => this.getUrl<AdonisGroupContainer>(this.baseUrl + '4.0/repos/' + repoId + '/objectgroups/root');
+  retrieveObjectGroupStructure = (repoId: string) => this.getUrl<AdonisGroupContainer>(this.baseUrl + '4.0/repos/' + repoId.substring(1, repoId.length - 1) + '/objectgroups/root?recursive=true');
 
 }

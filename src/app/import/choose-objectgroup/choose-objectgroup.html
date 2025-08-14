@@ -1,0 +1,22 @@
+@if (objectGroups().length > 0) {
+    <ul [ngClass]="{tree: top}">
+        @for (objectGroup of objectGroups(); track objectGroup.id) {
+            <li>
+                @if (objectGroup.subgroups && objectGroup.subgroups.length > 0) {
+                    <details>
+                        <summary>
+                            <button (click)="selectObjectGroup(objectGroup)">
+                                {{objectGroup.name}}
+                            </button>
+                        </summary>
+                        <app-choose-objectgroup [objectGroups]="objectGroup.subgroups"></app-choose-objectgroup>
+                    </details>
+                } @else {
+                    <button (click)="selectObjectGroup(objectGroup)">
+                        {{objectGroup.name}}
+                    </button>
+                }
+            </li>
+        }
+    </ul>
+}

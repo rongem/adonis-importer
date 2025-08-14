@@ -4,10 +4,12 @@ import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import * as Selectors from '../../lib/store/store.selectors';
 import * as StoreActions from '../../lib/store/store.actions';
+import { ChooseObjectgroup } from '../choose-objectgroup/choose-objectgroup';
+import { tap } from 'rxjs';
 
 @Component({
   selector: 'app-choose-repository',
-  imports: [AsyncPipe],
+  imports: [AsyncPipe, ChooseObjectgroup],
   templateUrl: './choose-repository.html',
   styleUrl: './choose-repository.scss'
 })
@@ -26,7 +28,11 @@ export class ChooseRepository {
       return this.store.select(Selectors.objectGroups);
     }
 
-    chooseRepository(value: string) {
-      this.store.dispatch(StoreActions.SelectRepository({repositoryId: value.substring(1, value.length - 1)}));
+    get selectedObjectGroup() {
+      return this.store.select(Selectors.selectedObjectGroup);
+    }
+
+    chooseRepository(repositoryId: string) {
+      this.store.dispatch(StoreActions.SelectRepository({repositoryId}));
     }
 }
