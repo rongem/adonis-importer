@@ -1,3 +1,9 @@
 export const rel = '-rel';
 export const RELATIONS = 'RELATIONS';
 export const ATTRDEF = 'ATTRDEF';
+export const GROUP = 'GROUP';
+export const NAME = 'NAME';
+export const login_url = 'login';
+export const classes_url = 'classes';
+export const export_files_url = 'export-files';
+export const choose_import_location_url = 'choose-import-location';

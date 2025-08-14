@@ -11,6 +11,7 @@ import { NotebookContainer } from '../interfaces/container-notebook.interface';
 import { ExportAction } from '../enums/export-action.enum';
 import * as StoreActions from './store.actions';
 import * as Selectors from './store.selectors';
+import { choose_import_location_url, classes_url, export_files_url } from '../string.constants';
 
 const getClasses = (classContainer: ClassContainer) => Object.values(classContainer);
 
@@ -30,7 +31,7 @@ export class StoreEffects {
     startLoadingNotebooks$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.ClassesLoaded),
         map((action) => StoreActions.LoadNotebooks({classes: getClasses(action.classContainer)})),
-        tap(() => this.router.navigateByUrl('/classes')),
+        tap(() => this.router.navigate([classes_url])),
     ));
 
     startLoadingAttributes$ = createEffect(() => this.actions$.pipe(
@@ -105,28 +106,18 @@ export class StoreEffects {
 
     selectClass$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.ClassSelected),
-        tap(action => this.router.navigate(['classes', action.selectedClass.metaName])),
-    ), {dispatch: false});
-
-    selectProperties$ = createEffect(() => this.actions$.pipe(
-        ofType(StoreActions.PropertiesSelected),
-        tap(() => this.router.navigate(['choose-import-export'])),
+        tap(action => this.router.navigate([classes_url, action.selectedClass.metaName])),
     ), {dispatch: false});
 
     selectAction$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.ActionSelected),
-        withLatestFrom(this.store.select(Selectors.selectObjectGroups)),
-        tap(([action, objectGroups]) => {
+        tap((action) => {
             switch (action.action) {
                 case ExportAction.ExportFiles:
-                    this.router.navigate(['export-files']);
+                    this.router.navigate([export_files_url]);
                     break;
                 case ExportAction.ImportViaRest:
-                    if (objectGroups) {
-                        this.router.navigate(['choose-objectgroup']);
-                    } else {
-                        this.router.navigate(['choose-repository']);
-                    }
+                    this.router.navigate([choose_import_location_url]);
                     break;
                 default:
                     this.router.navigateByUrl('/');

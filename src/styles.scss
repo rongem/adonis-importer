@@ -23,6 +23,11 @@ body {
     }
 }
 
+.buttonlist button {
+    display: block;
+    width: 100%;
+}
+
 .login {
     position: absolute;
     margin: auto;

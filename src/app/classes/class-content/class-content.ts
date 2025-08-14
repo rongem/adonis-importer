@@ -4,7 +4,8 @@ import { Children } from "../children/children";
 import { AdonisClass } from '../../lib/interfaces/adonis-class.interface';
 import { AdonisNoteBook } from '../../lib/interfaces/adonis-notebook.interface';
 import { AdonisNotebookGroup, AdonisNotebookRelations, AttributeOrRelation } from '../../lib/interfaces/adonis-notebook-elements.interface';
-import { ATTRDEF, rel, RELATIONS } from '../../lib/string.constants';
+import { ATTRDEF, GROUP, NAME, rel, RELATIONS } from '../../lib/string.constants';
+import { ExportAction } from '../../lib/enums/export-action.enum';
 
 @Component({
   selector: 'app-class-content',
@@ -16,10 +17,11 @@ export class ClassContent {
   readonly selectedClass = input.required<AdonisClass>();
   readonly selectedNotebook = input.required<AdonisNoteBook>();
   readonly propertiesSelected = output<AttributeOrRelation[]>();
+  readonly actionSelected = output<ExportAction>();
 
   selectedClassesProperties = computed(() => this.selectedNotebook().chapters.map(chapter => {
-      const properties: AttributeOrRelation[] = chapter.children.filter(c => c.type === 'GROUP').map(g => (g as AdonisNotebookGroup).children).flat();
-      properties.push(...chapter.children.filter(c => c.type !== 'GROUP').map(p => (p as AttributeOrRelation)));
+      const properties: AttributeOrRelation[] = chapter.children.filter(c => c.type === GROUP).map(g => (g as AdonisNotebookGroup).children).flat();
+      properties.push(...chapter.children.filter(c => c.type !== GROUP).map(p => (p as AttributeOrRelation)));
       return properties;
     }).flat()
   );
@@ -27,7 +29,7 @@ export class ClassContent {
   attributeForm = computed(() => {
     const formGroupObject: {[key: string]: FormControl | FormGroup} = {};
     this.selectedClassesProperties().forEach(p => {
-      formGroupObject[p.id] = new FormControl<boolean>({ value: p.metaName === 'NAME', disabled: p.metaName === 'NAME' });
+      formGroupObject[p.id] = new FormControl<boolean>({ value: p.metaName === NAME, disabled: p.metaName === NAME });
       if (p.type === RELATIONS) {
         const r = p as unknown as AdonisNotebookRelations;
         const innerFormGroupObject: {[key: string]: FormControl} = {};
@@ -40,8 +42,10 @@ export class ClassContent {
     return new FormGroup(formGroupObject);
   });
 
+  selectionDone = false;
+
   submitForm() {
-    const nameProperty = this.selectedClassesProperties().find(a => a.metaName === 'NAME')!;
+    const nameProperty = this.selectedClassesProperties().find(a => a.metaName === NAME)!;
     this.attributeForm().get(nameProperty.id)!.enable();
     const selectedProperties = [nameProperty];
     this.selectedClassesProperties().forEach(property => {
@@ -69,8 +73,17 @@ export class ClassContent {
       }
     });
     this.propertiesSelected.emit(selectedProperties);
+    this.selectionDone = true;
   };
   resetForm() {
     this.attributeForm().reset();
   };
+
+  selectImport() {
+    this.actionSelected.emit(ExportAction.ImportViaRest);
+  }
+
+  selectExport() {
+    this.actionSelected.emit(ExportAction.ExportFiles);
+  }
 }

@@ -1,19 +1,45 @@
-<div>
-    <h2>{{selectedClass().displayNames.de}} ({{selectedClass().metaName}})</h2>
-    <form [formGroup]="attributeForm()" class="content attributelist">
-        @for (chapter of selectedNotebook().chapters; track chapter.id) {
-            @if (chapter.children.length > 0) {
-                <ul class="chapter">
-                    <li>
-                        <h3>{{chapter.displayNames.de}}</h3>
-                        <app-children [children]="chapter.children" [formGroup]="attributeForm()"></app-children>
-                    </li>
-                </ul>
+@if (selectionDone) {
+    <h2>Weiteres Vorgehen</h2>
+    <p>Wählen Sie aus, was Sie jetzt tun möchten.</p>
+    <button (click)="selectExport()">
+        <h3>Excel-Vorlage und XML-Konfiguration für einen Import innerhalb von ADONIS erstellen</h3>
+        <p>
+            Sie erhalten eine XML-Konfiguration, die Sie über die Zwischenablage in den Editor einfügen und dann nach ADONIS importieren können.
+            Außerdem wird eine Excel-Datei heruntergeladen, die als Vorlage passend zur Konfiguration dient, und die Sie nach ADONIS importieren können.
+            Wenn Sie Excel- und XML-Datei über die Adminstrationsoberfläche importiert haben, können Sie innerhalb von ADONIS den Import durchführen.
+        </p>
+    </button>
+    <button (click)="selectImport()">
+        <h3>Direkt aus dieser Anwendung nach ADONIS importieren</h3>
+        <p>
+            Sie können direkt in dieser Anwendung nach ADONIS importieren. Voraussetzung ist, dass Sie die Daten in einer Tabelle (z. B. Excel oder ähnliches)
+            vorliegen haben. Kopieren Sie die Tabelle in die Zwischenablage, danach fügen Sie sie mit Strg+V im Browser ein. Nach einer letzten Kontrolle
+            können Sie die Daten importieren lassen.
+        </p>
+    </button>
+    <button (click)="selectionDone = false">
+        <h3>Zurück und Auswahl korrigieren</h3>
+        <p>
+            Sie gelangen zurück zur Auswahl und können korrigieren.
+        </p>
+    </button>
+} @else {
+    <div>
+        <h2>{{selectedClass().displayNames.de}} ({{selectedClass().metaName}})</h2>
+        <form [formGroup]="attributeForm()" class="attributelist">
+            @for (chapter of selectedNotebook().chapters; track chapter.id) {
+                @if (chapter.children.length > 0) {
+                    <ul class="chapter">
+                        <li>
+                            <h3>{{chapter.displayNames.de}}</h3>
+                            <app-children [children]="chapter.children" [formGroup]="attributeForm()"></app-children>
+                        </li>
+                    </ul>
+                }
             }
-        }
-    </form>
-    <div class="form-control">
-        <button type="submit" (click)="submitForm()">Auswählen</button> <button type="reset" (click)="resetForm()">Auswahl löschen</button>
+        </form>
+        <div class="form-control">
+            <button type="submit" (click)="submitForm()">Auswählen</button> <button type="reset" (click)="resetForm()">Auswahl löschen</button>
+        </div>
     </div>
-</div>
-
+}

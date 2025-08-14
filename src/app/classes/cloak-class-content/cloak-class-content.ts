@@ -2,9 +2,11 @@ import { Component } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { ClassContent } from '../../classes/class-content/class-content';
-import * as Selectors from '../../lib/store/store.selectors';
 import { AttributeOrRelation } from '../../lib/interfaces/adonis-notebook-elements.interface';
 import { PropertiesSelected } from '../../lib/store/store.actions';
+import * as Selectors from '../../lib/store/store.selectors';
+import * as StoreActions from '../../lib/store/store.actions';
+import { ExportAction } from '../../lib/enums/export-action.enum';
 
 @Component({
   selector: 'app-cloak-class-content',
@@ -27,4 +29,7 @@ export class CloakClassContent {
     this.store.dispatch(PropertiesSelected({properties}));
   }
 
+  actionSelected(action: ExportAction) {
+    this.store.dispatch(StoreActions.ActionSelected({action}));
+  }
 }
