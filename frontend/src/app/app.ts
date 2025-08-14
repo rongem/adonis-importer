@@ -13,7 +13,7 @@ import * as Selectors from './lib/store/store.selectors';
   styleUrl: './app.scss'
 })
 export class App {
-  protected readonly title = signal('ADONIS Import-Generator');
+  protected readonly title = signal('ADONIS Importer');
   constructor(private store: Store) {}
 
   attributeForm?: FormGroup;

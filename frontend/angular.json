@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "import-generator": {
+    "adonis-importer": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -58,10 +58,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "import-generator:build:production"
+              "buildTarget": "adonis-importer:build:production"
             },
             "development": {
-              "buildTarget": "import-generator:build:development"
+              "buildTarget": "adonis-importer:build:development"
             }
           },
           "defaultConfiguration": "development"
