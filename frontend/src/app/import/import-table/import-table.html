@@ -1,21 +1,21 @@
 @if ((importedRows | async) !== undefined) {
-  <div class="success">
+  <section class="success">
     {{importedRows | async}} Zeilen erfolgreich importiert.
-  </div>
+  </section>
 }
 @if ((rowCount | async) === 0) {
-  <div i18n>
+  <section i18n>
     Wenn Sie eine Tabelle aus einer anderen Anwendung in die Zwischenablage kopiert haben können Sie sie hier mit Strg+V einfügen.
-</div>
+  </section>
 } @else {
-  <div i18n>
+  <section i18n>
     Ersetzen Sie alle Daten hier mit Strg+V.
-</div>
+  </section>
 }
 @if ((canImport | async) === true) {
-  <div class="button-container">
+  <section class="button-container">
     <button type="button" (click)="onImport()" i18n>Starte Import</button>
-  </div>
+  </section>
 }
 <table class="table">
   <thead>
@@ -29,16 +29,16 @@
           (dragend)="onDragEnd()"
           (dragover)="onDragOver($event, i)"
           (drop)="onDrop(i)"
-          [ngClass]="{dragging: this.sourceIndex === i, target: presumedTargetIndex === i, primary: (getColumn(column) | async)?.primary, foreign: (getColumn(column) | async)?.foreignKey}"
+          [ngClass]="{dragging: this.sourceIndex === i, target: presumedTargetIndex === i, primary: (getColumn(column) | async)?.primary, foreign: (getColumn(column) | async)?.relation}"
           [attr.title]="getColumnTitle(column) | async"
           class="position-relative">
-          {{(getColumn(column) | async)?.name}}
+          {{(getColumn(column) | async)?.displayName}}
           @if ((getColumn(column) | async)?.primary === true) {
             <span class="visually-hidden" i18n>
                 Spalte hält den Primärschlüssel der Tabelle.
             </span>
           }
-          @if ((getColumn(column) | async)?.foreignKey === true) {
+          @if ((getColumn(column) | async)?.relation === true) {
             <span class="visually-hidden" i18n>
               Diese Spalte enthält Fremdschlüssel für eine andere Tabelle.
             </span>

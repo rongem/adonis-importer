@@ -1,11 +1,9 @@
 import { AsyncPipe } from '@angular/common';
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import * as Selectors from '../../lib/store/store.selectors';
 import * as StoreActions from '../../lib/store/store.actions';
 import { ChooseObjectgroup } from '../choose-objectgroup/choose-objectgroup';
-import { tap } from 'rxjs';
 
 @Component({
   selector: 'app-choose-repository',
@@ -14,7 +12,7 @@ import { tap } from 'rxjs';
   styleUrl: './choose-repository.scss'
 })
 export class ChooseRepository {
-    constructor(private store: Store, private router: Router) {}
+    constructor(private store: Store) {}
 
     get repositories() {
       return this.store.select(Selectors.repositories);

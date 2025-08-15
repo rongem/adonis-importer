@@ -1,12 +1,12 @@
-import { Component, ElementRef, HostListener, OnDestroy, OnInit, viewChildren } from '@angular/core';
-import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+import { Component, ElementRef, HostListener, viewChildren } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Actions, ofType } from '@ngrx/effects';
 import { Subscription, firstValueFrom, map, withLatestFrom } from 'rxjs';
 
 import * as StoreSelectors from '../../lib/store/store.selectors';
 import * as StoreActions from '../../lib/store/store.actions';
-import { ClipboardHelper } from '../../lib/clipboard-helper.model';
+import { getTableContentFromClipboard } from '../../lib/helpers/clipboard.functions';
 import { CellContent } from '../../lib/models/cellcontent.model';
 import { Row } from '../../lib/models/rest-backend/row.model';
 import { CellInformation } from '../../lib/models/cellinformation.model';
@@ -17,7 +17,7 @@ import { ErrorBadge } from '../../error-badge/error-badge';
 
 @Component({
   selector: 'app-import-table',
-  imports: [RouterLink, NgClass, ErrorBadge, AsyncPipe],
+  imports: [NgClass, ErrorBadge, AsyncPipe],
   templateUrl: './import-table.html',
   styleUrl: './import-table.scss'
 })
@@ -89,7 +89,7 @@ export class ImportTable {
       if (column?.primary) {
         content.push(/*$localize*/ `Primary key`);
       }
-      if (column?.foreignKey) {
+      if (column?.relation) {
         content.push(/*$localize*/ `Foreign key`);
       }
       if (column?.unique) {
@@ -136,7 +136,7 @@ export class ImportTable {
     event.stopPropagation();
     try {
       if (event.clipboardData) {
-        const rows = ClipboardHelper.getTableContent(event.clipboardData);
+        const rows = getTableContentFromClipboard(event.clipboardData);
         const columnMappings = await firstValueFrom(this.columnMappings);
         this.fitRowWidth(rows, columnMappings);
         this.fillCellContents(rows);

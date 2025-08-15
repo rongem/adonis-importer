@@ -61,7 +61,7 @@ export class CellInformation{
         return this.stringValue;
     }
 
-    get name() { return this.columnDefinition.name; }
+    get name() { return this.columnDefinition.internalName; }
     get row() { return this.cellContent.row; }
     get column() { return this.cellContent.column; }
     get ordinalPosition() { return this.columnDefinition.ordinalPosition; }

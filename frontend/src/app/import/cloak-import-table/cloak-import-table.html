@@ -1,1 +1,11 @@
-<p>cloak-import-table works!</p>
+<section class="content">
+    <div style="display: flex; justify-content: space-between;">
+        <h3>Repository</h3>
+        <p>{{(selectedRepository | async)?.name}}</p>
+        <h3>Objektgruppe</h3>
+        <p>
+            {{(selectedObjectGroup | async)!.name}}
+        </p>
+    </div>
+    <app-import-table></app-import-table>
+</section>

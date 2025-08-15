@@ -2,7 +2,7 @@ import { XMLBuilder } from 'fast-xml-parser';
 import { AdonisNotebookRelations, AttributeOrRelation } from '../interfaces/adonis-notebook-elements.interface';
 import { AdonisClass } from '../interfaces/adonis-class.interface';
 import { AttributeContainer } from '../interfaces/container-attribute.interface';
-import { ATTRDEF, RELATIONS } from '../string.constants';
+import * as Constants from '../string.constants';
 
 export function createXML(adonisClass: AdonisClass, properties: AttributeOrRelation[], attributes: AttributeContainer) {
     const b = new XMLBuilder({ignoreAttributes: false, format: true});
@@ -10,7 +10,7 @@ export function createXML(adonisClass: AdonisClass, properties: AttributeOrRelat
         conf: {
             sheet: {
                 '@_data_row': "2",
-                '@_relation': properties.some(a => a.type === 'RELATION') ? 'TRUE' : undefined,
+                '@_relation': properties.some(a => a.type === Constants.RELATIONS) ? 'TRUE' : undefined,
                 '@_id': "1",
                 '@_classname': adonisClass.metaName,
                 '@_name': adonisClass.displayNames.de,
@@ -26,36 +26,33 @@ export function createXML(adonisClass: AdonisClass, properties: AttributeOrRelat
     return b.build(out).toString();
 };
 
-const simpleAttributes = ['NAME', 'ADOSTRING', 'INTEGER', 'DOUBLE', 'SHORTSTRING', 'LONGSTRING', 'UNSIGNED INTEGER', 'STRING', 'STRING_MULTILINE', 'COLOR'];
-const dateAttributes = ['DATE', 'UTC'];
-
 function getAttributeType(property: AttributeOrRelation, attributes: AttributeContainer) {
     switch (property.type) {
-        case ATTRDEF:
-            if (simpleAttributes.includes(property.ctrlType)){
+        case Constants.ATTRDEF:
+            if (Constants.simpleAttributes.includes(property.ctrlType)){
                 return {'@_type': 'simple'};
             }
-            if (dateAttributes.includes(property.ctrlType)) {
+            if (Constants.dateAttributes.includes(property.ctrlType)) {
                 return {
                     '@_type': 'date',
                     ...getTimeZoneOffset(),
                 };
             }
             switch (property.ctrlType) {
-                case 'ENUM':
+                case Constants.ENUM:
                     return {
                         '@_type': 'enum',
                         '@_domain_mapping': getEnumContent(property, attributes),
                         '@_separator_domain_mapping': '|',
                     };
-                case 'ENUMLIST':
+                case Constants.ENUMLIST:
                     return {
                         '@_type': 'enum_list',
                         '@_separator': '@',
                         '@_domain_mapping': getEnumContent(property, attributes),
                         '@_separator_domain_mapping': '|',
                     };
-                case 'ENUMLIST_TREE':
+                case Constants.ENUMLIST_TREE:
                     return {
                         '@_type': 'treeenumlist',
                         '@_separator': '@',
@@ -68,7 +65,7 @@ function getAttributeType(property: AttributeOrRelation, attributes: AttributeCo
                 default:
                     return {'@_type': 'error ' + property.ctrlType};
             }
-        case RELATIONS:
+        case Constants.RELATIONS:
             const p = property as unknown as AdonisNotebookRelations;
             return {
                 '@_type': 'relation',
@@ -79,7 +76,7 @@ function getAttributeType(property: AttributeOrRelation, attributes: AttributeCo
                 '@_target_class': p.relClass.targetInformations[0].metaName,
                 '@_strategy': 'overwrite',
             };
-        case 'FILE_POINTER':
+        case Constants.FILE_POINTER:
             return {
                 '@_type': 'file_pointer',
                 '@_separator': '|',
@@ -101,6 +98,5 @@ function getEnumContent(property: AttributeOrRelation, attributes: AttributeCont
     const attribute = attributes[property.id];
     const values = attribute.constraints.de.split('@');
     const returnvalue = values.map((v, i) => v + '|v' + i.toString()).join('|');
-    console.log(returnvalue);
     return returnvalue;
 }
