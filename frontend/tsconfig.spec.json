@@ -10,5 +10,5 @@
   },
   "include": [
     "src/**/*.ts"
-, "src/app/lib/guards/export-auth-guard.ts"  ]
+, "src/app/lib/guards/export-guard.ts"  ]
 }

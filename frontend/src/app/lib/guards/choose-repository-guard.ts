@@ -6,7 +6,7 @@ import * as Selectors from '../store/store.selectors';
 import { ExportAction } from '../enums/export-action.enum';
 
 @Injectable({providedIn: 'root'})
-class ActivateImportAuthGuard  {
+class ChooseImportGuard  {
 
     constructor(private store: Store, private router: Router) {}
 
@@ -17,4 +17,4 @@ class ActivateImportAuthGuard  {
     }
 }
 
-export const canActivateImport: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => inject(ActivateImportAuthGuard).canActivate();
+export const canChooseRepository: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => inject(ChooseImportGuard).canActivate();

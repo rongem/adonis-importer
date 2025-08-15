@@ -8,7 +8,7 @@ import { DataAccess } from '../data-access/data-access';
 import { ClassContainer } from '../interfaces/container-class.interface';
 import { NotebookContainer } from '../interfaces/container-notebook.interface';
 import { ExportAction } from '../enums/export-action.enum';
-import { choose_import_location_url, classes_url, export_files_url, import_url } from '../string.constants';
+import * as Constants from '../string.constants';
 import * as StoreActions from './store.actions';
 
 const getClasses = (classContainer: ClassContainer) => Object.values(classContainer);
@@ -29,7 +29,7 @@ export class StoreEffects {
     startLoadingNotebooks$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.ClassesLoaded),
         map((action) => StoreActions.LoadNotebooks({classes: getClasses(action.classContainer)})),
-        tap(() => this.router.navigate([classes_url])),
+        tap(() => this.router.navigate([Constants.classes_url])),
     ));
 
     startLoadingAttributes$ = createEffect(() => this.actions$.pipe(
@@ -104,7 +104,7 @@ export class StoreEffects {
 
     selectClass$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.ClassSelected),
-        tap(action => this.router.navigate([classes_url, action.selectedClass.metaName])),
+        tap(action => this.router.navigate([Constants.classes_url, action.selectedClass.metaName])),
     ), {dispatch: false});
 
     selectAction$ = createEffect(() => this.actions$.pipe(
@@ -112,10 +112,10 @@ export class StoreEffects {
         tap((action) => {
             switch (action.action) {
                 case ExportAction.ExportFiles:
-                    this.router.navigate([export_files_url]);
+                    this.router.navigate([Constants.export_files_url]);
                     break;
                 case ExportAction.ImportViaRest:
-                    this.router.navigate([choose_import_location_url]);
+                    this.router.navigate([Constants.choose_import_location_url]);
                     break;
                 default:
                     this.router.navigateByUrl('/');
@@ -125,7 +125,7 @@ export class StoreEffects {
 
     selectObjectGroup$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.SelectObjectGroup),
-        tap(() => this.router.navigate([import_url])),
+        tap(() => this.router.navigate([Constants.import_url])),
     ), {dispatch: false});
 
     constructor(private actions$: Actions, private dataAccess: DataAccess, private router: Router) {}

@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { CanActivateFn } from '@angular/router';
 
-import { canActivateExport } from './export-auth-guard';
+import { canChooseRepository } from './choose-repository-guard';
 
-describe('exportAuthGuardGuard', () => {
+describe('canChooseRepository', () => {
   const executeGuard: CanActivateFn = (...guardParameters) => 
-      TestBed.runInInjectionContext(() => canActivateExport(...guardParameters));
+      TestBed.runInInjectionContext(() => canChooseRepository(...guardParameters));
 
   beforeEach(() => {
     TestBed.configureTestingModule({});

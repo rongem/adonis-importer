@@ -1,34 +1,20 @@
-<div class="breadcrumb">
-  <a [routerLink]="['/', 'schema', schema]">
-    <ng-container i18n>Schema: </ng-container>
-    {{schema}}
-  </a>
-</div>
-
 @if ((importedRows | async) !== undefined) {
   <div class="success">
-    <ng-container i18n>
-        Successfully imported 
-    </ng-container>
-    {{importedRows | async}}
-    <ng-container i18n>
-        rows.
-    </ng-container>
+    {{importedRows | async}} Zeilen erfolgreich importiert.
   </div>
 }
 @if ((rowCount | async) === 0) {
   <div i18n>
-    After copying your table content to clipboard, paste it here with Ctrl + V.
+    Wenn Sie eine Tabelle aus einer anderen Anwendung in die Zwischenablage kopiert haben können Sie sie hier mit Strg+V einfügen.
 </div>
-}
-@if ((rowCount | async) !== 0) {
+} @else {
   <div i18n>
-    Replace data here with Ctrl + V.
+    Ersetzen Sie alle Daten hier mit Strg+V.
 </div>
 }
 @if ((canImport | async) === true) {
   <div class="button-container">
-    <button type="button" (click)="onImport()" i18n>Start import</button>
+    <button type="button" (click)="onImport()" i18n>Starte Import</button>
   </div>
 }
 <table class="table">
@@ -49,18 +35,18 @@
           {{(getColumn(column) | async)?.name}}
           @if ((getColumn(column) | async)?.primary === true) {
             <span class="visually-hidden" i18n>
-                    This column is used for the primary key of the table.
-                </span>
+                Spalte hält den Primärschlüssel der Tabelle.
+            </span>
           }
           @if ((getColumn(column) | async)?.foreignKey === true) {
             <span class="visually-hidden" i18n>
-                    This column contains a foreign key pointing to another table.
-                </span>
+              Diese Spalte enthält Fremdschlüssel für eine andere Tabelle.
+            </span>
           }
           @if ((getColumn(column) | async)?.unique === true) {
             <span class="visually-hidden" i18n>
-                    This column must contain unique entries.
-                </span>
+              Diese Tabelle muss eindeutige Werte enthalten.
+            </span>
           }
         </th>
       }

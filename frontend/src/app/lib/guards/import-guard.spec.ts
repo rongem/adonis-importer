@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { CanActivateFn } from '@angular/router';
 
-import { canActivateImport } from './activate-import-auth-guard';
+import { canActivateImport } from './import-guard';
 
-describe('activateImportAuthGuardGuard', () => {
+describe('ImportGuard', () => {
   const executeGuard: CanActivateFn = (...guardParameters) => 
       TestBed.runInInjectionContext(() => canActivateImport(...guardParameters));
 
