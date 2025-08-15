@@ -14,6 +14,9 @@ export class Children {
   readonly children = input.required<AttributeOrGroupOrRelation[]>();
   readonly formGroup = input.required<FormGroup>();
 
+  readonly RELATIONS = Constants.RELATIONS;
+  readonly ATTRDEF = Constants.ATTRDEF;
+
   nodeChildren(nodeChild: AttributeOrGroupOrRelation) {
     const c = nodeChild as AdonisNotebookGroup;
     if (c.children) {
@@ -21,9 +24,6 @@ export class Children {
     }
     return [];
   }
-
-  RELATIONS = Constants.RELATIONS;
-  ATTRDEF = Constants.ATTRDEF;
 
   attribute = (child: AttributeOrGroupOrRelation) => child as AdonisNotebookAttribute;
 

@@ -1,3 +1,36 @@
 @if ((working | async) === false) {
     <app-login></app-login>
+    <hr>
+    <section class="content">
+        <h3>ADONIS Importer</h3>
+        <p>
+            Die Prozessmanagement-Software ADONIS bietet eine recht umständliche Konfiguration ihrer Imports an:
+            Die Eigenschaften müssen bekannt sein (meist sind sie in Produktionssystemen ausgeblendet), daraus muss
+            eine XML-Konfigurationsdatei entwickelt werden, und zum Schluss muss noch eine Excel-Vorlage erstellt
+            werden, die zu dieser Konfigurationsdatei passt. Da alles Handarbeit ist, ist die Fehleranfälligkeit
+            hoch, und es werden lieber überbordend umfangreiche Import-Konfigurationen erstellt, statt zielgenaue
+            kleine Listen.
+        </p>
+        <p>
+            Ziel dieser Anwendung ist es, dieses Problem zu lösen: Sie erhalten eine Übersicht über die Eigentschaften
+            Ihrer Konfiguration, wählen aus, welche davon Sie importieren möchten, und erhalten dann die
+            XML-Konfigurationsdatei und die Excel-Vorlage automatisch erstellt. Sie müssen diese nur noch importieren
+            und können so die passenden Konfigurationen schnell und zielgenau erstellen. Ein direkter Import aus
+            dieser Anwendung heraus wird derzeit entwickelt.
+        </p>
+        <p>
+            Die Anwendung läuft vollständig in Ihrem Browser, d. h. nach dem Laden findet keine Kommunikation mit
+            dem Ausgangssystem mehr statt. Damit können Sie auf eine sichere Art und Weise jedes ADONIS-System
+            erreichen, das Ihr PC erreichen kann.
+        </p>
+        <p>
+            Damit die Anwendung funktioniert, müssen REST mit Basic-Authentifzierung und CORS aktiviert sein. Eine 
+            Anleitund dazu finden Sie im
+            <a href="https://docs.boc-group.com/adonis/de/docs/17.1/admin_page/compset-00000/#compset-R0000">Administrationshandbuch</a>.
+            Außerdem benötigen Sie ein lokales Benutzerkonto (LDAP-Konten funktionieren nicht) und müssen die
+            IP-Adresse Ihres Clients freigeschaltet haben. Sind diese Voraussetzungen erfüllt, können Sie oben
+            den Host-Namen Ihres ADONIS-Systems sowie Benutzername und Kennwort des eingerichteten Benutzerkontos
+            eingeben und sich durch die Konfigurationsschritte führen lassen.
+        </p>
+    </section>
 }

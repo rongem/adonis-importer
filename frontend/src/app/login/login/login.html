@@ -1,7 +1,7 @@
 <form [formGroup]="loginForm" class="content login">
     <div class="formfield">
         <label for="url">Hostname des ADONIS-Systems: https://</label>
-        <input id="url" type="text" formControlName="url" autofocus style="width: fit-content;">
+        <input id="url" type="text" formControlName="url" autofocus>
         <span>/rest/</span>
     </div>
     <div class="formfield">
@@ -12,5 +12,8 @@
         <label for="password">Kennwort: </label>
         <input id="password" type="password" formControlName="password">
     </div>
-    <button class="content-button" type="submit" [disabled]="!loginForm.valid" (click)="retrieveLoginData()">Start</button>
+    <div class="formfield">
+        <label></label>
+        <button class="content-button" type="submit" [disabled]="!loginForm.valid" (click)="retrieveLoginData()">Start</button>
+    </div>
 </form>
