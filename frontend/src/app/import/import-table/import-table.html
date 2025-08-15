@@ -4,17 +4,17 @@
   </section>
 }
 @if ((rowCount | async) === 0) {
-  <section i18n>
+  <section>
     Wenn Sie eine Tabelle aus einer anderen Anwendung in die Zwischenablage kopiert haben können Sie sie hier mit Strg+V einfügen.
   </section>
 } @else {
-  <section i18n>
+  <section>
     Ersetzen Sie alle Daten hier mit Strg+V.
   </section>
 }
 @if ((canImport | async) === true) {
   <section class="button-container">
-    <button type="button" (click)="onImport()" i18n>Starte Import</button>
+    <button type="button" (click)="onImport()">Starte Import</button>
   </section>
 }
 <table class="table">
@@ -34,17 +34,17 @@
           class="position-relative">
           {{(getColumn(column) | async)?.displayName}}
           @if ((getColumn(column) | async)?.primary === true) {
-            <span class="visually-hidden" i18n>
+            <span class="visually-hidden">
                 Spalte hält den Primärschlüssel der Tabelle.
             </span>
           }
           @if ((getColumn(column) | async)?.relation === true) {
-            <span class="visually-hidden" i18n>
+            <span class="visually-hidden">
               Diese Spalte enthält Fremdschlüssel für eine andere Tabelle.
             </span>
           }
           @if ((getColumn(column) | async)?.unique === true) {
-            <span class="visually-hidden" i18n>
+            <span class="visually-hidden">
               Diese Tabelle muss eindeutige Werte enthalten.
             </span>
           }

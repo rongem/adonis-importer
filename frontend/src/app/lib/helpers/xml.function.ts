@@ -66,7 +66,7 @@ function getAttributeType(property: AttributeOrRelation, attributes: AttributeCo
                     return {'@_type': 'error ' + property.ctrlType};
             }
         case Constants.RELATIONS:
-            const p = property as unknown as AdonisNotebookRelations;
+            const p = property as AdonisNotebookRelations;
             return {
                 '@_type': 'relation',
                 '@_separator': '|',

@@ -2,7 +2,7 @@
     <section class="content">
         <h2>Ausgewählte Eigenschaften</h2>
         <ul>
-            @for (prop of selectedProperties; track prop.id) {
+            @for (prop of selectedProperties; track $index) {
                 <li>
                     {{prop.displayNames.de}}
                     @if (prop.type === RELATIONS) {

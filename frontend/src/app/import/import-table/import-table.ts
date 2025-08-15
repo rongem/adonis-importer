@@ -87,22 +87,22 @@ export class ImportTable {
     map(column => {
       const content: string[] = [];
       if (column?.primary) {
-        content.push(/*$localize*/ `Primary key`);
+        content.push(`Primary key`);
       }
       if (column?.relation) {
-        content.push(/*$localize*/ `Foreign key`);
+        content.push(`Foreign key`);
       }
       if (column?.unique) {
-        content.push(/*$localize*/ `Unique constraint`);
+        content.push(`Unique constraint`);
       }
       if (column?.hasDefaultValue) {
-        content.push(/*$localize*/ `Default value present`);
+        content.push(`Default value present`);
       }
       if (column?.isNullable) {
-        content.push(/*$localize*/ `Null values allowed`);
+        content.push(`Null values allowed`);
       }
-      content.push(/*$localize*/ `Allowed Data Types: ` + column?.typeInfo.allowedTypes.join(`|`));
-      return content.join(/*$localize*/ `, `);
+      content.push(`Allowed Data Types: ` + column?.typeInfo.allowedTypes.join(`|`));
+      return content.join(`, `);
     })
   );
 
@@ -203,7 +203,7 @@ export class ImportTable {
 
   async onDrop(targetIndex: number) {
     if (this.sourceIndex !== undefined) {
-      const columnMappings = await firstValueFrom(this.columnMappings);
+      const columnMappings = (await firstValueFrom(this.columnMappings)).slice();
       // remove source index
       const val = columnMappings.splice(this.sourceIndex, 1)[0];
       // put it into new place

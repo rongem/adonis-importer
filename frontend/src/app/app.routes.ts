@@ -9,6 +9,7 @@ import { canActivateImport } from './lib/guards/import-guard';
 import { ChooseRepository } from './import/choose-repository/choose-repository';
 import { canChooseRepository } from './lib/guards/choose-repository-guard';
 import * as Constants from './lib/string.constants';
+import { CloakImportTable } from './import/cloak-import-table/cloak-import-table';
 
 export const routes: Routes = [
     { path: '', pathMatch: 'full', redirectTo: Constants.login_url },
@@ -19,5 +20,5 @@ export const routes: Routes = [
     ]},
     { path: Constants.export_files_url, component: CloakExportFiles, canActivate: [canActivateExport] },
     { path: Constants.choose_import_location_url, component: ChooseRepository, canActivate: [canChooseRepository] },
-    { path: Constants.import_url, canActivate: [canActivateImport] },
+    { path: Constants.import_url, component: CloakImportTable, canActivate: [canActivateImport] },
 ];

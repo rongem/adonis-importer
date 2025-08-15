@@ -19,7 +19,7 @@ export interface AdonisNotebookAttribute extends AttributeOrRelation {
     attrType: string;
 };
 
-export interface AdonisNotebookRelations extends AdonisNotebookElement {
+export interface AdonisNotebookRelations extends AttributeOrRelation {
     incoming: boolean;
     relClass: {
         hasNotebook: boolean;

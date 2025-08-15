@@ -10,6 +10,7 @@ import { NotebookContainer } from '../interfaces/container-notebook.interface';
 import { ExportAction } from '../enums/export-action.enum';
 import * as Constants from '../string.constants';
 import * as StoreActions from './store.actions';
+import { createColumnsFromProperties } from '../helpers/columns.functions';
 
 const getClasses = (classContainer: ClassContainer) => Object.values(classContainer);
 
@@ -127,6 +128,11 @@ export class StoreEffects {
         ofType(StoreActions.SelectObjectGroup),
         tap(() => this.router.navigate([Constants.import_url])),
     ), {dispatch: false});
+
+    createColumns$ = createEffect(() => this.actions$.pipe(
+        ofType(StoreActions.PropertiesSelected),
+        map((action) => StoreActions.columnsLoaded({columns: createColumnsFromProperties(action.properties)})),
+    ));
 
     constructor(private actions$: Actions, private dataAccess: DataAccess, private router: Router) {}
 }

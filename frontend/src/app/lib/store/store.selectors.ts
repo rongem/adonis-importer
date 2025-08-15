@@ -43,7 +43,7 @@ export const selectedRepository = createSelector(appState, state => state.reposi
 export const objectGroups = createSelector(appState, state => state.objectGroups);
 export const selectedObjectGroup = createSelector(appState, state => state.selectedObjectGroup);
 
-export const columnDefinitions = createSelector(appState, state => state.columnDefinitions?.sort((a, b) => a.ordinalPosition - b.ordinalPosition) ?? []);
+export const columnDefinitions = createSelector(appState, state => state.columnDefinitions?.slice().sort((a, b) => a.ordinalPosition - b.ordinalPosition) ?? []);
 
 export const columnDefinition = (columnPosition: number) => createSelector(columnDefinitions, columns => columns.find(c => c.ordinalPosition === columnPosition + 1));
 
@@ -65,7 +65,7 @@ export const errorsInRow = (rowIndex: number) => createSelector(allRowErrors, er
 
 export const rowErrors = (rowIndex: number) => createSelector(allRowErrors, cellInformations, (rowErrors, cellInformations) => [
     ...rowErrors.filter(e => e.row === rowIndex).map(e => e.msg),
-    ...cellInformations.filter(c => c.row === rowIndex && c.containsErrors).map(c => /*$localize*/ `Column: ` + c.name + ': ' + c.errors.join(/*$localize*/ `, `)),
+    ...cellInformations.filter(c => c.row === rowIndex && c.containsErrors).map(c => `Column: ` + c.name + ': ' + c.errors.join(`, `)),
 ]);
 
 export const rowContainsErrors = (rowIndex: number) => createSelector(cellInformations, errorsInRow(rowIndex), (cells, errors) => 

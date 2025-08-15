@@ -40,7 +40,7 @@ export class ClassContent {
     this.selectedClassesProperties().forEach(p => {
       formGroupObject[p.id] = new FormControl<boolean>({ value: p.metaName === NAME, disabled: p.metaName === NAME });
       if (p.type === RELATIONS) {
-        const r = p as unknown as AdonisNotebookRelations;
+        const r = p as AdonisNotebookRelations;
         const innerFormGroupObject: {[key: string]: FormControl} = {};
         r.relClass.targetInformations.forEach(ti => {
           innerFormGroupObject[ti.id] = new FormControl<boolean>(false);
@@ -72,7 +72,7 @@ export class ClassContent {
           case RELATIONS:
             const formGroup = this.attributeForm().get(property.id + rel)!;
             const keys = Object.keys(formGroup.value).filter(k => formGroup.value[k] === true);
-            const oldProperty = property as unknown as AdonisNotebookRelations;
+            const oldProperty = property as AdonisNotebookRelations;
             keys.forEach(k => {
               const newProperty: AdonisNotebookRelations = {
                 ...oldProperty,
@@ -81,7 +81,7 @@ export class ClassContent {
                   targetInformations: oldProperty.relClass.targetInformations.filter(ti => ti.id === k),
                 }
               };
-              this.selectedProperties.push(newProperty as unknown as AttributeOrRelation);
+              this.selectedProperties.push(newProperty as AttributeOrRelation);
             });
             break;
         }
