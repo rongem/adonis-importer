@@ -48,3 +48,24 @@ th {
     position: relative;
 }
 
+.new, .edit {
+    border-radius: 50%;
+    border: 1px #005 solid;
+    text-align: center;
+    height: 1.1rem;
+    width: 1.1rem;
+    font-weight: bold;
+    margin: 0;
+    display: block;
+}
+
+.new {
+    background: lightgreen;
+    content: '&#10035';
+}
+
+.edit {
+    background: lightblue;
+    content: '&#10000';
+}
+
