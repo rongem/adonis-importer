@@ -1,7 +1,7 @@
 import { NgClass } from '@angular/common';
 import { Component, input } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { AdonisObjectGroup } from '../../lib/interfaces/adonis-object-group.interface';
+import { AdonisObjectGroup } from '../../lib/models/adonis-rest/metadata/object-group.interface';
 import * as StoreActions from '../../lib/store/store.actions';
 
 @Component({

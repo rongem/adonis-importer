@@ -1,5 +1,5 @@
 import { CellContent } from "./cellcontent.model";
-import { Column } from "./rest-backend/column.model";
+import { Column } from "./column.model";
 
 export class CellInformation{
     get value() { return this.cellContent.originalValue }

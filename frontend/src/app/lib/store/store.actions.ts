@@ -1,14 +1,14 @@
 import { createAction, props } from '@ngrx/store';
-import { ClassContainer } from '../interfaces/container-class.interface';
-import { AdonisClass } from '../interfaces/adonis-class.interface';
-import { NotebookContainer } from '../interfaces/container-notebook.interface';
-import { AttributeContainer } from '../interfaces/container-attribute.interface';
-import { CellContent } from '../models/cellcontent.model';
-import { RowContainer } from '../models/rest-backend/row-container.model';
-import { Column } from '../models/rest-backend/column.model';
-import { AdonisRepoList } from '../interfaces/adonis-list-repos.interface';
-import { AdonisObjectGroup } from '../interfaces/adonis-object-group.interface';
-import { AttributeOrRelation } from '../interfaces/adonis-notebook-elements.interface';
+import { AdonisClassContainer } from '../models/adonis-rest/metadata/container/container-class.interface';
+import { AdonisClass } from '../models/adonis-rest/metadata/class.interface';
+import { AdonisNotebookContainer } from '../models/adonis-rest/metadata/container/container-notebook.interface';
+import { AdonisAttributeContainer } from '../models/adonis-rest/metadata/container/container-attribute.interface';
+import { CellContent } from '../models/table/cellcontent.model';
+import { RowContainer } from '../models/table/row-container.model';
+import { Column } from '../models/table/column.model';
+import { AdonisRepoList } from '../models/adonis-rest/metadata/lists/list-repos.interface';
+import { AdonisObjectGroup } from '../models/adonis-rest/metadata/object-group.interface';
+import { AttributeOrRelation } from '../models/adonis-rest/metadata/notebook-elements.interface';
 import { ExportAction } from '../enums/export-action.enum';
 
 export const LoadClasses = createAction('[App] Start loading Classes.');
@@ -21,14 +21,14 @@ export const LoadNotebooks = createAction('[App] Start loading Notebook for a cl
 );
 
 export const ClassesLoaded = createAction('[App] Loading Classes finished.',
-    props<{classContainer: ClassContainer}>()
+    props<{classContainer: AdonisClassContainer}>()
 );
 export const NotebooksLoaded = createAction('[App] Loading Notebooks finished.',
-    props<{notebookContainer: NotebookContainer}>()
+    props<{notebookContainer: AdonisNotebookContainer}>()
 );
 
 export const AttributesLoaded = createAction('[App] Loading Attributes finished.',
-    props<{attributesContainer: AttributeContainer}>()
+    props<{attributesContainer: AdonisAttributeContainer}>()
 );
 
 export const ClassesLoadingFailed = createAction('[App] Loading Classes failed.',

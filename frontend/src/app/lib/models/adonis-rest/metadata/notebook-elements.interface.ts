@@ -1,4 +1,4 @@
-import { AdonisBasicNamedType } from "./adonis-basic-type.interface";
+import { AdonisBasicNamedType } from "./basic-type.interface";
 
 interface AdonisNotebookElement extends AdonisBasicNamedType {
     type: string;

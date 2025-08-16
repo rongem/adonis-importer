@@ -7,10 +7,10 @@ import { Subscription, firstValueFrom, map, withLatestFrom } from 'rxjs';
 import * as StoreSelectors from '../../lib/store/store.selectors';
 import * as StoreActions from '../../lib/store/store.actions';
 import { getTableContentFromClipboard } from '../../lib/helpers/clipboard.functions';
-import { CellContent } from '../../lib/models/cellcontent.model';
-import { Row } from '../../lib/models/rest-backend/row.model';
-import { CellInformation } from '../../lib/models/cellinformation.model';
-import { RowContainer } from '../../lib/models/rest-backend/row-container.model';
+import { CellContent } from '../../lib/models/table/cellcontent.model';
+import { Row } from '../../lib/models/table/row.model';
+import { CellInformation } from '../../lib/models/table/cellinformation.model';
+import { RowContainer } from '../../lib/models/table/row-container.model';
 import { NgClass, AsyncPipe } from '@angular/common';
 import { ErrorBadge } from '../../error-badge/error-badge';
 

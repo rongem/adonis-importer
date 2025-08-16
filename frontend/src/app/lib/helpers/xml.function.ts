@@ -1,10 +1,10 @@
 import { XMLBuilder } from 'fast-xml-parser';
-import { AdonisNotebookRelations, AttributeOrRelation } from '../interfaces/adonis-notebook-elements.interface';
-import { AdonisClass } from '../interfaces/adonis-class.interface';
-import { AttributeContainer } from '../interfaces/container-attribute.interface';
+import { AdonisNotebookRelations, AttributeOrRelation } from '../models/adonis-rest/metadata/notebook-elements.interface';
+import { AdonisClass } from '../models/adonis-rest/metadata/class.interface';
+import { AdonisAttributeContainer } from '../models/adonis-rest/metadata/container/container-attribute.interface';
 import * as Constants from '../string.constants';
 
-export function createXML(adonisClass: AdonisClass, properties: AttributeOrRelation[], attributes: AttributeContainer) {
+export function createXML(adonisClass: AdonisClass, properties: AttributeOrRelation[], attributes: AdonisAttributeContainer) {
     const b = new XMLBuilder({ignoreAttributes: false, format: true});
     const out = {
         conf: {
@@ -26,7 +26,7 @@ export function createXML(adonisClass: AdonisClass, properties: AttributeOrRelat
     return b.build(out).toString();
 };
 
-function getAttributeType(property: AttributeOrRelation, attributes: AttributeContainer) {
+function getAttributeType(property: AttributeOrRelation, attributes: AdonisAttributeContainer) {
     switch (property.type) {
         case Constants.ATTRDEF:
             if (Constants.simpleAttributes.includes(property.ctrlType)){
@@ -94,7 +94,7 @@ function getTimeZoneOffset() {
     return { '@_utc_offset_hours': offSetHours.toString(), '@_utc_offset_minutes': offsetMinutes.toString() };
 }
 
-function getEnumContent(property: AttributeOrRelation, attributes: AttributeContainer) {
+function getEnumContent(property: AttributeOrRelation, attributes: AdonisAttributeContainer) {
     const attribute = attributes[property.id];
     const values = attribute.constraints.de.split('@');
     const returnvalue = values.map((v, i) => v + '|v' + i.toString()).join('|');

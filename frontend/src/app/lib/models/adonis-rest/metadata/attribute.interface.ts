@@ -1,5 +1,5 @@
-import { AdonisBasicNamedType, AdonisBasicType } from "./adonis-basic-type.interface";
-import { AdonisDisplayName } from "./adonis-displayname.interface";
+import { AdonisBasicNamedType, AdonisBasicType } from "./basic-type.interface";
+import { AdonisDisplayName } from "./displayname.interface";
 
 export interface AdonisAttribute extends AdonisBasicNamedType {
     type: AdonisBasicType;

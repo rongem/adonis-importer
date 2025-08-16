@@ -1,4 +1,4 @@
-import { AdonisObjectGroup } from "./adonis-object-group.interface";
+import { AdonisObjectGroup } from "../object-group.interface";
 
 export interface AdonisObjectGroupList {
     locale: string;

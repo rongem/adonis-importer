@@ -18,18 +18,12 @@
         <h3>Repository</h3>
         <p>{{(selectedRepository | async)?.name}}</p>
     }
-    @if (!!(objectGroups | async) && !(selectedObjectGroup | async)) {
+    @if (!!(objectGroups | async)) {
         <h3>Objektgruppe auswählen</h3>
         <p>Bitte wählen Sie die Objektgruppe für den Import aus:</p>
         <p>
             {{(objectGroups | async)?.name}}
         </p>
         <app-choose-objectgroup [objectGroups]="(objectGroups | async)!.subgroups" [top]="true"></app-choose-objectgroup>
-    }
-    @if ((selectedObjectGroup | async)) {
-        <h3>Objektgruppe</h3>
-        <p>
-            {{(selectedObjectGroup | async)!.name}}
-        </p>
     }
 </section>

@@ -26,10 +26,6 @@ export class ChooseRepository {
       return this.store.select(Selectors.objectGroups);
     }
 
-    get selectedObjectGroup() {
-      return this.store.select(Selectors.selectedObjectGroup);
-    }
-
     chooseRepository(repositoryId: string) {
       this.store.dispatch(StoreActions.SelectRepository({repositoryId}));
     }

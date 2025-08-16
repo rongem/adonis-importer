@@ -1,6 +1,6 @@
-import { AdonisAttribute } from "../../interfaces/adonis-attribute.interface";
-import { AdonisClass } from "../../interfaces/adonis-class.interface";
-import { AdonisNotebookAttribute, AdonisNotebookRelations } from "../../interfaces/adonis-notebook-elements.interface";
+import { AdonisAttribute } from "../adonis-rest/metadata/attribute.interface";
+import { AdonisClass } from "../adonis-rest/metadata/class.interface";
+import { AdonisNotebookAttribute, AdonisNotebookRelations } from "../adonis-rest/metadata/notebook-elements.interface";
 
 export interface Column {
     displayName: string;

@@ -1,16 +1,16 @@
 import { Action, ActionReducerMap, createReducer, on } from "@ngrx/store";
 import * as StoreActions from './store.actions';
-import { ClassContainer } from "../interfaces/container-class.interface";
+import { AdonisClassContainer } from "../models/adonis-rest/metadata/container/container-class.interface";
 import { WorkflowState } from "../enums/workflow-state.enum";
-import { NotebookContainer } from "../interfaces/container-notebook.interface";
-import { AttributeContainer } from "../interfaces/container-attribute.interface";
-import { CellContent } from "../models/cellcontent.model";
-import { Column } from "../models/rest-backend/column.model";
-import { ErrorList } from "../models/rest-backend/errorlist.model";
-import { AdonisRepository } from "../interfaces/adonis-repository.interface";
-import { AdonisObjectGroup } from "../interfaces/adonis-object-group.interface";
-import { AdonisClass } from "../interfaces/adonis-class.interface";
-import { AttributeOrRelation } from "../interfaces/adonis-notebook-elements.interface";
+import { AdonisNotebookContainer } from "../models/adonis-rest/metadata/container/container-notebook.interface";
+import { AdonisAttributeContainer } from "../models/adonis-rest/metadata/container/container-attribute.interface";
+import { CellContent } from "../models/table/cellcontent.model";
+import { Column } from "../models/table/column.model";
+import { ErrorList } from "../models/table/errorlist.model";
+import { AdonisRepository } from "../models/adonis-rest/metadata/repository.interface";
+import { AdonisObjectGroup } from "../models/adonis-rest/metadata/object-group.interface";
+import { AdonisClass } from "../models/adonis-rest/metadata/class.interface";
+import { AttributeOrRelation } from "../models/adonis-rest/metadata/notebook-elements.interface";
 import { ExportAction } from "../enums/export-action.enum";
 
 export const STORE = 'STORE';
@@ -35,9 +35,9 @@ export interface State {
 
     notAuthorized: boolean;
 
-    repositoryClasses: ClassContainer;
-    notebooks: NotebookContainer;
-    attributes: AttributeContainer;
+    repositoryClasses: AdonisClassContainer;
+    notebooks: AdonisNotebookContainer;
+    attributes: AdonisAttributeContainer;
     selectedClass?: AdonisClass;
     selectedProperties?: AttributeOrRelation[];
 

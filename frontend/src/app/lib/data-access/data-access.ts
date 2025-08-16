@@ -1,19 +1,19 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { forkJoin, map, mergeMap, Observable, take, tap } from 'rxjs';
-import { AdonisClassList } from '../interfaces/adonis-list-class.interface';
-import { AdonisClass } from '../interfaces/adonis-class.interface';
-import { AdonisNoteBook } from '../interfaces/adonis-notebook.interface';
-import { ClassContainer } from '../interfaces/container-class.interface';
+import { AdonisClassList } from '../models/adonis-rest/metadata/lists/list-class.interface';
+import { AdonisClass } from '../models/adonis-rest/metadata/class.interface';
+import { AdonisNoteBook } from '../models/adonis-rest/metadata/notebook.interface';
+import { AdonisClassContainer } from '../models/adonis-rest/metadata/container/container-class.interface';
 import { AppSettings } from '../app-settings';
-import { AdonisNotebookGroup, AttributeOrGroupOrRelation, AttributeOrRelation } from '../interfaces/adonis-notebook-elements.interface';
-import { AdonisBasicClass } from '../interfaces/adonis-basic-class.interface';
-import { NotebookContainer } from '../interfaces/container-notebook.interface';
-import { AdonisAttribute } from '../interfaces/adonis-attribute.interface';
-import { AdonisAttributeList } from '../interfaces/adonis-list-attribute.interface';
-import { AttributeContainer } from '../interfaces/container-attribute.interface';
-import { AdonisGroupContainer } from '../interfaces/adonis-group.interface';
-import { AdonisRepoList } from '../interfaces/adonis-list-repos.interface';
+import { AdonisNotebookGroup, AttributeOrGroupOrRelation, AttributeOrRelation } from '../models/adonis-rest/metadata/notebook-elements.interface';
+import { AdonisBasicClass } from '../models/adonis-rest/metadata/basic-class.interface';
+import { AdonisNotebookContainer } from '../models/adonis-rest/metadata/container/container-notebook.interface';
+import { AdonisAttribute } from '../models/adonis-rest/metadata/attribute.interface';
+import { AdonisAttributeList } from '../models/adonis-rest/metadata/lists/list-attribute.interface';
+import { AdonisAttributeContainer } from '../models/adonis-rest/metadata/container/container-attribute.interface';
+import { AdonisGroupContainer } from '../models/adonis-rest/metadata/group.interface';
+import { AdonisRepoList } from '../models/adonis-rest/metadata/lists/list-repos.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -36,7 +36,7 @@ export class DataAccess {
       mergeMap(this.retrieveClassDetails),
       // mergeMap(this.retrieveNotebooksForClasses),
       map(classes => {
-        const classContainer: ClassContainer = {};
+        const classContainer: AdonisClassContainer = {};
         classes.forEach(c => {
           classContainer[c.id] = c;
         });
@@ -72,7 +72,7 @@ export class DataAccess {
             g.children = g.children.filter(this.filterChildren);
           })
           n.chapters.forEach(ch => ch.children = ch.children.filter(this.filterChapterChildren));
-          return { [c.id]: n } as NotebookContainer;
+          return { [c.id]: n } as AdonisNotebookContainer;
         }),
       );
     });
@@ -101,7 +101,7 @@ export class DataAccess {
         return forkJoin(attributes);
       }),
       map(attributes => {
-        const container: AttributeContainer = {};
+        const container: AdonisAttributeContainer = {};
         attributes.forEach(a => {
           container[a.id] = a;
         });

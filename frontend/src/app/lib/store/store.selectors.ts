@@ -2,7 +2,7 @@ import { createSelector, createFeatureSelector } from '@ngrx/store';
 
 import { State, STORE } from './store.reducer';
 import { WorkflowState } from '../enums/workflow-state.enum';
-import { CellInformation } from '../models/cellinformation.model';
+import { CellInformation } from '../models/table/cellinformation.model';
 
 const appState = createFeatureSelector<State>(STORE);
 

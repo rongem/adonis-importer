@@ -1,5 +1,5 @@
-import { AdonisBasicNamedType } from "./adonis-basic-type.interface";
-import { AdonisDisplayName } from "./adonis-displayname.interface";
+import { AdonisBasicNamedType } from "./basic-type.interface";
+import { AdonisDisplayName } from "./displayname.interface";
 
 interface Colums {
     id: string;

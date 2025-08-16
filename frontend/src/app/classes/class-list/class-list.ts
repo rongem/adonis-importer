@@ -1,5 +1,5 @@
 import { Component, input, output } from '@angular/core';
-import { AdonisClass } from '../../lib/interfaces/adonis-class.interface';
+import { AdonisClass } from '../../lib/models/adonis-rest/metadata/class.interface';
 
 @Component({
   selector: 'app-class-list',

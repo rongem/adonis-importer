@@ -1,11 +1,14 @@
-<div>
+<article>
     <router-outlet></router-outlet>
-</div>
+</article>
 
 @if ((working | async) === true)
 {
     <span class="loader"></span>
-    <div style="position: absolute; top: 0px; left: 0px;">
+    <span class="visually-hidden">
+        Derzeit werden Daten nachgeladen. Bitte haben Sie ein wenig Geduld.
+    </span>
+    <div style="position: fixed; top: 0px; left: 0px;">
         <span class="indicator" [ngClass]="{yellow: (classesState | async) === 1, green: (classesState | async) === 2, red: (classesState | async) === 3}">C</span>
         <span class="indicator" [ngClass]="{yellow: (notebookState | async) === 1, green: (notebookState | async) === 2, red: (notebookState | async) === 3}">N</span>
         <span class="indicator" [ngClass]="{yellow: (attributesState | async) === 1, green: (attributesState | async) === 2, red: (attributesState | async) === 3}">A</span>

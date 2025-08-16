@@ -1,5 +1,5 @@
-import { AdonisBasicClass } from "./adonis-basic-class.interface";
-import { AdonisDisplayName } from "./adonis-displayname.interface";
+import { AdonisBasicClass } from "./basic-class.interface";
+import { AdonisDisplayName } from "./displayname.interface";
 
 export interface AdonisClass extends AdonisBasicClass {
     infoText: AdonisDisplayName;

@@ -1,4 +1,4 @@
-import { AdonisBasicType, AdonisRestObject } from "./adonis-basic-type.interface";
+import { AdonisBasicType, AdonisRestObject } from "../basic-type.interface";
 
 export interface AdonisAttributeList extends AdonisRestObject {
     attributes: AdonisBasicType[];

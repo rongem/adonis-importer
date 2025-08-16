@@ -13,6 +13,12 @@ body {
     min-width: 26rem;
 }
 
+input,
+select,
+button {
+    margin: 0 0.5rem;
+}
+
 button {
     border-radius: 0.5rem;
     &:not(:disabled):hover {
@@ -133,7 +139,7 @@ input.ng-invalid {
     display: block;
     width: 8px;
     height: 8px;
-    position: absolute;
+    position: fixed;
     left: 50vw;
     top: 30vh;
     border-radius: 50%;
@@ -206,12 +212,6 @@ hr {
     width: 100%;
 }
 
-input,
-select,
-button {
-    margin: 0 0.5rem;
-}
-
 th {
     border-bottom: 0.5px solid $main-blue;
     padding: 0.5rem 1rem;
@@ -226,37 +226,6 @@ th {
 
 .spacer {
     flex: 1;
-}
-
-.toolbar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    align-items: center;
-    background-color: $main-blue;
-    color: white;
-    font-weight: 600;
-
-    & > a {
-        color: white;
-    }
-}
-
-.toolbar span:first-child {
-    margin: 0 1rem;
-}
-
-.content {
-    padding: 0 1rem;
-    margin: 5rem auto 2rem;
-    @media (min-width: 27.25rem) {
-        margin: 4rem auto 2rem;
-    }
-    @media (min-width: 48rem) {
-        margin: 3.5rem auto 2rem;
-    }
 }
 
 .card-container {

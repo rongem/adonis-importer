@@ -1,5 +1,5 @@
-import { AdonisDisplayName } from "./adonis-displayname.interface";
-import { AdonisLink } from "./adonis-link.interface";
+import { AdonisDisplayName } from "./displayname.interface";
+import { AdonisLink } from "./link.interface";
 
 
 

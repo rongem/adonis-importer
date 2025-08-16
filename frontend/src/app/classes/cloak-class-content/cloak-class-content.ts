@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { ClassContent } from '../../classes/class-content/class-content';
-import { AttributeOrRelation } from '../../lib/interfaces/adonis-notebook-elements.interface';
+import { AttributeOrRelation } from '../../lib/models/adonis-rest/metadata/notebook-elements.interface';
 import { PropertiesSelected } from '../../lib/store/store.actions';
 import * as Selectors from '../../lib/store/store.selectors';
 import * as StoreActions from '../../lib/store/store.actions';

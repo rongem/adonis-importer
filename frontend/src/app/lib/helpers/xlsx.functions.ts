@@ -1,6 +1,6 @@
 import * as XLSX from 'xlsx';
-import { AttributeOrRelation } from '../interfaces/adonis-notebook-elements.interface';
-import { AdonisClass } from '../interfaces/adonis-class.interface';
+import { AttributeOrRelation } from '../models/adonis-rest/metadata/notebook-elements.interface';
+import { AdonisClass } from '../models/adonis-rest/metadata/class.interface';
 
 export function createXLFile(adonisClass: AdonisClass, attributes: AttributeOrRelation[]) {
     const obj: {[key: string]: string} = {};

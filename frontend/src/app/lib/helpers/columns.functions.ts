@@ -1,10 +1,10 @@
-import { AttributeOrRelation, AdonisNotebookRelations, AdonisNotebookAttribute } from '../interfaces/adonis-notebook-elements.interface'
-import { AttributeContainer } from '../interfaces/container-attribute.interface';
-import { ClassContainer } from '../interfaces/container-class.interface';
-import { Column } from '../models/rest-backend/column.model'
+import { AttributeOrRelation, AdonisNotebookRelations, AdonisNotebookAttribute } from '../models/adonis-rest/metadata/notebook-elements.interface'
+import { AdonisAttributeContainer } from '../models/adonis-rest/metadata/container/container-attribute.interface';
+import { AdonisClassContainer } from '../models/adonis-rest/metadata/container/container-class.interface';
+import { Column } from '../models/table/column.model'
 import * as Constants from '../string.constants';
 
-export function createColumnsFromProperties(properties: AttributeOrRelation[], attributes: AttributeContainer, classes: ClassContainer) {
+export function createColumnsFromProperties(properties: AttributeOrRelation[], attributes: AdonisAttributeContainer, classes: AdonisClassContainer) {
     console.log(classes);
     const columns: Column[] = [createColumnFromAttribute(properties[0] as AdonisNotebookAttribute, 0, attributes)];
     for (let i = 1; i < properties.length; i++) {
@@ -22,7 +22,7 @@ export function createColumnsFromProperties(properties: AttributeOrRelation[], a
     return columns;
 }
 
-const createColumnFromAttribute = (property: AdonisNotebookAttribute, ordinalPosition: number, attributes: AttributeContainer): Column => ({
+const createColumnFromAttribute = (property: AdonisNotebookAttribute, ordinalPosition: number, attributes: AdonisAttributeContainer): Column => ({
     displayName: property.displayNames.de,
     internalName: property.metaName,
     ordinalPosition,
@@ -39,7 +39,7 @@ const createColumnFromAttribute = (property: AdonisNotebookAttribute, ordinalPos
     enumData: Constants.enumAttributes.includes(property.ctrlType) ? getEnumContent(property, attributes) : undefined,
 });
 
-const createColumnFromRelation = (relation: AdonisNotebookRelations, ordinalPosition: number, classes: ClassContainer): Column => {
+const createColumnFromRelation = (relation: AdonisNotebookRelations, ordinalPosition: number, classes: AdonisClassContainer): Column => {
     const relationTarget = classes[relation.relClass.targetInformations[0].id];
     const targetName = relationTarget ? relationTarget.displayNames.de : relation.relClass.targetInformations[0].metaName;
     return {
@@ -77,7 +77,7 @@ const getAttributeColumnTypes = (attribute: AdonisNotebookAttribute) => {
     return [];
 }
 
-function getEnumContent(property: AttributeOrRelation, attributes: AttributeContainer) {
+function getEnumContent(property: AttributeOrRelation, attributes: AdonisAttributeContainer) {
     const attribute = attributes[property.id];
     const values = attribute.constraints.de.split('@');
     const aliases = values.map((v, i) => 'v' + i.toString());

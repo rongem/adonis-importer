@@ -6,15 +6,16 @@ import { catchError, iif, map, of, switchMap, tap, withLatestFrom } from 'rxjs';
 import { Store } from '@ngrx/store';
 
 import { DataAccess } from '../data-access/data-access';
-import { ClassContainer } from '../interfaces/container-class.interface';
-import { NotebookContainer } from '../interfaces/container-notebook.interface';
+import { AdonisClassContainer } from '../models/adonis-rest/metadata/container/container-class.interface';
+import { AdonisNotebookContainer } from '../models/adonis-rest/metadata/container/container-notebook.interface';
 import { ExportAction } from '../enums/export-action.enum';
 import { createColumnsFromProperties } from '../helpers/columns.functions';
 import * as Constants from '../string.constants';
 import * as StoreActions from './store.actions';
 import * as Selectors from './store.selectors';
+import { sortGroup } from '../helpers/group-sorter.functions';
 
-const getClasses = (classContainer: ClassContainer) => Object.values(classContainer);
+const getClasses = (classContainer: AdonisClassContainer) => Object.values(classContainer);
 
 @Injectable({providedIn: 'root'})
 export class StoreEffects {
@@ -49,7 +50,7 @@ export class StoreEffects {
         ofType(StoreActions.LoadNotebooks),
         switchMap(action => this.dataAccess.retrieveNotebooksForClasses(action.classes).pipe(
             map(notebooks => {
-                const notebookContainer: NotebookContainer = {};
+                const notebookContainer: AdonisNotebookContainer = {};
                 notebooks.forEach(n => {
                     const key = Object.keys(n)[0];
                     notebookContainer[key] = n[key];
@@ -97,6 +98,7 @@ export class StoreEffects {
     selectRepository$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.SelectRepository),
         switchMap((action) => this.dataAccess.retrieveObjectGroupStructure(action.repositoryId).pipe(
+            map(sortGroup),
             map(objectGroupList => StoreActions.ObjectGroupsLoaded({objectGroup: objectGroupList.group})),
             catchError((error: HttpErrorResponse) => {
                 console.error(error);
