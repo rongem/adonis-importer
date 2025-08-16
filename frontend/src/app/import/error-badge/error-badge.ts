@@ -1,3 +1,4 @@
+import { NgClass } from '@angular/common';
 import { Component, input } from '@angular/core';
 
 
@@ -5,7 +6,7 @@ import { Component, input } from '@angular/core';
     selector: 'app-error-badge',
     templateUrl: './error-badge.html',
     styleUrls: ['./error-badge.scss'],
-    imports: []
+    imports: [NgClass]
 })
 export class ErrorBadge {
   readonly errorDescription = input<string | null>(`An error occured`);

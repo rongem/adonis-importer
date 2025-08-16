@@ -12,7 +12,7 @@ import { Row } from '../../lib/models/table/row.model';
 import { CellInformation } from '../../lib/models/table/cellinformation.model';
 import { RowContainer } from '../../lib/models/table/row-container.model';
 import { NgClass, AsyncPipe } from '@angular/common';
-import { ErrorBadge } from '../../error-badge/error-badge';
+import { ErrorBadge } from '../error-badge/error-badge';
 
 
 @Component({

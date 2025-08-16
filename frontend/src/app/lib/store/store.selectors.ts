@@ -22,6 +22,8 @@ export const objectGroupsState = createSelector(appState, state => state.objectG
 
 export const classesReady = createSelector(appState, state => state.classesState === WorkflowState.Loaded);
 export const notebooksReady = createSelector(appState, state => state.notebookState === WorkflowState.Loaded);
+export const attributesReady = createSelector(appState, state => state.attributesState === WorkflowState.Loaded);
+export const repositoriesReady = createSelector(appState, state => state.repositoryState === WorkflowState.Loaded);
 
 export const errorPresent = createSelector(appState, state => !!state.errorMessage);
 export const errorMessage = createSelector(appState, state => state.errorMessage);

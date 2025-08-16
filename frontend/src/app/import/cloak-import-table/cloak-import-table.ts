@@ -13,6 +13,10 @@ import * as StoreActions from '../../lib/store/store.actions';
 })
 export class CloakImportTable {
     constructor(private store: Store) {}
+    get selectedClass() {
+      return this.store.select(Selectors.selectedClass);
+    }
+
     get selectedRepository() {
       return this.store.select(Selectors.selectedRepository);
     }

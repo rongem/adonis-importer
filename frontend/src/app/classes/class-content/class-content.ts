@@ -8,8 +8,8 @@ import { AdonisNoteBook } from '../../lib/models/adonis-rest/metadata/notebook.i
 import { AdonisNotebookGroup, AdonisNotebookRelations, AttributeOrGroupOrRelation, AttributeOrRelation } from '../../lib/models/adonis-rest/metadata/notebook-elements.interface';
 import { ATTRDEF, GROUP, NAME, rel, RELATIONS } from '../../lib/string.constants';
 import { ExportAction } from '../../lib/enums/export-action.enum';
+import * as Selectors from '../../lib/store/store.selectors';
 import * as Constants from '../../lib/string.constants';
-import { repositoryClass } from '../../lib/store/store.selectors';
 
 @Component({
   selector: 'app-class-content',
@@ -54,7 +54,7 @@ export class ClassContent {
   relation = (child: AttributeOrGroupOrRelation | AttributeOrRelation) => child as AdonisNotebookRelations;
 
   getClassForId(id: string) {
-    return this.store.select(repositoryClass(id));
+    return this.store.select(Selectors.repositoryClass(id));
   }
 
   selectionDone = false;
@@ -93,6 +93,14 @@ export class ClassContent {
   resetForm() {
     this.attributeForm().reset();
   };
+
+  get attributesReady() {
+    return this.store.select(Selectors.attributesReady);
+  }
+
+  get repositoriesReady() {
+    return this.store.select(Selectors.repositoriesReady);
+  }
 
   selectImport() {
     this.actionSelected.emit(ExportAction.ImportViaRest);

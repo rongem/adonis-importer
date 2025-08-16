@@ -1,0 +1,9 @@
+<button class="error-sign" (click)="visibleText = !visibleText" [ngClass]="{visibletext: visibleText}">!</button>
+<span class="visually-hidden">
+    Diese Zeile enthält Daten, die Fehler beim Import erzeugen würden.
+</span>
+@if (visibleText) {
+  <section class="error position-absolute" (click)="visibleText = !visibleText">
+    {{errorDescription()}}
+  </section>
+}
