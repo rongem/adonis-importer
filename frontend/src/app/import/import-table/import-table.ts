@@ -85,23 +85,23 @@ export class ImportTable {
 
   getColumnTitle = (columnPosition: number) => this.getColumn(columnPosition).pipe(
     map(column => {
-      const content: string[] = [];
+      const content: string[] = [column!.internalName];
       if (column?.primary) {
-        content.push(`Primary key`);
+        content.push(`Primäerschlüssel`);
       }
       if (column?.relation) {
-        content.push(`Foreign key`);
+        content.push(`Verweis auf Objekt`);
       }
       if (column?.unique) {
-        content.push(`Unique constraint`);
+        content.push(`Muss eindeutig sein`);
       }
       if (column?.hasDefaultValue) {
-        content.push(`Default value present`);
+        content.push(`Standardwert vorhanden`);
       }
       if (column?.isNullable) {
-        content.push(`Null values allowed`);
+        content.push(`Fehlende Werte erlaubt`);
       }
-      content.push(`Allowed Data Types: ` + column?.typeInfo.allowedTypes.join(`|`));
+      content.push(`Erlaubte Datentypen: ` + column?.allowedTypes.join(`|`));
       return content.join(`, `);
     })
   );

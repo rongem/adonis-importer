@@ -27,6 +27,7 @@ export const errorPresent = createSelector(appState, state => !!state.errorMessa
 export const errorMessage = createSelector(appState, state => state.errorMessage);
 
 export const classes = createSelector(appState, state => Object.values(state.repositoryClasses).sort((a, b) => a.displayNames.de > b.displayNames.de ? 1 : -1));
+export const classContainer = createSelector(appState, state => state.repositoryClasses);
 
 export const repositoryClass = (id: string) => createSelector(appState, state => state.repositoryClasses[id]);
 export const selectedClass = createSelector(appState, state => state.selectedClass);
@@ -45,7 +46,7 @@ export const selectedObjectGroup = createSelector(appState, state => state.selec
 
 export const columnDefinitions = createSelector(appState, state => state.columnDefinitions?.slice().sort((a, b) => a.ordinalPosition - b.ordinalPosition) ?? []);
 
-export const columnDefinition = (columnPosition: number) => createSelector(columnDefinitions, columns => columns.find(c => c.ordinalPosition === columnPosition + 1));
+export const columnDefinition = (columnPosition: number) => createSelector(columnDefinitions, columns => columns.find(c => c.ordinalPosition === columnPosition));
 
 const cellContents = createSelector(appState, state => state.cellContents);
 

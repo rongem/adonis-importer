@@ -2,15 +2,17 @@ import { Injectable } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, iif, map, of, switchMap, tap } from 'rxjs';
+import { catchError, iif, map, of, switchMap, tap, withLatestFrom } from 'rxjs';
+import { Store } from '@ngrx/store';
 
 import { DataAccess } from '../data-access/data-access';
 import { ClassContainer } from '../interfaces/container-class.interface';
 import { NotebookContainer } from '../interfaces/container-notebook.interface';
 import { ExportAction } from '../enums/export-action.enum';
+import { createColumnsFromProperties } from '../helpers/columns.functions';
 import * as Constants from '../string.constants';
 import * as StoreActions from './store.actions';
-import { createColumnsFromProperties } from '../helpers/columns.functions';
+import * as Selectors from './store.selectors';
 
 const getClasses = (classContainer: ClassContainer) => Object.values(classContainer);
 
@@ -131,8 +133,9 @@ export class StoreEffects {
 
     createColumns$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.PropertiesSelected),
-        map((action) => StoreActions.columnsLoaded({columns: createColumnsFromProperties(action.properties)})),
+        withLatestFrom(this.store.select(Selectors.attributes), this.store.select(Selectors.classContainer)),
+        map(([action, attributes, classes]) => StoreActions.columnsLoaded({columns: createColumnsFromProperties(action.properties, attributes, classes)})),
     ));
 
-    constructor(private actions$: Actions, private dataAccess: DataAccess, private router: Router) {}
+    constructor(private actions$: Actions, private dataAccess: DataAccess, private router: Router, private store: Store) {}
 }

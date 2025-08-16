@@ -3,7 +3,7 @@ import { AdonisDisplayName } from "./adonis-displayname.interface";
 
 export interface AdonisAttribute extends AdonisBasicNamedType {
     type: AdonisBasicType;
-    classAttribute: string;
+    classAttribute: boolean;
     contextSpecific: boolean;
     multiLingual: boolean;
     systemAttribute: boolean;

@@ -96,7 +96,7 @@ export class CellInformation{
     private canContainNumber = () => this.checkType('number');
     private canContainString = () => this.checkType('string');
 
-    private checkType = (type: 'boolean' | 'date' | 'number' | 'string') => this.columnDefinition.typeInfo.allowedTypes.includes(type);
+    private checkType = (type: 'boolean' | 'date' | 'number' | 'string') => this.columnDefinition.allowedTypes.includes(type);
 
     private readonly hasBrowserGermanLanguageSet = /^de\b/.test(navigator.language);
 

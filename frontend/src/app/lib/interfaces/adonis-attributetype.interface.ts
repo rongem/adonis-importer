@@ -19,4 +19,5 @@ export interface AdonisAttributeType extends AdonisBasicNamedType {
     deleteRows: boolean;
     readOnly: boolean;
     contextSpecific: boolean;
+    noValueSupport: boolean;
 };

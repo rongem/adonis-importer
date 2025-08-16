@@ -1,4 +1,6 @@
-import { tsTypeInfo } from "./tsTypeInfo";
+import { AdonisAttribute } from "../../interfaces/adonis-attribute.interface";
+import { AdonisClass } from "../../interfaces/adonis-class.interface";
+import { AdonisNotebookAttribute, AdonisNotebookRelations } from "../../interfaces/adonis-notebook-elements.interface";
 
 export interface Column {
     displayName: string;
@@ -6,15 +8,18 @@ export interface Column {
     ordinalPosition: number;
     hasDefaultValue: boolean;
     isNullable: boolean;
-    characterData?: {
-        maximumCharacterLength: number;
-    };
-    typeInfo: tsTypeInfo;
     primary: boolean;
-    relation: boolean;
-    relationTarget?: {
-        metaName: string;
-        id: string;
-    };
     unique: boolean;
+    relation: boolean;
+    allowedTypes: string[];
+    property: {
+        attribute?: AdonisNotebookAttribute;
+        attributeInfo?: AdonisAttribute;
+        relation?: AdonisNotebookRelations;
+        relationTargetClass?: AdonisClass;
+    }
+    enumData?: {
+        values: string[];
+        aliases: string[];
+    }
 }

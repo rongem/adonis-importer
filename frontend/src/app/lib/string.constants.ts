@@ -16,5 +16,6 @@ export const dateAttributes = ['DATE', 'UTC'];
 export const ENUM = 'ENUM';
 export const ENUMLIST = 'ENUMLIST';
 export const ENUMLIST_TREE = 'ENUMLIST_TREE';
+export const enumAttributes = [ENUM, ENUMLIST, ENUMLIST_TREE];
 export const BOOL = 'BOOL';
 export const FILE_POINTER = 'FILE_POINTER';
