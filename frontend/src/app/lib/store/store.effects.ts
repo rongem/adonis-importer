@@ -99,7 +99,7 @@ export class StoreEffects {
 
     selectRepository$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.SelectRepository),
-        tap(action => this.dataAccess.repoId = action.repositoryId),
+        tap((action) => this.dataAccess.repoId = action.repositoryId),
         switchMap(() => this.dataAccess.retrieveObjectGroupStructure().pipe(
             map(sortGroup),
             map(objectGroupList => StoreActions.ObjectGroupsLoaded({objectGroup: objectGroupList.group})),
@@ -144,7 +144,7 @@ export class StoreEffects {
 
     testRows$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.testRows),
-        map(action => {
+        switchMap(action => {
             const rows = action.content.rows;
             const primaryColumn = action.content.columns.find(c => c.primary)!;
             const primaryValues = rows.map(r => r[primaryColumn.internalName]);
@@ -155,15 +155,15 @@ export class StoreEffects {
                 }
             });
             if (errors.length > 0) {
-                return StoreActions.setRowErrors({errors});
+                return of(StoreActions.setRowErrors({errors}));
             }
-            return StoreActions.testRowsInBackend({content: action.content});
+            return of(StoreActions.testRowsInBackend({content: action.content}));
         }),
     ));
 
     testRowsInBackend$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.testRowsInBackend),
-        tap(action => {
+        switchMap(action => {
             const rows = action.content.rows;
             const primaryColumn = action.content.columns.find(c => c.primary)!;
             const selectedClass = action.content.selectedClass;
@@ -177,9 +177,20 @@ export class StoreEffects {
                 }]
             };
             const queryString = encodeURIComponent(JSON.stringify(query));
-            this.dataAccess.searchObjects(queryString);
+            return this.dataAccess.searchObjects(queryString).pipe(
+                map(items => StoreActions.itemsLoaded(items)),
+                catchError((error: HttpErrorResponse) => {
+                    console.error(error);
+                    return of(StoreActions.ObjectGroupLoadingFailed({errorMessage: error.message}));
+                }),
+            );
         }),
-    ), {dispatch: false});
+    ));
+
+    itemsLoaded$ = createEffect(() => this.actions$.pipe(
+        ofType(StoreActions.itemsLoaded),
+        map(() => StoreActions.backendTestSuccessful()),
+    ));
 
     constructor(private actions$: Actions, private dataAccess: DataAccess, private router: Router, private store: Store) {}
 }

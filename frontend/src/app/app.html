@@ -14,6 +14,7 @@
         <span class="indicator" [ngClass]="{yellow: (attributesState | async) === 1, green: (attributesState | async) === 2, red: (attributesState | async) === 3}">A</span>
         <span class="indicator" [ngClass]="{yellow: (repositoryState | async) === 1, green: (repositoryState | async) === 2, red: (repositoryState | async) === 3}">R</span>
         <span class="indicator" [ngClass]="{yellow: (objectGroupsState | async) === 1, green: (objectGroupsState | async) === 2, red: (objectGroupsState | async) === 3}">O</span>
+        <span class="indicator" [ngClass]="{yellow: (itemsState | async) === 1, green: (itemsState | async) === 2, red: (itemsState | async) === 3}">I</span>
     </div>
 }
 

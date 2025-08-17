@@ -8,7 +8,7 @@ export interface AdonisSearchResult extends AdonisRestObject {
     items: AdonisItem[];
 }
 
-interface AdonisItem extends AdonisBasicObject {
+export interface AdonisItem extends AdonisBasicObject {
     libraryObjectId: string;
     name: string;
     type: string;

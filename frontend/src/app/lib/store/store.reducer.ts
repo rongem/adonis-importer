@@ -12,6 +12,8 @@ import { AdonisObjectGroup } from "../models/adonis-rest/metadata/object-group.i
 import { AdonisClass } from "../models/adonis-rest/metadata/class.interface";
 import { AttributeOrRelation } from "../models/adonis-rest/metadata/notebook-elements.interface";
 import { ExportAction } from "../enums/export-action.enum";
+import { AdonisItem } from "../models/adonis-rest/search/result.interface";
+import { working } from "./store.selectors";
 
 export const STORE = 'STORE';
 
@@ -32,6 +34,7 @@ export interface State {
     attributesState: WorkflowState;
     repositoryState: WorkflowState;
     objectGroupState: WorkflowState;
+    itemState: WorkflowState;
 
     notAuthorized: boolean;
 
@@ -54,6 +57,7 @@ export interface State {
     errorMessage?: string;
     rowErrors: ErrorList[];
     canImport: boolean;
+    items?: AdonisItem[];
     importedRows?: number;
 };
 
@@ -65,6 +69,7 @@ const initialState: State = {
     attributesState: WorkflowState.NotPresent,
     repositoryState: WorkflowState.NotPresent,
     objectGroupState: WorkflowState.NotPresent,
+    itemState: WorkflowState.NotPresent,
 
     notAuthorized: true,
 
@@ -181,14 +186,12 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
             columnDefinitions: [...action.columns],
             cellContents: [],
             columnMapping: Array.from(Array(action.columns.length).keys()),
-            working: false,
             rowErrors: [],
             canImport: false,
         })),
         on(StoreActions.changeColumnOrder, (state, action) => ({
             ...state,
             columnMapping: [...action.columnMappings],
-            working: false,
             rowErrors: [],
             canImport: false,
         })),
@@ -199,9 +202,14 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
         })),
         on(StoreActions.testRows, (state, action) => ({
             ...state,
-            working: true,
+            itemState: WorkflowState.Loading,
             rowErrors: [],
             canImport: false,
+        })),
+        on(StoreActions.itemsLoaded, (state, action) => ({
+            ...state,
+            itemState: WorkflowState.Loaded,
+            items: [...action.items],
         })),
         on(StoreActions.importRowsInBackend, (state, action) => ({
             ...state,
@@ -210,20 +218,18 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
         })),
         on(StoreActions.setRowErrors, (state, action) => ({
             ...state,
-            working: false,
+            itemState: WorkflowState.Loaded,
             rowErrors: [...action.errors],
             canImport: action.errors.length === 0,
         })),
         on(StoreActions.backendTestSuccessful, (state, action) => ({
             ...state,
             canImport: true,
-            working: false,
         })),
         on(StoreActions.importSuccessful, (state, action) => ({
             ...state,
             cellContents: [],
             rowErrors: [],
-            working: false,
             canImport: false,
             importedRows: action.importedRows
         })),

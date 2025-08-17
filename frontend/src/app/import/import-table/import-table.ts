@@ -2,7 +2,7 @@ import { Component, ElementRef, HostListener, OnDestroy, OnInit, viewChildren } 
 import { Router, ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Actions, ofType } from '@ngrx/effects';
-import { Subscription, firstValueFrom, map, withLatestFrom } from 'rxjs';
+import { Subscription, firstValueFrom, map, tap, withLatestFrom } from 'rxjs';
 
 import * as StoreSelectors from '../../lib/store/store.selectors';
 import * as StoreActions from '../../lib/store/store.actions';
@@ -13,9 +13,6 @@ import { CellInformation } from '../../lib/models/table/cellinformation.model';
 import { RowContainer } from '../../lib/models/table/row-container.model';
 import { NgClass, AsyncPipe } from '@angular/common';
 import { ErrorBadge } from '../error-badge/error-badge';
-import { AdonisClass } from '../../lib/models/adonis-rest/metadata/class.interface';
-import { Column } from '../../lib/models/table/column.model';
-
 
 @Component({
   selector: 'app-import-table',
@@ -49,17 +46,10 @@ export class ImportTable implements OnDestroy, OnInit {
       ).subscribe(([, cellInformations, rowNumbers, errorPresent, selectedClass, columns]) => {
         if (errorPresent === false && rowNumbers.length > 0 && selectedClass) {
           const rows: Row[] = this.createRowsForBackend(cellInformations, rowNumbers);
-          this.store.dispatch(StoreActions.testRows({content: this.createRowContainer(rows, selectedClass, columns)}));
+          this.store.dispatch(StoreActions.testRows({content: {rows, selectedClass, columns}}));
         }
       })
     );
-  }
-  private createRowContainer(rows: Row[], selectedClass: AdonisClass, columns: Column[]): RowContainer {
-    return {
-      rows,
-      selectedClass,
-      columns,
-    };
   }
 
   private createRowsForBackend(cellInformations: CellInformation[], rowNumbers: number[]) {
@@ -112,8 +102,6 @@ export class ImportTable implements OnDestroy, OnInit {
 
   getRowContainsErrors = (rowIndex: number) => this.store.select(StoreSelectors.rowContainsErrors(rowIndex));
 
-  nameExists = (rowIndex: number) => true;
-
   getRowErrorDescriptions = (rowIndex: number) => this.store.select(StoreSelectors.rowErrors(rowIndex)).pipe(map(errors => errors.join('; ')));
 
   // columns for drag and drop column order change
@@ -128,6 +116,8 @@ export class ImportTable implements OnDestroy, OnInit {
   get rowCount() {
     return this.rowNumbers.pipe(map(r => r.length));
   }
+
+  nameExists = (rowNumber: number) => this.store.select(StoreSelectors.rowsWithExistingItems).pipe(map(rows => rows.includes(rowNumber)));
 
   get canImport() {
     return this.store.select(StoreSelectors.canImport);
@@ -227,7 +217,7 @@ export class ImportTable implements OnDestroy, OnInit {
     const rows: Row[] = this.createRowsForBackend(cellInformations, rowNumbers);
     const selectedClass = (await firstValueFrom(this.store.select(StoreSelectors.selectedClass)))!;
     const columns = await firstValueFrom(this.store.select(StoreSelectors.columnDefinitions));
-    const content = this.createRowContainer(rows, selectedClass, columns);
+    const content: RowContainer = {rows, selectedClass, columns};
     this.store.dispatch(StoreActions.importRowsInBackend({content}));
   }
 

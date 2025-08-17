@@ -42,6 +42,10 @@ export class App {
     return this.store.select(Selectors.objectGroupsState);
   }  
 
+  get itemsState() {
+    return this.store.select(Selectors.itemsState);
+  }  
+
   get errorPresent() {
     return this.store.select(Selectors.errorPresent)
   }

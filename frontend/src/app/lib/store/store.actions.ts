@@ -11,6 +11,7 @@ import { AdonisObjectGroup } from '../models/adonis-rest/metadata/object-group.i
 import { AttributeOrRelation } from '../models/adonis-rest/metadata/notebook-elements.interface';
 import { ExportAction } from '../enums/export-action.enum';
 import { ErrorList } from '../models/table/errorlist.model';
+import { AdonisItem } from '../models/adonis-rest/search/result.interface';
 
 export const LoadClasses = createAction('[App] Start loading Classes.');
 
@@ -86,35 +87,39 @@ export const SelectObjectGroup = createAction('[ObjectGroup] Select Object Group
     props<{objectGroup: AdonisObjectGroup}>()
 );
 
-export const columnsLoaded = createAction('[Columns] Finished loading columns',
+export const columnsLoaded = createAction('[Columns] Finished loading columns.',
     props<{columns: Column[]}>()
 );
 
-export const changeColumnOrder = createAction('[Columns] Changed order of table columns via drag & drop',
+export const changeColumnOrder = createAction('[Columns] Changed order of table columns via drag & drop.',
     props<{columnMappings: number[]}>()
 );
 
-export const setCellContents = createAction('[CellContent] Set new content for cells',
+export const setCellContents = createAction('[CellContent] Set new content for cells.',
     props<{contents: CellContent[]}>()
 );
 
-export const testRows = createAction('[Rows] Test rows in backend',
+export const testRows = createAction('[Rows] Test rows for duplicate primary key.',
     props<{content: RowContainer}>()
 );
 
-export const testRowsInBackend = createAction('[Rows] Test rows in backend',
+export const testRowsInBackend = createAction('[Rows] Test rows in backend.',
     props<{content: RowContainer}>()
 );
 
-export const importRowsInBackend = createAction('[Rows] Import rows in backend',
+export const itemsLoaded = createAction('[Rows] Get all existing objects for import',
+    props<{items: AdonisItem[]}>()
+);
+
+export const importRowsInBackend = createAction('[Rows] Import rows into backend.',
     props<{content: RowContainer}>()
 );
 
-export const setRowErrors = createAction('[Rows] Set list of row errors',
+export const setRowErrors = createAction('[Rows] Set list of row errors.',
     props<{errors: ErrorList[]}>()
 );
 
-export const backendTestSuccessful = createAction('[Rows] Test of rows in backend was successful');
+export const backendTestSuccessful = createAction('[Rows] Test of rows in backend was successful.');
 
 export const importSuccessful = createAction('[Rows] Import successful',
     props<{importedRows: number}>()

@@ -11,7 +11,8 @@ export const working = createSelector(appState, state =>
     state.notebookState === WorkflowState.Loading ||
     state.attributesState === WorkflowState.Loading ||
     state.repositoryState === WorkflowState.Loading ||
-    state.objectGroupState === WorkflowState.Loading
+    state.objectGroupState === WorkflowState.Loading ||
+    state.itemState === WorkflowState.Loading
 );
 
 export const classesState = createSelector(appState, state => state.classesState);
@@ -19,6 +20,7 @@ export const notebookState = createSelector(appState, state => state.notebookSta
 export const attributesState = createSelector(appState, state => state.attributesState);
 export const repositoryState = createSelector(appState, state => state.repositoryState);
 export const objectGroupsState = createSelector(appState, state => state.objectGroupState);
+export const itemsState = createSelector(appState, state => state.itemState);
 
 export const classesReady = createSelector(appState, state => state.classesState === WorkflowState.Loaded);
 export const notebooksReady = createSelector(appState, state => state.notebookState === WorkflowState.Loaded);
@@ -59,6 +61,18 @@ export const rowNumbers = createSelector(cellContents, contents => [...new Set(c
 export const cellInformations = createSelector(cellContents, columnMappings, columnDefinitions, (cells, columnMappings, columnDefinitions) => 
     cells.map(c => new CellInformation(c, columnDefinitions[columnMappings[c.column]]))
 );
+
+export const items = createSelector(appState, state => state.items ?? []);
+
+export const itemNames = createSelector(items, items => items.map(i => i.name));
+
+export const rowsWithExistingItems = createSelector(rowNumbers, columnDefinitions, cellContents, itemNames, (rowNumbers, columnDefinitions, cellInformations, itemNames) => {
+    const primaryColumn = columnDefinitions.findIndex(c => c.primary);
+    const cellsInPrimaryColumn = cellInformations.filter(c => c.column === primaryColumn);
+    const retVal = cellsInPrimaryColumn.filter(c => itemNames.includes(c.originalValue)).map(c => c.row);
+    console.log(primaryColumn, cellsInPrimaryColumn, retVal);
+    return retVal;
+});
 
 export const cellInformation = (rowIndex: number, columIndex: number) => createSelector(cellInformations, cells => cells.find(c => c.row === rowIndex && c.column === columIndex));
 
