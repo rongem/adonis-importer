@@ -197,7 +197,7 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
             cellContents: [...action.contents],
             rowErrors: [],
         })),
-        on(StoreActions.testRowsInBackend, (state, action) => ({
+        on(StoreActions.testRows, (state, action) => ({
             ...state,
             working: true,
             rowErrors: [],
@@ -211,8 +211,8 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
         on(StoreActions.setRowErrors, (state, action) => ({
             ...state,
             working: false,
-            // rowErrors: [...action.errors],
-            // canImport: action.errors.length === 0,
+            rowErrors: [...action.errors],
+            canImport: action.errors.length === 0,
         })),
         on(StoreActions.backendTestSuccessful, (state, action) => ({
             ...state,

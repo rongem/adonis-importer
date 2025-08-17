@@ -14,6 +14,8 @@ import * as Constants from '../string.constants';
 import * as StoreActions from './store.actions';
 import * as Selectors from './store.selectors';
 import { sortGroup } from '../helpers/group-sorter.functions';
+import { ErrorList } from '../models/table/errorlist.model';
+import { AdonisQuery } from '../models/adonis-rest/search/query.interface';
 
 const getClasses = (classContainer: AdonisClassContainer) => Object.values(classContainer);
 
@@ -97,7 +99,8 @@ export class StoreEffects {
 
     selectRepository$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.SelectRepository),
-        switchMap((action) => this.dataAccess.retrieveObjectGroupStructure(action.repositoryId).pipe(
+        tap(action => this.dataAccess.repoId = action.repositoryId),
+        switchMap(() => this.dataAccess.retrieveObjectGroupStructure().pipe(
             map(sortGroup),
             map(objectGroupList => StoreActions.ObjectGroupsLoaded({objectGroup: objectGroupList.group})),
             catchError((error: HttpErrorResponse) => {
@@ -138,6 +141,45 @@ export class StoreEffects {
         withLatestFrom(this.store.select(Selectors.attributes), this.store.select(Selectors.classContainer)),
         map(([action, attributes, classes]) => StoreActions.columnsLoaded({columns: createColumnsFromProperties(action.properties, attributes, classes)})),
     ));
+
+    testRows$ = createEffect(() => this.actions$.pipe(
+        ofType(StoreActions.testRows),
+        map(action => {
+            const rows = action.content.rows;
+            const primaryColumn = action.content.columns.find(c => c.primary)!;
+            const primaryValues = rows.map(r => r[primaryColumn.internalName]);
+            const errors: ErrorList[] = [];
+            primaryValues.forEach((value, row) => {
+                if (primaryValues.filter(v1 => v1 === value).length > 1) {
+                    errors.push({msg: 'Doppelter Primärschlüssel', row, rowContent: rows[row]});
+                }
+            });
+            if (errors.length > 0) {
+                return StoreActions.setRowErrors({errors});
+            }
+            return StoreActions.testRowsInBackend({content: action.content});
+        }),
+    ));
+
+    testRowsInBackend$ = createEffect(() => this.actions$.pipe(
+        ofType(StoreActions.testRowsInBackend),
+        tap(action => {
+            const rows = action.content.rows;
+            const primaryColumn = action.content.columns.find(c => c.primary)!;
+            const selectedClass = action.content.selectedClass;
+            const query: AdonisQuery = {
+                filters: [{
+                    className: selectedClass.metaName,
+                }, {
+                    attrName: Constants.NAME,
+                    op: 'OP_EQ',
+                    values: rows.map(r => r[primaryColumn.internalName]!.toString())
+                }]
+            };
+            const queryString = encodeURIComponent(JSON.stringify(query));
+            this.dataAccess.searchObjects(queryString);
+        }),
+    ), {dispatch: false});
 
     constructor(private actions$: Actions, private dataAccess: DataAccess, private router: Router, private store: Store) {}
 }

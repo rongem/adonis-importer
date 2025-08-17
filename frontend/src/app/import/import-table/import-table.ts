@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, viewChildren } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, viewChildren } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Actions, ofType } from '@ngrx/effects';
@@ -13,6 +13,8 @@ import { CellInformation } from '../../lib/models/table/cellinformation.model';
 import { RowContainer } from '../../lib/models/table/row-container.model';
 import { NgClass, AsyncPipe } from '@angular/common';
 import { ErrorBadge } from '../error-badge/error-badge';
+import { AdonisClass } from '../../lib/models/adonis-rest/metadata/class.interface';
+import { Column } from '../../lib/models/table/column.model';
 
 
 @Component({
@@ -21,7 +23,7 @@ import { ErrorBadge } from '../error-badge/error-badge';
   templateUrl: './import-table.html',
   styleUrl: './import-table.scss'
 })
-export class ImportTable {
+export class ImportTable implements OnDestroy, OnInit {
   columnDefinitions = this.store.select(StoreSelectors.columnDefinitions);
   // table cells for selection
   readonly cells = viewChildren<ElementRef<HTMLTableCellElement>>('td');
@@ -41,20 +43,22 @@ export class ImportTable {
           this.store.select(StoreSelectors.cellInformations),
           this.rowNumbers,
           this.store.select(StoreSelectors.tableContainsErrors),
+          this.store.select(StoreSelectors.selectedClass),
+          this.store.select(StoreSelectors.columnDefinitions)
         ),
-      ).subscribe(([, cellInformations, rowNumbers, errorPresent]) => {
-        if (errorPresent === false && rowNumbers.length > 0) {
+      ).subscribe(([, cellInformations, rowNumbers, errorPresent, selectedClass, columns]) => {
+        if (errorPresent === false && rowNumbers.length > 0 && selectedClass) {
           const rows: Row[] = this.createRowsForBackend(cellInformations, rowNumbers);
-          this.store.dispatch(StoreActions.testRowsInBackend({content: this.createRowContainer(rows)}));
+          this.store.dispatch(StoreActions.testRows({content: this.createRowContainer(rows, selectedClass, columns)}));
         }
       })
     );
   }
-  private createRowContainer(rows: Row[]): RowContainer {
+  private createRowContainer(rows: Row[], selectedClass: AdonisClass, columns: Column[]): RowContainer {
     return {
-      schema: this.schema,
-      table: this.table,
       rows,
+      selectedClass,
+      columns,
     };
   }
 
@@ -107,6 +111,8 @@ export class ImportTable {
   );
 
   getRowContainsErrors = (rowIndex: number) => this.store.select(StoreSelectors.rowContainsErrors(rowIndex));
+
+  nameExists = (rowIndex: number) => true;
 
   getRowErrorDescriptions = (rowIndex: number) => this.store.select(StoreSelectors.rowErrors(rowIndex)).pipe(map(errors => errors.join('; ')));
 
@@ -219,7 +225,9 @@ export class ImportTable {
     const cellInformations = await firstValueFrom(this.store.select(StoreSelectors.cellInformations));
     const rowNumbers = await firstValueFrom(this.store.select(StoreSelectors.rowNumbers));
     const rows: Row[] = this.createRowsForBackend(cellInformations, rowNumbers);
-    const content = this.createRowContainer(rows);
+    const selectedClass = (await firstValueFrom(this.store.select(StoreSelectors.selectedClass)))!;
+    const columns = await firstValueFrom(this.store.select(StoreSelectors.columnDefinitions));
+    const content = this.createRowContainer(rows, selectedClass, columns);
     this.store.dispatch(StoreActions.importRowsInBackend({content}));
   }
 

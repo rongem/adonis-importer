@@ -9,6 +9,6 @@ import { Component, input } from '@angular/core';
     imports: [NgClass]
 })
 export class ErrorBadge {
-  readonly errorDescription = input<string | null>(`An error occured`);
+  readonly errorDescription = input<string | null>(`Es sind Validierungsfehler aufgetreten.`);
   visibleText = false;
 }

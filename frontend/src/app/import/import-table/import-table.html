@@ -58,6 +58,14 @@
         <td [attr.title]="getRowErrorDescriptions(rowNumber) | async">
           @if ((getRowContainsErrors(rowNumber) | async) === true) {
             <app-error-badge [errorDescription]="getRowErrorDescriptions(rowNumber) | async"></app-error-badge>
+          } @else {
+            @if (nameExists(rowNumber)) {
+              <span class="edit">&#10000;</span>
+              <span class="visually-hidden">Objekt mit diesem Namen gefunden. Objekt wird geändert.</span>
+            } @else {
+              <span class="new">&#10035;</span>
+              <span class="visually-hidden">Objekt wird neu erstellt.</span>
+            }
           }
         </td>
         <td class="align-right">

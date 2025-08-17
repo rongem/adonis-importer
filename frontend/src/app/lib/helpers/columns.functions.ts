@@ -5,7 +5,6 @@ import { Column } from '../models/table/column.model'
 import * as Constants from '../string.constants';
 
 export function createColumnsFromProperties(properties: AttributeOrRelation[], attributes: AdonisAttributeContainer, classes: AdonisClassContainer) {
-    console.log(classes);
     const columns: Column[] = [createColumnFromAttribute(properties[0] as AdonisNotebookAttribute, 0, attributes)];
     for (let i = 1; i < properties.length; i++) {
         const property = properties[i];

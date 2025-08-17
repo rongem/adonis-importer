@@ -10,6 +10,7 @@ import { AdonisRepoList } from '../models/adonis-rest/metadata/lists/list-repos.
 import { AdonisObjectGroup } from '../models/adonis-rest/metadata/object-group.interface';
 import { AttributeOrRelation } from '../models/adonis-rest/metadata/notebook-elements.interface';
 import { ExportAction } from '../enums/export-action.enum';
+import { ErrorList } from '../models/table/errorlist.model';
 
 export const LoadClasses = createAction('[App] Start loading Classes.');
 
@@ -97,6 +98,10 @@ export const setCellContents = createAction('[CellContent] Set new content for c
     props<{contents: CellContent[]}>()
 );
 
+export const testRows = createAction('[Rows] Test rows in backend',
+    props<{content: RowContainer}>()
+);
+
 export const testRowsInBackend = createAction('[Rows] Test rows in backend',
     props<{content: RowContainer}>()
 );
@@ -106,7 +111,7 @@ export const importRowsInBackend = createAction('[Rows] Import rows in backend',
 );
 
 export const setRowErrors = createAction('[Rows] Set list of row errors',
-    // props<{errors: ErrorList[]}>()
+    props<{errors: ErrorList[]}>()
 );
 
 export const backendTestSuccessful = createAction('[Rows] Test of rows in backend was successful');

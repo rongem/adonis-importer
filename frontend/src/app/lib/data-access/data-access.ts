@@ -14,6 +14,8 @@ import { AdonisAttributeList } from '../models/adonis-rest/metadata/lists/list-a
 import { AdonisAttributeContainer } from '../models/adonis-rest/metadata/container/container-attribute.interface';
 import { AdonisGroupContainer } from '../models/adonis-rest/metadata/group.interface';
 import { AdonisRepoList } from '../models/adonis-rest/metadata/lists/list-repos.interface';
+import * as Constants from '../string.constants';
+import { AdonisSearchResult } from '../models/adonis-rest/search/result.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -26,6 +28,16 @@ export class DataAccess {
 
   private getUrl<T>(url: string): Observable<T> {
     return this.http.get<T>(url).pipe(take(1));
+  }
+
+  private _repoId: string = '';
+
+  set repoId(value: string) {
+    this._repoId = value;
+  };
+
+  get repoId() {
+    return this._repoId.substring(1, this._repoId.length - 1);
   }
 
   retrieveClassesWithNotebooks = () => this.retrieveClasslist().pipe(
@@ -110,8 +122,10 @@ export class DataAccess {
     );
   };
 
-  retrieveRepositories = () => this.getUrl<AdonisRepoList>(this.baseUrl + '4.0/repos');
+  retrieveRepositories = () => this.getUrl<AdonisRepoList>(this.baseUrl + Constants.repos_url);
 
-  retrieveObjectGroupStructure = (repoId: string) => this.getUrl<AdonisGroupContainer>(this.baseUrl + '4.0/repos/' + repoId.substring(1, repoId.length - 1) + '/objectgroups/root?recursive=true');
+  retrieveObjectGroupStructure = () => this.getUrl<AdonisGroupContainer>(this.baseUrl + Constants.repos_url + this.repoId + Constants.objectgroups_url);
+
+  searchObjects = (queryString: string) => this.getUrl<AdonisSearchResult>(this.baseUrl + Constants.repos_url + this.repoId + Constants.search_query_url + queryString);
 
 }

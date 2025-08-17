@@ -69,24 +69,24 @@ export class CellInformation{
     private errorDescriptions: string[] = [];
 
     constructor(private cellContent: CellContent, private columnDefinition: Column) {
-        if (!cellContent) throw new Error(`Missing cell content`);
-        if (!columnDefinition) throw new Error(`Missing column definition for ` + JSON.stringify(cellContent));
+        if (!cellContent) throw new Error(`Es fehlt der Zelleninhalt`);
+        if (!columnDefinition) throw new Error(`Es fehlt eine Spalte für ` + JSON.stringify(cellContent));
         if (this.isEmpty) {
             if (!this.canBeEmpty) {
-                this.errorDescriptions.push(`Nulls and empty values are not allowed.`);
+                this.errorDescriptions.push(`Keine leeren Zellen erlaubt.`);
             }
         } else {
             if (this.canContainNumber() && !this.isNumber) {
-                this.errorDescriptions.push(`Number expected`);
+                this.errorDescriptions.push(`Nur Zahlen erlaubt`);
             }
             if (this.canContainDate() && !this.isDate) {
-                this.errorDescriptions.push(`Date expected`);
+                this.errorDescriptions.push(`Nur Datumswerte erlaubt`);
             }
             if (this.canContainBoolean() && !this.isBoolean) {
-                this.errorDescriptions.push(`Boolean expected`);
+                this.errorDescriptions.push(`Nur Wahr/Falsch-Werkte erlaubt.`);
             }
             if (this.canContainString() && !this.stringValue) {
-                this.errorDescriptions.push(`String expected`);
+                this.errorDescriptions.push(`Nur Text erlaubt.`);
             }
         }
     };
