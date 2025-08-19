@@ -70,7 +70,6 @@ export const rowsWithExistingItems = createSelector(rowNumbers, columnDefinition
     const primaryColumn = columnDefinitions.findIndex(c => c.primary);
     const cellsInPrimaryColumn = cellInformations.filter(c => c.column === primaryColumn);
     const retVal = cellsInPrimaryColumn.filter(c => itemNames.includes(c.originalValue)).map(c => c.row);
-    console.log(primaryColumn, cellsInPrimaryColumn, retVal);
     return retVal;
 });
 

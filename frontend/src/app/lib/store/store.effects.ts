@@ -144,7 +144,7 @@ export class StoreEffects {
 
     testRows$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.testRows),
-        switchMap(action => {
+        map(action => {
             const rows = action.content.rows;
             const primaryColumn = action.content.columns.find(c => c.primary)!;
             const primaryValues = rows.map(r => r[primaryColumn.internalName]);
@@ -154,10 +154,12 @@ export class StoreEffects {
                     errors.push({msg: 'Doppelter Primärschlüssel', row, rowContent: rows[row]});
                 }
             });
+            const enumColumns = action.content.columns.filter(c => !!c.enumData);
+            console.log(enumColumns);
             if (errors.length > 0) {
-                return of(StoreActions.setRowErrors({errors}));
+                return StoreActions.setRowErrors({errors});
             }
-            return of(StoreActions.testRowsInBackend({content: action.content}));
+            return StoreActions.testRowsInBackend({content: action.content});
         }),
     ));
 

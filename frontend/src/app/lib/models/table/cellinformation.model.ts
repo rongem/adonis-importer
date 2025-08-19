@@ -53,6 +53,8 @@ export class CellInformation{
     get isString() { return this.stringValue !== undefined; }
     get isEmpty() { return this.value === '' || this.value === undefined || this.value === null; }
     get canBeEmpty() { return this.columnDefinition.isNullable || this.columnDefinition.hasDefaultValue; }
+    get isEnum() { return !!this.columnDefinition.enumData; }
+    get enumMembers() { return this.columnDefinition.enumData?.values ?? []; }
 
     get typedValue() {
         if (this.isDate) return this.dateValue;
@@ -88,6 +90,9 @@ export class CellInformation{
             if (this.canContainString() && !this.stringValue) {
                 this.errorDescriptions.push(`Nur Text erlaubt.`);
             }
+        }
+        if (this.isEnum && !this.enumMembers.includes(cellContent.originalValue)) {
+            this.errorDescriptions.push('Wert ist nicht in der Enumeration enthalten.');
         }
     };
 
