@@ -16,7 +16,6 @@ export interface Column {
         attribute?: AdonisNotebookAttribute;
         attributeInfo?: AdonisAttribute;
         relation?: AdonisNotebookRelations;
-        relationTargetClass?: AdonisClass;
     }
     enumData?: {
         values: string[];

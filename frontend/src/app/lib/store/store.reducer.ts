@@ -230,6 +230,12 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
             rowErrors: [...action.errors],
             canImport: action.errors.length === 0,
         })),
+        on(StoreActions.addRowErrors, (state, action) => ({
+            ...state,
+            itemState: WorkflowState.Loaded,
+            rowErrors: [...state.rowErrors, ...action.errors],
+            canImport: action.errors.length === 0,
+        })),
         on(StoreActions.backendTestSuccessful, (state, action) => ({
             ...state,
             canImport: true,

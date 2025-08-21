@@ -9,7 +9,28 @@ $medium-border-style: 1px #005 solid;
 
 .target {
     background-color: lemonchiffon;
+    transition: translate 0.5s cubic-bezier(0.3, 0.8, 0.3, 2.3);
+    &:not(.left) {
+        translate: -0.75rem 0;
+        &::after {
+            content: "\25bc";
+            position: absolute;
+            right: -1rem;
+            top: -0.5rem;
+        }
+    }
+
+    &.left {
+        translate: 0.75rem 0;
+        &::before {
+            content: "\25bc";
+            position: absolute;
+            left: -1rem;
+            top: -0.5rem;
+        }
+    }
 }
+
 
 .highlighted {
     background-color: lightblue;

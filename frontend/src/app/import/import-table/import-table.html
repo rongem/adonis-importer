@@ -12,6 +12,9 @@
     Ersetzen Sie alle Daten hier mit Strg+V.
   </section>
 }
+<section>
+  Sie können die Spaltenköpfe verschieben, um die Anordnung der Spalten zu verändern, so dass die Zielkonfiguration mit den Ausgangsdaten übereinstimmt.
+</section>
 @if ((canImport | async) === true) {
   <section class="button-container">
     <button type="button" (click)="onImport()">Starte Import</button>
@@ -29,7 +32,7 @@
           (dragend)="onDragEnd()"
           (dragover)="onDragOver($event, i)"
           (drop)="onDrop(i)"
-          [ngClass]="{dragging: this.sourceIndex === i, target: presumedTargetIndex === i, primary: (getColumn(column) | async)?.primary, foreign: (getColumn(column) | async)?.relation}"
+          [ngClass]="{dragging: sourceIndex === i, target: presumedTargetIndex === i, left: (presumedTargetIndex === i && sourceIndex! > presumedTargetIndex), primary: (getColumn(column) | async)?.primary, foreign: (getColumn(column) | async)?.relation}"
           [attr.title]="getColumnTitle(column) | async"
           class="position-relative">
           {{(getColumn(column) | async)?.displayName}}

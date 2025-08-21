@@ -203,25 +203,26 @@ export class StoreEffects {
         switchMap(action => {
             const rows = action.content.rows;
             const relatedColumns = action.content.columns.filter(c => c.relation)!;
-            console.log('related', relatedColumns);
+            if (relatedColumns.length === 0) {
+                return of([]);
+            }
             const queries = relatedColumns.map((c, i) => {
-                console.log('index', action.content.columns.indexOf(c));
                 const querystring = encodeURIComponent(JSON.stringify({
                     filters: [{
-                        className: c.property.relationTargetClass!.metaName,
+                        className: c.property.relation!.relClass.targetInformations[0].metaName,
                     }, {
                         attrName: Constants.NAME,
                         op: 'OP_EQ',
                         values: rows.map(r => r[c.internalName]!.toString())
                     }]
                 }));
+                const index = action.content.columns.indexOf(c);
                 return this.dataAccess.searchObjects(querystring).pipe(
-                    map(searchResult => ({column: relatedColumns[i], index: i, items:searchResult.items} as RelationTargets)),
+                    map(searchResult => ({column: relatedColumns[i], index, items:searchResult.items} as RelationTargets)),
                     catchError((error: HttpErrorResponse) => {
                         console.error(error);
-                        return of({column: relatedColumns[i], index: i, errorMessage: error.message} as RelationTargets);
+                        return of({column: relatedColumns[i], index, errorMessage: error.message} as RelationTargets);
                     }),
-
                 );
             });
             return forkJoin(queries);
@@ -236,8 +237,9 @@ export class StoreEffects {
     ));
 
     itemsLoaded$ = createEffect(() => this.actions$.pipe(
-        ofType(StoreActions.primaryItemsLoaded),
-        map(() => StoreActions.backendTestSuccessful()),
+        ofType(StoreActions.primaryItemsLoaded, StoreActions.targetItemsLoaded),
+        switchMap(() => this.store.select(Selectors.working)),
+        switchMap((working) => iif(() => working, of(StoreActions.noAction()), of(StoreActions.backendTestSuccessful()))),
     ));
 
     constructor(private actions$: Actions, private dataAccess: DataAccess, private router: Router, private store: Store) {}

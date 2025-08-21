@@ -116,11 +116,17 @@ export const targetItemsLoaded = createAction('[Rows] Got all existing objects f
     props<{content: RelationTargetsContainer}>()
 );
 
+export const noTargetItems = createAction('[Rows] No relations selected.');
+
 export const importRowsInBackend = createAction('[Rows] Import rows into backend.',
     props<{content: RowContainer}>()
 );
 
 export const setRowErrors = createAction('[Rows] Set list of row errors.',
+    props<{errors: ErrorList[]}>()
+);
+
+export const addRowErrors = createAction('[Rows] Add new errors to existing list of row errors.',
     props<{errors: ErrorList[]}>()
 );
 

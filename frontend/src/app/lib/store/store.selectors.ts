@@ -12,7 +12,8 @@ export const working = createSelector(appState, state =>
     state.attributesState === WorkflowState.Loading ||
     state.repositoryState === WorkflowState.Loading ||
     state.objectGroupState === WorkflowState.Loading ||
-    state.itemState === WorkflowState.Loading
+    state.itemState === WorkflowState.Loading ||
+    state.targetState === WorkflowState.Loading
 );
 
 export const classesState = createSelector(appState, state => state.classesState);
