@@ -73,8 +73,8 @@
         </td>
         @for (column of (columnMappings | async); track column; let i = $index) {
           <td
-            [ngClass]="{error: (getCellInformation(rowNumber, i) | async)?.containsErrors}"
-            [attr.title]="(getCellInformation(rowNumber, i) | async)?.errorText">
+            [ngClass]="{error: (getCellInformation(rowNumber, i) | async)?.containsErrors || (getCellContainsRowErrors(rowNumber, i) | async)}"
+            [attr.title]="(getCellErrorMessages(rowNumber, i) | async)">
             {{(getCellInformation(rowNumber, i) | async)?.typedValue}}
           </td>
         }

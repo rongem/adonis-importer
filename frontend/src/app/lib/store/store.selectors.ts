@@ -21,6 +21,7 @@ export const attributesState = createSelector(appState, state => state.attribute
 export const repositoryState = createSelector(appState, state => state.repositoryState);
 export const objectGroupsState = createSelector(appState, state => state.objectGroupState);
 export const itemsState = createSelector(appState, state => state.itemState);
+export const targetState = createSelector(appState, state => state.targetState);
 
 export const classesReady = createSelector(appState, state => state.classesState === WorkflowState.Loaded);
 export const notebooksReady = createSelector(appState, state => state.notebookState === WorkflowState.Loaded);
@@ -86,6 +87,10 @@ export const rowErrors = (rowIndex: number) => createSelector(allRowErrors, cell
 
 export const rowContainsErrors = (rowIndex: number) => createSelector(cellInformations, errorsInRow(rowIndex), (cells, errors) => 
     errors || cells.some(c => c.row === rowIndex && c.containsErrors)
+);
+
+export const columnContainsRowError = (rowIndex: number, columIndex: number) =>
+    createSelector(allRowErrors, errors => errors.filter(e => e.row === rowIndex && e.columnIndex === columIndex).map(e => e.msg)
 );
 
 export const tableContainsErrors = createSelector(cellInformations, cells => cells.some(c => c.containsErrors));

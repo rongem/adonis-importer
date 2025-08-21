@@ -104,6 +104,13 @@ export class ImportTable implements OnDestroy, OnInit {
 
   getRowErrorDescriptions = (rowIndex: number) => this.store.select(StoreSelectors.rowErrors(rowIndex)).pipe(map(errors => errors.join('; ')));
 
+  getCellRowErrors = (rowIndex: number, columnIndex: number) => this.store.select(StoreSelectors.columnContainsRowError(rowIndex, columnIndex));
+  getCellContainsRowErrors = (rowIndex: number, columnIndex: number) => this.getCellRowErrors(rowIndex, columnIndex).pipe(map(e => e.length > 0));
+  getCellErrorMessages = (rowIndex: number, columIndex: number) => this.getCellRowErrors(rowIndex, columIndex).pipe(
+    withLatestFrom(this.getCellInformation(rowIndex, columIndex)),
+    map(([cellErrors, cellinformation]) => [...cellErrors, cellinformation?.errorText].join(';')),
+  );
+
   // columns for drag and drop column order change
   get columnMappings() { return this.store.select(StoreSelectors.columnMappings) };
 

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, iif, map, of, switchMap, tap, withLatestFrom } from 'rxjs';
+import { catchError, forkJoin, iif, map, Observable, of, switchMap, tap, withLatestFrom } from 'rxjs';
 import { Store } from '@ngrx/store';
 
 import { DataAccess } from '../data-access/data-access';
@@ -16,6 +16,7 @@ import * as Selectors from './store.selectors';
 import { sortGroup } from '../helpers/group-sorter.functions';
 import { ErrorList } from '../models/table/errorlist.model';
 import { AdonisQuery } from '../models/adonis-rest/search/query.interface';
+import { RelationTargets, RelationTargetsContainer } from '../models/table/relationtargets.model';
 
 const getClasses = (classContainer: AdonisClassContainer) => Object.values(classContainer);
 
@@ -138,8 +139,8 @@ export class StoreEffects {
 
     createColumns$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.PropertiesSelected),
-        withLatestFrom(this.store.select(Selectors.attributes), this.store.select(Selectors.classContainer)),
-        map(([action, attributes, classes]) => StoreActions.columnsLoaded({columns: createColumnsFromProperties(action.properties, attributes, classes)})),
+        withLatestFrom(this.store.select(Selectors.attributes)),
+        map(([action, attributes]) => StoreActions.columnsLoaded({columns: createColumnsFromProperties(action.properties, attributes)})),
     ));
 
     testRows$ = createEffect(() => this.actions$.pipe(
@@ -147,15 +148,23 @@ export class StoreEffects {
         map(action => {
             const rows = action.content.rows;
             const primaryColumn = action.content.columns.find(c => c.primary)!;
+            const primaryColumnIndex = action.content.columns.indexOf(primaryColumn);
             const primaryValues = rows.map(r => r[primaryColumn.internalName]);
             const errors: ErrorList[] = [];
             primaryValues.forEach((value, row) => {
                 if (primaryValues.filter(v1 => v1 === value).length > 1) {
-                    errors.push({msg: 'Doppelter Primärschlüssel', row, rowContent: rows[row]});
+                    errors.push({msg: 'Doppelter Primärschlüssel', row, columnIndex: primaryColumnIndex, rowContent: rows[row]});
                 }
             });
             const enumColumns = action.content.columns.filter(c => !!c.enumData);
-            console.log(enumColumns);
+            enumColumns.forEach(c => {
+                const enumColumnIndex = action.content.columns.indexOf(c);
+                rows.forEach((value, row) => {
+                    if (!c.enumData!.values.includes(value.toString())) {
+                        errors.push({msg: 'Wert nicht im erlaubten Bereich', row, columnIndex: enumColumnIndex, rowContent: value})
+                    }
+                });
+            });
             if (errors.length > 0) {
                 return StoreActions.setRowErrors({errors});
             }
@@ -163,7 +172,7 @@ export class StoreEffects {
         }),
     ));
 
-    testRowsInBackend$ = createEffect(() => this.actions$.pipe(
+    testPrimaryInBackend$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.testRowsInBackend),
         switchMap(action => {
             const rows = action.content.rows;
@@ -180,7 +189,7 @@ export class StoreEffects {
             };
             const queryString = encodeURIComponent(JSON.stringify(query));
             return this.dataAccess.searchObjects(queryString).pipe(
-                map(items => StoreActions.itemsLoaded(items)),
+                map(items => StoreActions.primaryItemsLoaded(items)),
                 catchError((error: HttpErrorResponse) => {
                     console.error(error);
                     return of(StoreActions.ObjectGroupLoadingFailed({errorMessage: error.message}));
@@ -189,8 +198,45 @@ export class StoreEffects {
         }),
     ));
 
+    testAllRelationsInBackend$ = createEffect(() => this.actions$.pipe(
+        ofType(StoreActions.testRowsInBackend),
+        switchMap(action => {
+            const rows = action.content.rows;
+            const relatedColumns = action.content.columns.filter(c => c.relation)!;
+            console.log('related', relatedColumns);
+            const queries = relatedColumns.map((c, i) => {
+                console.log('index', action.content.columns.indexOf(c));
+                const querystring = encodeURIComponent(JSON.stringify({
+                    filters: [{
+                        className: c.property.relationTargetClass!.metaName,
+                    }, {
+                        attrName: Constants.NAME,
+                        op: 'OP_EQ',
+                        values: rows.map(r => r[c.internalName]!.toString())
+                    }]
+                }));
+                return this.dataAccess.searchObjects(querystring).pipe(
+                    map(searchResult => ({column: relatedColumns[i], index: i, items:searchResult.items} as RelationTargets)),
+                    catchError((error: HttpErrorResponse) => {
+                        console.error(error);
+                        return of({column: relatedColumns[i], index: i, errorMessage: error.message} as RelationTargets);
+                    }),
+
+                );
+            });
+            return forkJoin(queries);
+        }),
+        map(results => {
+            const queryContainer: RelationTargetsContainer = {};
+            results.forEach(r => {
+                queryContainer[r.index] = r;
+            });
+            return StoreActions.targetItemsLoaded({content: queryContainer});
+        }),
+    ));
+
     itemsLoaded$ = createEffect(() => this.actions$.pipe(
-        ofType(StoreActions.itemsLoaded),
+        ofType(StoreActions.primaryItemsLoaded),
         map(() => StoreActions.backendTestSuccessful()),
     ));
 

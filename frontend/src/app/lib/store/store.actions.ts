@@ -12,6 +12,7 @@ import { AttributeOrRelation } from '../models/adonis-rest/metadata/notebook-ele
 import { ExportAction } from '../enums/export-action.enum';
 import { ErrorList } from '../models/table/errorlist.model';
 import { AdonisItem } from '../models/adonis-rest/search/result.interface';
+import { RelationTargetsContainer } from '../models/table/relationtargets.model';
 
 export const LoadClasses = createAction('[App] Start loading Classes.');
 
@@ -107,8 +108,12 @@ export const testRowsInBackend = createAction('[Rows] Test rows in backend.',
     props<{content: RowContainer}>()
 );
 
-export const itemsLoaded = createAction('[Rows] Get all existing objects for import',
+export const primaryItemsLoaded = createAction('[Rows] Got all existing objects for import by primary key.',
     props<{items: AdonisItem[]}>()
+);
+
+export const targetItemsLoaded = createAction('[Rows] Got all existing objects for import of relations.',
+    props<{content: RelationTargetsContainer}>()
 );
 
 export const importRowsInBackend = createAction('[Rows] Import rows into backend.',

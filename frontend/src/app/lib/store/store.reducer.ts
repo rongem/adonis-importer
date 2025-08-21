@@ -13,7 +13,7 @@ import { AdonisClass } from "../models/adonis-rest/metadata/class.interface";
 import { AttributeOrRelation } from "../models/adonis-rest/metadata/notebook-elements.interface";
 import { ExportAction } from "../enums/export-action.enum";
 import { AdonisItem } from "../models/adonis-rest/search/result.interface";
-import { working } from "./store.selectors";
+import { RelationTargetsContainer } from "../models/table/relationtargets.model";
 
 export const STORE = 'STORE';
 
@@ -35,6 +35,7 @@ export interface State {
     repositoryState: WorkflowState;
     objectGroupState: WorkflowState;
     itemState: WorkflowState;
+    targetState: WorkflowState;
 
     notAuthorized: boolean;
 
@@ -58,6 +59,7 @@ export interface State {
     rowErrors: ErrorList[];
     canImport: boolean;
     items?: AdonisItem[];
+    targetItems?: RelationTargetsContainer;
     importedRows?: number;
 };
 
@@ -70,6 +72,7 @@ const initialState: State = {
     repositoryState: WorkflowState.NotPresent,
     objectGroupState: WorkflowState.NotPresent,
     itemState: WorkflowState.NotPresent,
+    targetState: WorkflowState.NotPresent,
 
     notAuthorized: true,
 
@@ -203,17 +206,22 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
         on(StoreActions.testRows, (state, action) => ({
             ...state,
             itemState: WorkflowState.Loading,
+            targetState: WorkflowState.Loading,
             rowErrors: [],
             canImport: false,
         })),
-        on(StoreActions.itemsLoaded, (state, action) => ({
+        on(StoreActions.primaryItemsLoaded, (state, action) => ({
             ...state,
             itemState: WorkflowState.Loaded,
             items: [...action.items],
         })),
+        on(StoreActions.targetItemsLoaded, (state, action) => ({
+            ...state,
+            targetState: WorkflowState.Loaded,
+            targetItems: action.content,
+        })),
         on(StoreActions.importRowsInBackend, (state, action) => ({
             ...state,
-            working: true,
             rowErrors: [],
         })),
         on(StoreActions.setRowErrors, (state, action) => ({

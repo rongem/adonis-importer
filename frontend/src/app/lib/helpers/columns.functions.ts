@@ -1,10 +1,9 @@
 import { AttributeOrRelation, AdonisNotebookRelations, AdonisNotebookAttribute } from '../models/adonis-rest/metadata/notebook-elements.interface'
 import { AdonisAttributeContainer } from '../models/adonis-rest/metadata/container/container-attribute.interface';
-import { AdonisClassContainer } from '../models/adonis-rest/metadata/container/container-class.interface';
 import { Column } from '../models/table/column.model'
 import * as Constants from '../string.constants';
 
-export function createColumnsFromProperties(properties: AttributeOrRelation[], attributes: AdonisAttributeContainer, classes: AdonisClassContainer) {
+export function createColumnsFromProperties(properties: AttributeOrRelation[], attributes: AdonisAttributeContainer) {
     const columns: Column[] = [createColumnFromAttribute(properties[0] as AdonisNotebookAttribute, 0, attributes)];
     for (let i = 1; i < properties.length; i++) {
         const property = properties[i];
@@ -13,8 +12,7 @@ export function createColumnsFromProperties(properties: AttributeOrRelation[], a
                 columns.push(createColumnFromAttribute(property as AdonisNotebookAttribute, i, attributes));
                 break;
             case Constants.RELATIONS:
-                console.log((property as AdonisNotebookRelations).relClass.targetInformations[0])
-                columns.push(createColumnFromRelation(property as AdonisNotebookRelations, i, classes));
+                columns.push(createColumnFromRelation(property as AdonisNotebookRelations, i));
                 break;
         }
     }
@@ -38,9 +36,8 @@ const createColumnFromAttribute = (property: AdonisNotebookAttribute, ordinalPos
     enumData: Constants.enumAttributes.includes(property.ctrlType) ? getEnumContent(property, attributes) : undefined,
 });
 
-const createColumnFromRelation = (relation: AdonisNotebookRelations, ordinalPosition: number, classes: AdonisClassContainer): Column => {
-    const relationTarget = classes[relation.relClass.targetInformations[0].id];
-    const targetName = relationTarget ? relationTarget.displayNames.de : relation.relClass.targetInformations[0].metaName;
+const createColumnFromRelation = (relation: AdonisNotebookRelations, ordinalPosition: number): Column => {
+    const targetName = relation.relClass.targetInformations[0].metaName;
     return {
         displayName: relation.displayNames.de + ' -> ' + targetName,
         internalName: relation.metaName,
@@ -53,7 +50,6 @@ const createColumnFromRelation = (relation: AdonisNotebookRelations, ordinalPosi
         allowedTypes: ['string'],
         property: {
             relation,
-            relationTargetClass: relationTarget,
         },
     }};
 
