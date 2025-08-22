@@ -116,8 +116,6 @@ export const targetItemsLoaded = createAction('[Rows] Got all existing objects f
     props<{content: RelationTargetsContainer}>()
 );
 
-export const noTargetItems = createAction('[Rows] No relations selected.');
-
 export const importRowsInBackend = createAction('[Rows] Import rows into backend.',
     props<{content: RowContainer}>()
 );

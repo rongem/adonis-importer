@@ -1,6 +1,6 @@
 import { AdonisAttribute } from "../adonis-rest/metadata/attribute.interface";
-import { AdonisClass } from "../adonis-rest/metadata/class.interface";
 import { AdonisNotebookAttribute, AdonisNotebookRelations } from "../adonis-rest/metadata/notebook-elements.interface";
+import { AdonisItem } from "../adonis-rest/search/result.interface";
 
 export interface Column {
     displayName: string;
@@ -16,6 +16,7 @@ export interface Column {
         attribute?: AdonisNotebookAttribute;
         attributeInfo?: AdonisAttribute;
         relation?: AdonisNotebookRelations;
+        relationTargets?: AdonisItem[];
     }
     enumData?: {
         values: string[];

@@ -68,7 +68,7 @@ export const items = createSelector(appState, state => state.items ?? []);
 
 export const itemNames = createSelector(items, items => items.map(i => i.name));
 
-export const rowsWithExistingItems = createSelector(rowNumbers, columnDefinitions, cellContents, itemNames, (rowNumbers, columnDefinitions, cellInformations, itemNames) => {
+export const rowsWithExistingItems = createSelector(columnDefinitions, cellContents, itemNames, (columnDefinitions, cellInformations, itemNames) => {
     const primaryColumn = columnDefinitions.findIndex(c => c.primary);
     const cellsInPrimaryColumn = cellInformations.filter(c => c.column === primaryColumn);
     const retVal = cellsInPrimaryColumn.filter(c => itemNames.includes(c.originalValue)).map(c => c.row);

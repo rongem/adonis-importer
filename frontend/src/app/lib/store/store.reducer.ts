@@ -59,7 +59,6 @@ export interface State {
     rowErrors: ErrorList[];
     canImport: boolean;
     items?: AdonisItem[];
-    targetItems?: RelationTargetsContainer;
     importedRows?: number;
 };
 
@@ -215,11 +214,25 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
             itemState: WorkflowState.Loaded,
             items: [...action.items],
         })),
-        on(StoreActions.targetItemsLoaded, (state, action) => ({
-            ...state,
-            targetState: WorkflowState.Loaded,
-            targetItems: action.content,
-        })),
+        on(StoreActions.targetItemsLoaded, (state, action) => {
+            const columnDefinitions = state.columnDefinitions!.slice();
+            columnDefinitions.forEach((c, i) => {
+                const def: Column = {
+                    ...c,
+                    property: {
+                        ...c.property,
+                        relationTargets: action.content[i] ? action.content[i].items : undefined,
+                    },
+                }
+                columnDefinitions[i] = def;
+            });
+            console.log(columnDefinitions);
+            return {
+                ...state,
+                targetState: WorkflowState.Loaded,
+                columnDefinitions,
+            };
+        }),
         on(StoreActions.importRowsInBackend, (state, action) => ({
             ...state,
             rowErrors: [],

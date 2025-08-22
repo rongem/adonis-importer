@@ -202,11 +202,11 @@ export class StoreEffects {
         ofType(StoreActions.testRowsInBackend),
         switchMap(action => {
             const rows = action.content.rows;
-            const relatedColumns = action.content.columns.filter(c => c.relation)!;
-            if (relatedColumns.length === 0) {
+            const relationColumns = action.content.columns.filter(c => c.relation)!;
+            if (relationColumns.length === 0) {
                 return of([]);
             }
-            const queries = relatedColumns.map((c, i) => {
+            const queries = relationColumns.map((c, i) => {
                 const querystring = encodeURIComponent(JSON.stringify({
                     filters: [{
                         className: c.property.relation!.relClass.targetInformations[0].metaName,
@@ -218,10 +218,10 @@ export class StoreEffects {
                 }));
                 const index = action.content.columns.indexOf(c);
                 return this.dataAccess.searchObjects(querystring).pipe(
-                    map(searchResult => ({column: relatedColumns[i], index, items:searchResult.items} as RelationTargets)),
+                    map(searchResult => ({column: relationColumns[i], index, items:searchResult.items} as RelationTargets)),
                     catchError((error: HttpErrorResponse) => {
                         console.error(error);
-                        return of({column: relatedColumns[i], index, errorMessage: error.message} as RelationTargets);
+                        return of({column: relationColumns[i], index, errorMessage: error.message} as RelationTargets);
                     }),
                 );
             });
@@ -239,7 +239,8 @@ export class StoreEffects {
     itemsLoaded$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.primaryItemsLoaded, StoreActions.targetItemsLoaded),
         switchMap(() => this.store.select(Selectors.working)),
-        switchMap((working) => iif(() => working, of(StoreActions.noAction()), of(StoreActions.backendTestSuccessful()))),
+        withLatestFrom(this.store.select(Selectors.tableContainsErrors)),
+        switchMap(([working, errors]) => iif(() => (working || errors), of(StoreActions.noAction()), of(StoreActions.backendTestSuccessful()))),
     ));
 
     constructor(private actions$: Actions, private dataAccess: DataAccess, private router: Router, private store: Store) {}

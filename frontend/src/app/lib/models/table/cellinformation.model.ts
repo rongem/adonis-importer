@@ -52,9 +52,11 @@ export class CellInformation{
     get isNumber() { return this.numberValue !== undefined; }
     get isString() { return this.stringValue !== undefined; }
     get isEmpty() { return this.value === '' || this.value === undefined || this.value === null; }
-    get canBeEmpty() { return this.columnDefinition.isNullable || this.columnDefinition.hasDefaultValue; }
+    get canBeEmpty() { return this.columnDefinition.isNullable || this.columnDefinition.hasDefaultValue || this.columnDefinition.relation; }
     get isEnum() { return !!this.columnDefinition.enumData; }
     get enumMembers() { return this.columnDefinition.enumData?.values ?? []; }
+    get isRelation() { return this.columnDefinition.relation; }
+    get relationTargets() { return this.columnDefinition.property.relationTargets?.map(t => t.name); }
 
     get typedValue() {
         if (this.isDate) return this.dateValue;
@@ -93,6 +95,9 @@ export class CellInformation{
         }
         if (this.isEnum && !this.enumMembers.includes(cellContent.originalValue)) {
             this.errorDescriptions.push('Wert ist nicht in der Enumeration enthalten.');
+        }
+        if (this.isRelation && !this.isEmpty && this.relationTargets && !this.relationTargets.includes(this.stringValue!)) {
+            this.errorDescriptions.push('Wert ist nicht als Objekt bzw. Diagramm vorhanden.');
         }
     };
 

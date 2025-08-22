@@ -44,7 +44,7 @@ export class ImportTable implements OnDestroy, OnInit {
           this.store.select(StoreSelectors.columnDefinitions)
         ),
       ).subscribe(([, cellInformations, rowNumbers, errorPresent, selectedClass, columns]) => {
-        if (errorPresent === false && rowNumbers.length > 0 && selectedClass) {
+        if (rowNumbers.length > 0 && selectedClass) {
           const rows: Row[] = this.createRowsForBackend(cellInformations, rowNumbers);
           this.store.dispatch(StoreActions.testRows({content: {rows, selectedClass, columns}}));
         }
