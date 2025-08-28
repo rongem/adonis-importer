@@ -16,6 +16,8 @@ import { AdonisGroupContainer } from '../models/adonis-rest/metadata/group.inter
 import { AdonisRepoList } from '../models/adonis-rest/metadata/lists/list-repos.interface';
 import * as Constants from '../string.constants';
 import { AdonisSearchResult } from '../models/adonis-rest/search/result.interface';
+import { CreateObject } from '../models/adonis-rest/write/create-object.interface';
+import { CreateObjectResponse } from '../models/adonis-rest/write/create-object-response.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -28,6 +30,10 @@ export class DataAccess {
 
   private getUrl<T>(url: string): Observable<T> {
     return this.http.get<T>(url).pipe(take(1));
+  }
+
+  private postUrl<T>(url: string, body: any): Observable<T> {
+    return this.http.post<T>(url, body).pipe(take(1));
   }
 
   private _repoId: string = '';
@@ -127,5 +133,7 @@ export class DataAccess {
   retrieveObjectGroupStructure = () => this.getUrl<AdonisGroupContainer>(this.baseUrl + Constants.repos_url + this.repoId + Constants.objectgroups_url);
 
   searchObjects = (queryString: string) => this.getUrl<AdonisSearchResult>(this.baseUrl + Constants.repos_url + this.repoId + Constants.search_query_url + queryString);
+
+  createObject = (newObject: CreateObject) => this.postUrl<CreateObjectResponse>(this.baseUrl + Constants.repos_url + this.repoId + Constants.createobject_url, newObject);
 
 }

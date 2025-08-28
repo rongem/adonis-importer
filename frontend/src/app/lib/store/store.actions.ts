@@ -13,6 +13,7 @@ import { ExportAction } from '../enums/export-action.enum';
 import { ErrorList } from '../models/table/errorlist.model';
 import { AdonisItem } from '../models/adonis-rest/search/result.interface';
 import { RelationTargetsContainer } from '../models/table/relationtargets.model';
+import { RowOperations } from '../models/table/row-operations.model';
 
 export const LoadClasses = createAction('[App] Start loading Classes.');
 
@@ -117,7 +118,7 @@ export const targetItemsLoaded = createAction('[Rows] Got all existing objects f
 );
 
 export const importRowsInBackend = createAction('[Rows] Import rows into backend.',
-    props<{content: RowContainer}>()
+    props<{rowOperations: RowOperations[]}>()
 );
 
 export const setRowErrors = createAction('[Rows] Set list of row errors.',

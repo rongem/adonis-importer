@@ -53,6 +53,7 @@ export class CellInformation{
     get isString() { return this.stringValue !== undefined; }
     get isEmpty() { return this.value === '' || this.value === undefined || this.value === null; }
     get canBeEmpty() { return this.columnDefinition.isNullable || this.columnDefinition.hasDefaultValue || this.columnDefinition.relation; }
+    get isPrimary() { return this.columnDefinition.primary; }
     get isEnum() { return !!this.columnDefinition.enumData; }
     get enumMembers() { return this.columnDefinition.enumData?.values ?? []; }
     get isRelation() { return this.columnDefinition.relation; }

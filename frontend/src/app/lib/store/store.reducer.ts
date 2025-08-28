@@ -13,7 +13,6 @@ import { AdonisClass } from "../models/adonis-rest/metadata/class.interface";
 import { AttributeOrRelation } from "../models/adonis-rest/metadata/notebook-elements.interface";
 import { ExportAction } from "../enums/export-action.enum";
 import { AdonisItem } from "../models/adonis-rest/search/result.interface";
-import { RelationTargetsContainer } from "../models/table/relationtargets.model";
 
 export const STORE = 'STORE';
 
@@ -36,8 +35,6 @@ export interface State {
     objectGroupState: WorkflowState;
     itemState: WorkflowState;
     targetState: WorkflowState;
-
-    notAuthorized: boolean;
 
     repositoryClasses: AdonisClassContainer;
     notebooks: AdonisNotebookContainer;
@@ -72,8 +69,6 @@ const initialState: State = {
     objectGroupState: WorkflowState.NotPresent,
     itemState: WorkflowState.NotPresent,
     targetState: WorkflowState.NotPresent,
-
-    notAuthorized: true,
 
     repositoryClasses: {},
     notebooks: {},

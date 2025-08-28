@@ -17,6 +17,7 @@ import { sortGroup } from '../helpers/group-sorter.functions';
 import { ErrorList } from '../models/table/errorlist.model';
 import { AdonisQuery } from '../models/adonis-rest/search/query.interface';
 import { RelationTargets, RelationTargetsContainer } from '../models/table/relationtargets.model';
+import { CreateObjectResponse } from '../models/adonis-rest/write/create-object-response.interface';
 
 const getClasses = (classContainer: AdonisClassContainer) => Object.values(classContainer);
 
@@ -241,6 +242,20 @@ export class StoreEffects {
         switchMap(() => this.store.select(Selectors.working)),
         withLatestFrom(this.store.select(Selectors.tableContainsErrors)),
         switchMap(([working, errors]) => iif(() => (working || errors), of(StoreActions.noAction()), of(StoreActions.backendTestSuccessful()))),
+    ));
+
+    importItems$ = createEffect(() => this.actions$.pipe(
+        ofType(StoreActions.importRowsInBackend),
+        switchMap(action => {
+            const creationOperations: Observable<CreateObjectResponse>[] = [];
+            action.rowOperations.forEach(op => {
+                creationOperations.push(this.dataAccess.createObject(op.createObject));
+            });
+            return forkJoin(creationOperations);
+        }),
+        map(operations => {
+            return StoreActions.importSuccessful({importedRows: operations.length});
+        }),
     ));
 
     constructor(private actions$: Actions, private dataAccess: DataAccess, private router: Router, private store: Store) {}

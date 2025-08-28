@@ -13,6 +13,10 @@ import { CellInformation } from '../../lib/models/table/cellinformation.model';
 import { RowContainer } from '../../lib/models/table/row-container.model';
 import { NgClass, AsyncPipe } from '@angular/common';
 import { ErrorBadge } from '../error-badge/error-badge';
+import { AdonisClass } from '../../lib/models/adonis-rest/metadata/class.interface';
+import { CreateObject } from '../../lib/models/adonis-rest/write/create-object.interface';
+import { CreateRelation } from '../../lib/models/adonis-rest/write/create-relation.interface';
+import { RowOperations } from '../../lib/models/table/row-operations.model';
 
 @Component({
   selector: 'app-import-table',
@@ -45,14 +49,14 @@ export class ImportTable implements OnDestroy, OnInit {
         ),
       ).subscribe(([, cellInformations, rowNumbers, errorPresent, selectedClass, columns]) => {
         if (rowNumbers.length > 0 && selectedClass) {
-          const rows: Row[] = this.createRowsForBackend(cellInformations, rowNumbers);
+          const rows: Row[] = this.createRows(cellInformations, rowNumbers);
           this.store.dispatch(StoreActions.testRows({content: {rows, selectedClass, columns}}));
         }
       })
     );
   }
 
-  private createRowsForBackend(cellInformations: CellInformation[], rowNumbers: number[]) {
+  private createRows(cellInformations: CellInformation[], rowNumbers: number[]) {
     const rows: Row[] = [];
     for (let rowNumber of rowNumbers) {
       const cells = cellInformations.filter(c => c.row === rowNumber);
@@ -221,13 +225,37 @@ export class ImportTable implements OnDestroy, OnInit {
   async onImport() {
     const cellInformations = await firstValueFrom(this.store.select(StoreSelectors.cellInformations));
     const rowNumbers = await firstValueFrom(this.store.select(StoreSelectors.rowNumbers));
-    const rows: Row[] = this.createRowsForBackend(cellInformations, rowNumbers);
     const selectedClass = (await firstValueFrom(this.store.select(StoreSelectors.selectedClass)))!;
-    const columns = await firstValueFrom(this.store.select(StoreSelectors.columnDefinitions));
-    const content: RowContainer = {rows, selectedClass, columns};
-    this.store.dispatch(StoreActions.importRowsInBackend({content}));
+    const selectedObjectGroup = (await firstValueFrom(this.store.select(StoreSelectors.selectedObjectGroup)))!;
+    const rowOperations: RowOperations[] = this.createRowsForBackend(cellInformations, rowNumbers, selectedClass, selectedObjectGroup.id);
+    console.log(rowOperations);
+    this.store.dispatch(StoreActions.importRowsInBackend({rowOperations}));
   }
 
+  private createRowsForBackend(cellInformations: CellInformation[], rowNumbers: number[], selectedClass: AdonisClass, groupId: string) {
+    const rows: RowOperations[] = [];
+    for (let rowNumber of rowNumbers) {
+      const cells = cellInformations.filter(c => c.row === rowNumber);
+      const nameCell = cells.find(c => c.isPrimary)!;
+      const attributeCells = cells.filter(c => !c.isPrimary && !c.isRelation);
+      const relationCells = cells.filter(c => c.isRelation);
+      const createObject: CreateObject = {
+        metaName: selectedClass.metaName,
+        name: nameCell.value,
+        groupId,
+        attributes: attributeCells.map(a => ({
+          metaName: a.name,
+          value: a.value,
+        })),
+      };
+      const createRelations: CreateRelation[] = relationCells.map(c => ({}));
+      rows[rowNumber] = {
+        createObject,
+        createRelations,
+      };
+    }
+    return rows;
+  }
   /*onCellClick(event: FocusEvent) {
     let colIndex = -1;
     let rowIndex = -1;
