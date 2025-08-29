@@ -17,7 +17,8 @@ import { sortGroup } from '../helpers/group-sorter.functions';
 import { ErrorList } from '../models/table/errorlist.model';
 import { AdonisQuery } from '../models/adonis-rest/search/query.interface';
 import { RelationTargets, RelationTargetsContainer } from '../models/table/relationtargets.model';
-import { CreateObjectResponse } from '../models/adonis-rest/write/create-object-response.interface';
+import { CreateObjectResponse } from '../models/adonis-rest/write/object-response.interface';
+import { RowOperations } from '../models/table/row-operations.model';
 
 const getClasses = (classContainer: AdonisClassContainer) => Object.values(classContainer);
 
@@ -247,9 +248,23 @@ export class StoreEffects {
     importItems$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.importRowsInBackend),
         switchMap(action => {
-            const creationOperations: Observable<CreateObjectResponse>[] = [];
+            const creationOperations: Observable<RowOperations>[] = [];
             action.rowOperations.forEach(op => {
-                creationOperations.push(this.dataAccess.createObject(op.createObject));
+                if (op.createObject) {
+                    creationOperations.push(this.dataAccess.createObject(op.createObject).pipe(
+                        map(importedObject => ({...op, importedObject})),
+                        catchError((error: HttpErrorResponse) => {
+                            return of({...op, error});
+                        }),
+                    ));
+                } else {
+                    creationOperations.push(this.dataAccess.editObject(op.editObject!, op.editObjectId!).pipe(
+                        map(importedObject => ({...op, importedObject})),
+                        catchError((error: HttpErrorResponse) => {
+                            return of({...op, error});
+                        }),
+                    ));
+                }
             });
             return forkJoin(creationOperations);
         }),

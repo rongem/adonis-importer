@@ -1,8 +1,11 @@
-export interface CreateObject {
+export interface EditObject {
+    attributes: CreateAttribute[];
+}
+
+export interface CreateObject extends EditObject {
     metaName: string;
     name: string;
     groupId: string;
-    attributes: CreateAttribute[];
 };
 
 export interface CreateAttribute {

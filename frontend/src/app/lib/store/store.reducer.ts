@@ -56,6 +56,7 @@ export interface State {
     rowErrors: ErrorList[];
     canImport: boolean;
     items?: AdonisItem[];
+    importing: boolean;
     importedRows?: number;
 };
 
@@ -78,6 +79,7 @@ const initialState: State = {
     columnMapping: [],
     rowErrors: [],
     canImport: false,
+    importing: false,
 };
 
 export function storeReducer(appState: State | undefined, appAction: Action) {
@@ -230,6 +232,8 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
         }),
         on(StoreActions.importRowsInBackend, (state, action) => ({
             ...state,
+            canImport: false,
+            importing: true,
             rowErrors: [],
         })),
         on(StoreActions.setRowErrors, (state, action) => ({
@@ -252,7 +256,7 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
             ...state,
             cellContents: [],
             rowErrors: [],
-            canImport: false,
+            importing: false,
             importedRows: action.importedRows
         })),
     )(appState, appAction);

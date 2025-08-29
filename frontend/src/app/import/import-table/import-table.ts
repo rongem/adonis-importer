@@ -14,9 +14,10 @@ import { RowContainer } from '../../lib/models/table/row-container.model';
 import { NgClass, AsyncPipe } from '@angular/common';
 import { ErrorBadge } from '../error-badge/error-badge';
 import { AdonisClass } from '../../lib/models/adonis-rest/metadata/class.interface';
-import { CreateObject } from '../../lib/models/adonis-rest/write/create-object.interface';
-import { CreateRelation } from '../../lib/models/adonis-rest/write/create-relation.interface';
+import { CreateObject, EditObject } from '../../lib/models/adonis-rest/write/object.interface';
+import { CreateRelation } from '../../lib/models/adonis-rest/write/relation.interface';
 import { RowOperations } from '../../lib/models/table/row-operations.model';
+import { AdonisItem } from '../../lib/models/adonis-rest/search/result.interface';
 
 @Component({
   selector: 'app-import-table',
@@ -227,32 +228,48 @@ export class ImportTable implements OnDestroy, OnInit {
     const rowNumbers = await firstValueFrom(this.store.select(StoreSelectors.rowNumbers));
     const selectedClass = (await firstValueFrom(this.store.select(StoreSelectors.selectedClass)))!;
     const selectedObjectGroup = (await firstValueFrom(this.store.select(StoreSelectors.selectedObjectGroup)))!;
-    const rowOperations: RowOperations[] = this.createRowsForBackend(cellInformations, rowNumbers, selectedClass, selectedObjectGroup.id);
+    const existingItems = (await firstValueFrom(this.store.select(StoreSelectors.items)));
+    const rowOperations: RowOperations[] = this.createRowsForBackend(cellInformations, rowNumbers, selectedClass, selectedObjectGroup.id, existingItems);
     console.log(rowOperations);
     this.store.dispatch(StoreActions.importRowsInBackend({rowOperations}));
   }
 
-  private createRowsForBackend(cellInformations: CellInformation[], rowNumbers: number[], selectedClass: AdonisClass, groupId: string) {
+  private createRowsForBackend(cellInformations: CellInformation[], rowNumbers: number[], selectedClass: AdonisClass, groupId: string, existingItems: AdonisItem[]) {
     const rows: RowOperations[] = [];
     for (let rowNumber of rowNumbers) {
       const cells = cellInformations.filter(c => c.row === rowNumber);
       const nameCell = cells.find(c => c.isPrimary)!;
       const attributeCells = cells.filter(c => !c.isPrimary && !c.isRelation);
       const relationCells = cells.filter(c => c.isRelation);
-      const createObject: CreateObject = {
-        metaName: selectedClass.metaName,
-        name: nameCell.value,
-        groupId,
-        attributes: attributeCells.map(a => ({
-          metaName: a.name,
-          value: a.value,
-        })),
-      };
+      const existingItem = existingItems.find(i => i.name === nameCell.stringValue);
       const createRelations: CreateRelation[] = relationCells.map(c => ({}));
-      rows[rowNumber] = {
-        createObject,
-        createRelations,
-      };
+      if (existingItem) {
+        const editObject: EditObject = {
+          attributes: attributeCells.map(a => ({
+            metaName: a.name,
+            value: a.value,
+          })),
+        };
+        rows[rowNumber] = {
+          editObject,
+          editObjectId: existingItem.id.substring(1, existingItem.id.length - 1),
+          createRelations,
+        }
+      } else {
+        const createObject: CreateObject = {
+          metaName: selectedClass.metaName,
+          name: nameCell.value,
+          groupId,
+          attributes: attributeCells.map(a => ({
+            metaName: a.name,
+            value: a.value,
+          })),
+        };
+        rows[rowNumber] = {
+          createObject,
+          createRelations,
+        };
+      }
     }
     return rows;
   }
