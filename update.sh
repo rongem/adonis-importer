@@ -1,3 +1,4 @@
+cd frontend
 echo Updating @angular
 ng update @angular/cli @angular/core @ngrx/store --force --allow-dirty
 echo Updating other libraries
