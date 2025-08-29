@@ -12,6 +12,7 @@ export const repos_url = '4.0/repos/';
 export const objectgroups_url = '/objectgroups/root?recursive=true';
 export const search_query_url = '/search?query=';
 export const objects_url = '/objects';
+export const relations_url = '/relations/';
 
 export const stringAttributes = ['NAME', 'ADOSTRING', 'SHORTSTRING', 'LONGSTRING', 'STRING', 'STRING_MULTILINE', 'COLOR'];
 export const numberAttributes = ['INTEGER', 'DOUBLE', 'UNSIGNED INTEGER'];

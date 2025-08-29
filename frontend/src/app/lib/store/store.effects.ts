@@ -19,6 +19,7 @@ import { AdonisQuery } from '../models/adonis-rest/search/query.interface';
 import { RelationTargets, RelationTargetsContainer } from '../models/table/relationtargets.model';
 import { CreateObjectResponse } from '../models/adonis-rest/write/object-response.interface';
 import { RowOperations } from '../models/table/row-operations.model';
+import { CreateRelationResponse } from '../models/adonis-rest/write/relation.interface';
 
 const getClasses = (classContainer: AdonisClassContainer) => Object.values(classContainer);
 
@@ -215,7 +216,7 @@ export class StoreEffects {
                     }, {
                         attrName: Constants.NAME,
                         op: 'OP_EQ',
-                        values: rows.map(r => r[c.internalName]!.toString())
+                        values: rows.map(r => r[c.internalName]?.toString()).filter(v => !!v),
                     }]
                 }));
                 const index = action.content.columns.indexOf(c);
@@ -265,6 +266,20 @@ export class StoreEffects {
                         }),
                     ));
                 }
+            });
+            return forkJoin(creationOperations);
+        }),
+        switchMap(operations => {
+            const errors: ErrorList[] = operations.filter(o => !!o.error).map(o => ({ row: o.rowNumber, msg: o.error!.status === 403 ? 'Keine Schreibrechte' : o.error!.message}));
+            this.store.dispatch(StoreActions.setRowErrors({errors}))
+            const relationOperations = operations.filter(o => !o.error && o.createRelations.length > 0);
+            const creationOperations: Observable<CreateRelationResponse>[] = [];
+            relationOperations.forEach(o => {
+                creationOperations.push(this.dataAccess.createRelation(o.importedObject!.item.id.substring(1, o.importedObject!.item.id.length - 1),
+                                                                    o.createRelations[0].direction,
+                                                                    o.createRelations[0].relationClass,
+                                                                    '{' + o.createRelations[0].relationTargetId + '}',
+                ));
             });
             return forkJoin(creationOperations);
         }),

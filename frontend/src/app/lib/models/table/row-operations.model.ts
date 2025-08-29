@@ -4,6 +4,7 @@ import { CreateObject, EditObject } from "../adonis-rest/write/object.interface"
 import { CreateRelation } from "../adonis-rest/write/relation.interface";
 
 export interface RowOperations {
+    rowNumber: number;
     createObject?: CreateObject;
     editObject?: EditObject;
     editObjectId?: string;

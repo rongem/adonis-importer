@@ -18,6 +18,7 @@ import * as Constants from '../string.constants';
 import { AdonisSearchResult } from '../models/adonis-rest/search/result.interface';
 import { CreateObject, EditObject } from '../models/adonis-rest/write/object.interface';
 import { CreateObjectResponse } from '../models/adonis-rest/write/object-response.interface';
+import { CreateRelationResponse, DirectionType } from '../models/adonis-rest/write/relation.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -132,13 +133,20 @@ export class DataAccess {
     );
   };
 
+  private get repoUrl() { return this.baseUrl + Constants.repos_url + this.repoId; }
+
   retrieveRepositories = () => this.getUrl<AdonisRepoList>(this.baseUrl + Constants.repos_url);
 
-  retrieveObjectGroupStructure = () => this.getUrl<AdonisGroupContainer>(this.baseUrl + Constants.repos_url + this.repoId + Constants.objectgroups_url);
+  retrieveObjectGroupStructure = () => this.getUrl<AdonisGroupContainer>(this.repoUrl + Constants.objectgroups_url);
 
-  searchObjects = (queryString: string) => this.getUrl<AdonisSearchResult>(this.baseUrl + Constants.repos_url + this.repoId + Constants.search_query_url + queryString);
+  searchObjects = (queryString: string) => this.getUrl<AdonisSearchResult>(this.repoUrl + Constants.search_query_url + queryString);
 
-  createObject = (newObject: CreateObject) => this.postUrl<CreateObjectResponse>(this.baseUrl + Constants.repos_url + this.repoId + Constants.objects_url, newObject);
+  createObject = (newObject: CreateObject) => this.postUrl<CreateObjectResponse>(this.repoUrl + Constants.objects_url, newObject);
   
-  editObject = (existingObject: EditObject, id: string) => this.patchUrl<CreateObjectResponse>(this.baseUrl + Constants.repos_url + this.repoId + Constants.objects_url + '/' + id, existingObject);
+  editObject = (existingObject: EditObject, id: string) => this.patchUrl<CreateObjectResponse>(this.repoUrl + Constants.objects_url + '/' + id, existingObject);
+
+  createRelation = (sourceId: string, direction: DirectionType, relationClassName: string, relationTargetId: string) => 
+    this.postUrl<CreateRelationResponse>(this.repoUrl + Constants.objects_url + '/' + sourceId + Constants.relations_url + direction + '/' + relationClassName, {
+      fromId: relationTargetId
+    });
 }

@@ -1,5 +1,4 @@
 import { Component, ElementRef, HostListener, OnDestroy, OnInit, viewChildren } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Actions, ofType } from '@ngrx/effects';
 import { Subscription, firstValueFrom, map, tap, withLatestFrom } from 'rxjs';
@@ -10,7 +9,6 @@ import { getTableContentFromClipboard } from '../../lib/helpers/clipboard.functi
 import { CellContent } from '../../lib/models/table/cellcontent.model';
 import { Row } from '../../lib/models/table/row.model';
 import { CellInformation } from '../../lib/models/table/cellinformation.model';
-import { RowContainer } from '../../lib/models/table/row-container.model';
 import { NgClass, AsyncPipe } from '@angular/common';
 import { ErrorBadge } from '../error-badge/error-badge';
 import { AdonisClass } from '../../lib/models/adonis-rest/metadata/class.interface';
@@ -34,9 +32,8 @@ export class ImportTable implements OnDestroy, OnInit {
   // index of column that dragged column is hovering on
   presumedTargetIndex: number | undefined;
   schema: string = '';
-  private table: string = '';
   private subscriptions: Subscription[] = [];
-  constructor(private store: Store, private router: Router, private route: ActivatedRoute, private actions$: Actions) {}
+  constructor(private store: Store, private actions$: Actions) {}
   ngOnInit(): void {
     this.subscriptions.push(
       this.actions$.pipe(
@@ -44,11 +41,10 @@ export class ImportTable implements OnDestroy, OnInit {
         withLatestFrom(
           this.store.select(StoreSelectors.cellInformations),
           this.rowNumbers,
-          this.store.select(StoreSelectors.tableContainsErrors),
           this.store.select(StoreSelectors.selectedClass),
           this.store.select(StoreSelectors.columnDefinitions)
         ),
-      ).subscribe(([, cellInformations, rowNumbers, errorPresent, selectedClass, columns]) => {
+      ).subscribe(([, cellInformations, rowNumbers, selectedClass, columns]) => {
         if (rowNumbers.length > 0 && selectedClass) {
           const rows: Row[] = this.createRows(cellInformations, rowNumbers);
           this.store.dispatch(StoreActions.testRows({content: {rows, selectedClass, columns}}));
@@ -230,7 +226,6 @@ export class ImportTable implements OnDestroy, OnInit {
     const selectedObjectGroup = (await firstValueFrom(this.store.select(StoreSelectors.selectedObjectGroup)))!;
     const existingItems = (await firstValueFrom(this.store.select(StoreSelectors.items)));
     const rowOperations: RowOperations[] = this.createRowsForBackend(cellInformations, rowNumbers, selectedClass, selectedObjectGroup.id, existingItems);
-    console.log(rowOperations);
     this.store.dispatch(StoreActions.importRowsInBackend({rowOperations}));
   }
 
@@ -242,7 +237,11 @@ export class ImportTable implements OnDestroy, OnInit {
       const attributeCells = cells.filter(c => !c.isPrimary && !c.isRelation);
       const relationCells = cells.filter(c => c.isRelation);
       const existingItem = existingItems.find(i => i.name === nameCell.stringValue);
-      const createRelations: CreateRelation[] = relationCells.map(c => ({}));
+      const createRelations: CreateRelation[] = relationCells.map(c => ({
+        direction: c.relationDirection!,
+        relationClass: c.relationClass!,
+        relationTargetId: c.getRelationTargetByName(c.stringValue!)!.id.substring(1, c.getRelationTargetByName(c.stringValue!)!.id.length - 1),
+      }));
       if (existingItem) {
         const editObject: EditObject = {
           attributes: attributeCells.map(a => ({
@@ -251,6 +250,7 @@ export class ImportTable implements OnDestroy, OnInit {
           })),
         };
         rows[rowNumber] = {
+          rowNumber,
           editObject,
           editObjectId: existingItem.id.substring(1, existingItem.id.length - 1),
           createRelations,
@@ -266,6 +266,7 @@ export class ImportTable implements OnDestroy, OnInit {
           })),
         };
         rows[rowNumber] = {
+          rowNumber,
           createObject,
           createRelations,
         };

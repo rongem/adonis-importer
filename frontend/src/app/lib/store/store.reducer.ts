@@ -223,7 +223,6 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
                 }
                 columnDefinitions[i] = def;
             });
-            console.log(columnDefinitions);
             return {
                 ...state,
                 targetState: WorkflowState.Loaded,
