@@ -20,10 +20,20 @@
     }
     @if (!!(objectGroups | async)) {
         <h3>Objektgruppe auswählen</h3>
-        <p>Bitte wählen Sie die Objektgruppe für den Import aus:</p>
-        <p>
-            {{(objectGroups | async)?.name}}
-        </p>
-        <app-choose-objectgroup [objectGroups]="(objectGroups | async)!.subgroups" [top]="true"></app-choose-objectgroup>
+        <section>
+            <p>
+                Hinweis: Es ist leider nicht möglich, im Vorhinein herauszufinden, welche Objektgruppen für Ihr Benutzerkonto
+                beschreibbar sind. Sorgen Sie daher bitte selbst dafür, dass Sie beim Import keine Fehler erhalten.
+            </p>
+            <p>
+                Die Zielobjektgruppe gilt nur für während des Imports neu angelegte Objekte.
+                Vorhandene Objekte, die nur aktualisiert werden, verbleiben an ihrem Ort.
+            </p>
+            <p>Bitte wählen Sie die Objektgruppe für den Import aus:</p>
+            <p>
+                {{(objectGroups | async)?.name}}
+            </p>
+            <app-choose-objectgroup [objectGroups]="(objectGroups | async)!.subgroups" [top]="true"></app-choose-objectgroup>
+        </section>
     }
 </section>

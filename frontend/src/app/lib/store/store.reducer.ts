@@ -13,8 +13,7 @@ import { AdonisClass } from "../models/adonis-rest/metadata/class.interface";
 import { AttributeOrRelation } from "../models/adonis-rest/metadata/notebook-elements.interface";
 import { ExportAction } from "../enums/export-action.enum";
 import { AdonisItem } from "../models/adonis-rest/search/result.interface";
-
-export const STORE = 'STORE';
+import { STORE } from "../string.constants";
 
 export interface AppState {
     [STORE]: State,
@@ -23,7 +22,6 @@ export interface AppState {
 export const appReducer: ActionReducerMap<AppState> = {
     [STORE]: storeReducer,
 };
-
 
 export interface State {
     authenticated: boolean;
@@ -58,6 +56,7 @@ export interface State {
     items?: AdonisItem[];
     importing: boolean;
     importedRows?: number;
+    importErrors: ErrorList[];
 };
 
 const initialState: State = {
@@ -80,6 +79,7 @@ const initialState: State = {
     rowErrors: [],
     canImport: false,
     importing: false,
+    importErrors: [],
 };
 
 export function storeReducer(appState: State | undefined, appAction: Action) {
@@ -241,11 +241,10 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
             rowErrors: [...action.errors],
             canImport: action.errors.length === 0,
         })),
-        on(StoreActions.addRowErrors, (state, action) => ({
+        on(StoreActions.setImportErrors, (state, action) => ({
             ...state,
             itemState: WorkflowState.Loaded,
-            rowErrors: [...state.rowErrors, ...action.errors],
-            canImport: action.errors.length === 0,
+            importErrors: action.errors,
         })),
         on(StoreActions.backendTestSuccessful, (state, action) => ({
             ...state,

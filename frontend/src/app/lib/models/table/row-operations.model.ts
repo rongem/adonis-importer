@@ -1,9 +1,10 @@
 import { HttpErrorResponse } from "@angular/common/http";
 import { CreateObjectResponse } from "../adonis-rest/write/object-response.interface";
 import { CreateObject, EditObject } from "../adonis-rest/write/object.interface";
-import { CreateRelation } from "../adonis-rest/write/relation.interface";
+import { CreateRelation, CreateRelationResponse } from "../adonis-rest/write/relation.interface";
+import { ErrorList } from "./errorlist.model";
 
-export interface RowOperations {
+export interface RowOperation {
     rowNumber: number;
     createObject?: CreateObject;
     editObject?: EditObject;
@@ -11,4 +12,10 @@ export interface RowOperations {
     createRelations: CreateRelation[];
     importedObject?: CreateObjectResponse;
     error?: HttpErrorResponse;
+}
+
+export interface RelationOperation {
+    rowOperation: RowOperation;
+    operationResult?: CreateRelationResponse;
+    operationError?: HttpErrorResponse;
 }

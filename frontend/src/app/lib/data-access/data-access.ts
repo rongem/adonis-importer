@@ -19,6 +19,7 @@ import { AdonisSearchResult } from '../models/adonis-rest/search/result.interfac
 import { CreateObject, EditObject } from '../models/adonis-rest/write/object.interface';
 import { CreateObjectResponse } from '../models/adonis-rest/write/object-response.interface';
 import { CreateRelationResponse, DirectionType } from '../models/adonis-rest/write/relation.interface';
+import { idToUrl } from '../helpers/url.functions';
 
 @Injectable({
   providedIn: 'root'
@@ -41,15 +42,7 @@ export class DataAccess {
     return this.http.patch<T>(url, body).pipe(take(1));
   }
 
-  private _repoId: string = '';
-
-  set repoId(value: string) {
-    this._repoId = value;
-  };
-
-  get repoId() {
-    return this._repoId.substring(1, this._repoId.length - 1);
-  }
+  repoId: string = '';
 
   retrieveClassesWithNotebooks = () => this.retrieveClasslist().pipe(
       map(m => {
@@ -69,21 +62,21 @@ export class DataAccess {
 
   private retrieveClassDetails = (classes: AdonisBasicClass[]) => {
     const classDetails = classes.map(c => {
-      const classUrl = c.rest_links.find(l => l.rel === 'self')!.href;
+      const classUrl = c.rest_links.find(l => l.rel === Constants.self)!.href;
       return this.getUrl<AdonisClass>(classUrl);
     });
     return forkJoin(classDetails);
   };
 
-  private filterChildren = (p: AttributeOrRelation) => p.properties.READONLY !== 'true' && p.ctrlType !== 'RECORD' && p.ctrlType !== 'FILE_POINTER';
-  private filterChapterChildren = (p: AttributeOrGroupOrRelation) => p.type === 'GROUP' || this.filterChildren(p as AttributeOrRelation);
+  private filterChildren = (p: AttributeOrRelation) => p.properties.READONLY !== 'true' && p.ctrlType !== Constants.RECORD && p.ctrlType !== Constants.FILE_POINTER;
+  private filterChapterChildren = (p: AttributeOrGroupOrRelation) => p.type === Constants.GROUP || this.filterChildren(p as AttributeOrRelation);
 
   retrieveNotebooksForClasses = (classes: AdonisClass[]) => {
     const notebooks = classes.map(c => {
-      const notebookUrl = c.rest_links.find(l => l.rel === 'notebook')!.href;
+      const notebookUrl = c.rest_links.find(l => l.rel === Constants.notebook)!.href;
       return this.getUrl<AdonisNoteBook>(notebookUrl).pipe(
         map(n => {
-          const groups = n.chapters.map(ch => ch.children.filter(chi => chi.type === 'GROUP')).flat() as AdonisNotebookGroup[];
+          const groups = n.chapters.map(ch => ch.children.filter(chi => chi.type === Constants.GROUP)).flat() as AdonisNotebookGroup[];
           groups.forEach(g => { // remove duplicate values, because of error in ADONIS REST API
             g.children.forEach((ch, index) => {
               if (g.children.filter(chi => chi.id === ch.id).length > 1) {
@@ -105,11 +98,11 @@ export class DataAccess {
   retrieveAttributesForClasses = (classes: AdonisClass[]) => {
     const attributeContainer: {[key: string]: string} = {};
     const attributes = classes.map(c => {
-      const attributesUrl = c.rest_links.find(l => l.rel === 'attributes')!.href;
+      const attributesUrl = c.rest_links.find(l => l.rel === Constants.attributes)!.href;
       return this.getUrl<AdonisAttributeList>(attributesUrl).pipe(
         map(al => {
           const attributeIds = al.attributes.map(a => a.id);
-          const attributeUrl = al.attributes.map(a => a.rest_links.find(l => l.rel === 'self')!.href);
+          const attributeUrl = al.attributes.map(a => a.rest_links.find(l => l.rel === Constants.self)!.href);
           for (let index = 0; index < attributeIds.length; index++) {
             if (!attributeContainer[attributeIds[index]]) {
               attributeContainer[attributeIds[index]] = attributeUrl[index];
@@ -133,7 +126,7 @@ export class DataAccess {
     );
   };
 
-  private get repoUrl() { return this.baseUrl + Constants.repos_url + this.repoId; }
+  private get repoUrl() { return this.baseUrl + Constants.repos_url + idToUrl(this.repoId); }
 
   retrieveRepositories = () => this.getUrl<AdonisRepoList>(this.baseUrl + Constants.repos_url);
 
@@ -143,10 +136,9 @@ export class DataAccess {
 
   createObject = (newObject: CreateObject) => this.postUrl<CreateObjectResponse>(this.repoUrl + Constants.objects_url, newObject);
   
-  editObject = (existingObject: EditObject, id: string) => this.patchUrl<CreateObjectResponse>(this.repoUrl + Constants.objects_url + '/' + id, existingObject);
+  editObject = (existingObject: EditObject, id: string) => this.patchUrl<CreateObjectResponse>(this.repoUrl + Constants.objects_url + '/' + idToUrl(id), existingObject);
 
   createRelation = (sourceId: string, direction: DirectionType, relationClassName: string, relationTargetId: string) => 
-    this.postUrl<CreateRelationResponse>(this.repoUrl + Constants.objects_url + '/' + sourceId + Constants.relations_url + direction + '/' + relationClassName, {
-      fromId: relationTargetId
-    });
+    this.postUrl<CreateRelationResponse>(this.repoUrl + Constants.objects_url + '/' + idToUrl(sourceId) + Constants.relations_url + direction + '/' + relationClassName,
+    direction === 'incoming' ? { fromId: relationTargetId } : { toId: relationTargetId });
 }

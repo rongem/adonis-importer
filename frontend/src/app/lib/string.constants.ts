@@ -1,8 +1,13 @@
+export const STORE = 'STORE';
+
 export const rel = '-rel';
 export const RELATIONS = 'RELATIONS';
 export const ATTRDEF = 'ATTRDEF';
 export const GROUP = 'GROUP';
 export const NAME = 'NAME';
+export const attributes = 'attributes';
+export const notebook = 'notebook';
+export const self = 'self';
 export const login_url = 'login';
 export const classes_url = 'classes';
 export const export_files_url = 'export-files';
@@ -23,5 +28,6 @@ export const ENUMLIST = 'ENUMLIST';
 export const ENUMLIST_TREE = 'ENUMLIST_TREE';
 export const enumAttributes = [ENUM, ENUMLIST, ENUMLIST_TREE];
 export const BOOL = 'BOOL';
+export const RECORD = 'RECORD';
 export const FILE_POINTER = 'FILE_POINTER';
 

@@ -8,8 +8,9 @@ import { provideStoreDevtools } from '@ngrx/store-devtools';
 
 import { authInterceptor } from './lib/interceptors/auth-interceptor';
 import { routes } from './app.routes';
-import { STORE, storeReducer } from './lib/store/store.reducer';
+import { storeReducer } from './lib/store/store.reducer';
 import { StoreEffects } from './lib/store/store.effects';
+import { STORE } from './lib/string.constants';
 
 export const appConfig: ApplicationConfig = {
   providers: [

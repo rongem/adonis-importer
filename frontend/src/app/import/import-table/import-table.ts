@@ -14,7 +14,7 @@ import { ErrorBadge } from '../error-badge/error-badge';
 import { AdonisClass } from '../../lib/models/adonis-rest/metadata/class.interface';
 import { CreateObject, EditObject } from '../../lib/models/adonis-rest/write/object.interface';
 import { CreateRelation } from '../../lib/models/adonis-rest/write/relation.interface';
-import { RowOperations } from '../../lib/models/table/row-operations.model';
+import { RowOperation } from '../../lib/models/table/row-operations.model';
 import { AdonisItem } from '../../lib/models/adonis-rest/search/result.interface';
 
 @Component({
@@ -225,12 +225,12 @@ export class ImportTable implements OnDestroy, OnInit {
     const selectedClass = (await firstValueFrom(this.store.select(StoreSelectors.selectedClass)))!;
     const selectedObjectGroup = (await firstValueFrom(this.store.select(StoreSelectors.selectedObjectGroup)))!;
     const existingItems = (await firstValueFrom(this.store.select(StoreSelectors.items)));
-    const rowOperations: RowOperations[] = this.createRowsForBackend(cellInformations, rowNumbers, selectedClass, selectedObjectGroup.id, existingItems);
+    const rowOperations: RowOperation[] = this.createRowsForBackend(cellInformations, rowNumbers, selectedClass, selectedObjectGroup.id, existingItems);
     this.store.dispatch(StoreActions.importRowsInBackend({rowOperations}));
   }
 
   private createRowsForBackend(cellInformations: CellInformation[], rowNumbers: number[], selectedClass: AdonisClass, groupId: string, existingItems: AdonisItem[]) {
-    const rows: RowOperations[] = [];
+    const rows: RowOperation[] = [];
     for (let rowNumber of rowNumbers) {
       const cells = cellInformations.filter(c => c.row === rowNumber);
       const nameCell = cells.find(c => c.isPrimary)!;
@@ -240,7 +240,7 @@ export class ImportTable implements OnDestroy, OnInit {
       const createRelations: CreateRelation[] = relationCells.map(c => ({
         direction: c.relationDirection!,
         relationClass: c.relationClass!,
-        relationTargetId: c.getRelationTargetByName(c.stringValue!)!.id.substring(1, c.getRelationTargetByName(c.stringValue!)!.id.length - 1),
+        relationTargetId: c.getRelationTargetByName(c.stringValue!)!.id,
       }));
       if (existingItem) {
         const editObject: EditObject = {
@@ -252,7 +252,7 @@ export class ImportTable implements OnDestroy, OnInit {
         rows[rowNumber] = {
           rowNumber,
           editObject,
-          editObjectId: existingItem.id.substring(1, existingItem.id.length - 1),
+          editObjectId: existingItem.id,
           createRelations,
         }
       } else {
