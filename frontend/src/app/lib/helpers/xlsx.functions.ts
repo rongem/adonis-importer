@@ -1,10 +1,21 @@
 import * as XLSX from 'xlsx';
-import { AttributeOrRelation } from '../models/adonis-rest/metadata/notebook-elements.interface';
+import { AdonisNotebookRelations, AttributeOrRelation } from '../models/adonis-rest/metadata/notebook-elements.interface';
 import { AdonisClass } from '../models/adonis-rest/metadata/class.interface';
+import * as Constants from '../string.constants';
 
-export function createXLFile(adonisClass: AdonisClass, attributes: AttributeOrRelation[]) {
+export function createXLFile(adonisClass: AdonisClass, properties: AttributeOrRelation[]) {
     const obj: {[key: string]: string} = {};
-    attributes.forEach(a => obj[a.displayNames.de] = 'Test');
+    properties.forEach(p => {
+        switch (p.type) {
+            case Constants.ATTRDEF:
+                obj[p.displayNames.de] = 'Test';
+                break;
+            case Constants.RELATIONS:
+                const r = p as AdonisNotebookRelations;
+                const propName = r.displayNames.de + ' ' + (r.relClass.incoming ? '<-' : '->') + ' ' + r.relClass.targetInformations[0].metaName;
+                obj[propName] = 'Objekt-Test';
+        }
+    });
 
     const ws = XLSX.utils.json_to_sheet([obj]);
     

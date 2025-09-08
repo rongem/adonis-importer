@@ -5,25 +5,28 @@ import { AdonisAttributeContainer } from '../models/adonis-rest/metadata/contain
 import * as Constants from '../string.constants';
 
 export function createXML(adonisClass: AdonisClass, properties: AttributeOrRelation[], attributes: AdonisAttributeContainer) {
-    const b = new XMLBuilder({ignoreAttributes: false, format: true});
+    const b = new XMLBuilder({ignoreAttributes: false, format: true, });
     const out = {
-        conf: {
-            sheet: {
-                '@_data_row': "2",
-                '@_relation': properties.some(a => a.type === Constants.RELATIONS) ? 'TRUE' : undefined,
-                '@_id': "1",
-                '@_classname': adonisClass.metaName,
-                '@_name': adonisClass.displayNames.de,
-                attribute: properties.map((value, index) => ({
-                    '@_name': value.metaName,
-                    '@_column': (index + 1).toString(),
-                    '@_context': 'de',
-                    ...getAttributeType(value, attributes),
-                })),
+        adoxx: {
+            '@_platformversion': '28.1.54525',
+            conf: {
+                sheet: {
+                    '@_name': adonisClass.displayNames.de,
+                    '@_class_name': adonisClass.metaName,
+                    '@_data_row': '2',
+                    '@_id': '1',
+                    '@_relation': properties.some(a => a.type === Constants.RELATIONS) ? 'TRUE' : undefined,
+                    attribute: properties.map((value, index) => ({
+                        '@_name': value.metaName,
+                        '@_column': (index + 1).toString(),
+                        '@_context': 'de',
+                        ...getAttributeType(value, attributes),
+                    })),
+                }
             }
         }
     };
-    return b.build(out).toString();
+    return '<?xml version="1.0" encoding="UTF-8" ?>\n' + b.build(out).toString();
 };
 
 function getAttributeType(property: AttributeOrRelation, attributes: AdonisAttributeContainer) {
