@@ -8,9 +8,9 @@ import { canActivateExport } from './lib/guards/export-guard';
 import { canActivateImport } from './lib/guards/import-guard';
 import { ChooseRepository } from './import/choose-repository/choose-repository';
 import { canChooseRepository } from './lib/guards/choose-repository-guard';
-import * as Constants from './lib/string.constants';
 import { CloakImportTable } from './import/cloak-import-table/cloak-import-table';
 import { ImportResults } from './import/import-results/import-results';
+import * as Constants from './lib/string.constants';
 
 export const routes: Routes = [
     { path: '', pathMatch: 'full', redirectTo: Constants.login_url },
