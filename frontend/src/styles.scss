@@ -278,6 +278,26 @@ footer {
     }
 }
 
+.new, .edit {
+    border-radius: 50%;
+    border: 1px #005 solid;
+    text-align: center;
+    height: 1.2rem;
+    width: 1.2rem;
+    margin: 0;
+    display: block;
+}
+
+.new {
+    background: lightgreen;
+}
+
+.edit {
+    background: lightblue;
+}
+
+
+
 .tree {
   --spacing: 1.5rem;
   --radius: 10px;

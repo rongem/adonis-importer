@@ -2,10 +2,56 @@
   <section class="success">
     {{(importedRows | async)!.length}} Zeilen erfolgreich importiert.
   </section>
+  <h2>Ergebnisse im Detail</h2>
   <ul>
     @for (row of (importedRows | async); track row.id) {
         <li [ngClass]="{error: ((getRowErrors(row.rowNumber) | async)?.length ?? 0) > 0}">
-            {{row.className}}: {{row.name}}
+          <summary style="display: flex;">
+            @if(row.edited) {
+              <span class="edit">&#10000;</span>
+              <span class="visually-hidden">Objekt wurde geändert.</span>
+            } @else if (row.created) {
+              <span class="new">+</span>
+              <span class="visually-hidden">Objekt wurde neu erstellt.</span>
+            } @else {
+              <span class="visually-hidden">Objekt ist unverändert.</span>
+            }
+            {{row.rowNumber}}. {{row.className}}: {{row.name}}
+          </summary>
+          <details>
+            @if (row.attributes.length > 0) {
+              <h3>Attribute</h3>
+              <ul>
+                @for (attribute of row.attributes; track attribute.name) {
+                  @if (!!attribute.value) {
+                    <li>
+                      {{attribute.name}}: {{attribute.value}}
+                    </li>
+                  }
+                }
+              </ul>
+            }
+            @if (((getImportedRelationsForRow(row.rowNumber) | async)?.length ?? 0) > 0) {
+              <h3>Beziehungen</h3>
+              <ul>
+                @for (rel of (getImportedRelationsForRow(row.rowNumber) | async); track $index) {
+                  <li>
+                    {{rel.fromClassName}}: {{rel.fromName}} &rAarr; {{rel.toClassName}}: {{rel.toName}}
+                  </li>
+                }
+              </ul>
+            }
+            @if (((getRowErrors(row.rowNumber) | async)?.length ?? 0) > 0) {
+              <h3>Fehler</h3>
+              <ul>
+                @for (error of getRowErrors(row.rowNumber) | async; track $index) {
+                  <li>
+                    Spalte {{error.columnIndex}}: {{error.msg}}
+                  </li>
+                }
+              </ul>
+            }
+          </details>
         </li>
     }
   </ul>

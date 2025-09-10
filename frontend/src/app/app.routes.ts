@@ -22,5 +22,5 @@ export const routes: Routes = [
     { path: Constants.export_files_url, component: CloakExportFiles, canActivate: [canActivateExport] },
     { path: Constants.choose_import_location_url, component: ChooseRepository, canActivate: [canChooseRepository] },
     { path: Constants.import_url, component: CloakImportTable, canActivate: [canActivateImport] },
-    { path: Constants.import_results_url, component: ImportResults },
+    { path: Constants.import_results_url, component: ImportResults, canActivate: [canActivateImport] },
 ];
