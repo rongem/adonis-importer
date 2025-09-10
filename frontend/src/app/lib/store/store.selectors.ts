@@ -100,6 +100,14 @@ export const tableContainsErrors = createSelector(cellInformations, cells => cel
 
 export const canImport = createSelector(appState, state => state.canImport);
 
-export const importedRows = createSelector(appState, state => state.importedRows);
+export const importedObjects = createSelector(appState, state => state.succeededImports);
+
+const importedRelations = createSelector(appState, state => state.succeededRelations ?? []);
+
+export const importedRelationsForRow = (row: number) => createSelector(importedRelations, relations => relations.filter(r => r.rowNumber === row));
+
+export const importErrors = createSelector(appState, state => state.importErrors);
+
+export const importErrorForRow = (row: number) => createSelector(importErrors, errors => errors.filter(e => e.row === row));
 
 

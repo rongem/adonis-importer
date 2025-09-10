@@ -13,6 +13,7 @@ export const classes_url = 'classes';
 export const export_files_url = 'export-files';
 export const choose_import_location_url = 'choose-import-location';
 export const import_url = 'import';
+export const import_results_url = 'import-results';
 export const repos_url = '4.0/repos/';
 export const objectgroups_url = '/objectgroups/root?recursive=true';
 export const search_query_url = '/search?query=';

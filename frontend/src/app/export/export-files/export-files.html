@@ -1,4 +1,4 @@
-<div>
+<section>
     <div>
         <label for="xmlContent">XML-Konfiguration:</label>
     </div>
@@ -8,5 +8,10 @@
     <div>
         <button class="content-button" type="button" (click)="copyToClipboard()">XML in die Zwischenablage kopieren</button>
     </div>
-</div>
+    @if (fileUrl) {
+        <div>
+            <a [href]="fileUrl" class="content-link" [download]="'Import ' + selectedClass().displayNames.de + '.xml'">XML als Datei herunterladen</a>
+        </div>
+    }
+</section>
 

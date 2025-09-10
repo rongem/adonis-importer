@@ -2,26 +2,26 @@ import { AdonisLink } from "../metadata/link.interface";
 
 export interface CreateObjectResponse {
     item: {
-        artefactType: string;
+        artefactType?: string;
         attributes: CreateAttributeResponse[];
-        groupId: string;
-        groupPath: string;
-        icon: {
+        groupId?: string;
+        groupPath?: string;
+        icon?: {
             href: string;
             rel: string;
         };
         id: string;
-        libraryObjectId: string;
-        link: {
+        libraryObjectId?: string;
+        link?: {
             href: string;
         };
         metaName: string;
-        modelId: string;
-        modelName: string;
+        modelId?: string;
+        modelName?: string;
         name: string;
-        relations: CreateObjectRelationResponse[];
-        rest_links: AdonisLink[];
-        rwf: {
+        relations?: CreateObjectRelationResponse[];
+        rest_links?: AdonisLink[];
+        rwf?: {
             icon: {
                 groupName: string;
                 key: string;
@@ -31,15 +31,15 @@ export interface CreateObjectResponse {
             };
             state: string;
         };
-        type: string;
+        type?: string;
     };
     locale: string;
 }
 
 interface CreateAttributeResponse {
-    attrType: string;
+    attrType?: string;
     metaName: string;
-    name: string;
+    name?: string;
     value: string;
 };
 

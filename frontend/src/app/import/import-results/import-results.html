@@ -1,0 +1,13 @@
+@if ((importedRows | async) !== undefined) {
+  <section class="success">
+    {{(importedRows | async)!.length}} Zeilen erfolgreich importiert.
+  </section>
+  <ul>
+    @for (row of (importedRows | async); track row.id) {
+        <li [ngClass]="{error: ((getRowErrors(row.rowNumber) | async)?.length ?? 0) > 0}">
+            {{row.className}}: {{row.name}}
+        </li>
+    }
+  </ul>
+}
+

@@ -14,6 +14,7 @@ import { AttributeOrRelation } from "../models/adonis-rest/metadata/notebook-ele
 import { ExportAction } from "../enums/export-action.enum";
 import { AdonisItem } from "../models/adonis-rest/search/result.interface";
 import { STORE } from "../string.constants";
+import { SucceededImports, SucceededRelations } from "../models/table/succeeded-operations.model";
 
 export interface AppState {
     [STORE]: State,
@@ -55,8 +56,9 @@ export interface State {
     canImport: boolean;
     items?: AdonisItem[];
     importing: boolean;
-    importedRows?: number;
     importErrors: ErrorList[];
+    succeededImports?: SucceededImports[];
+    succeededRelations?: SucceededRelations[];
 };
 
 const initialState: State = {
@@ -241,21 +243,28 @@ export function storeReducer(appState: State | undefined, appAction: Action) {
             rowErrors: [...action.errors],
             canImport: action.errors.length === 0,
         })),
-        on(StoreActions.setImportErrors, (state, action) => ({
-            ...state,
-            itemState: WorkflowState.Loaded,
-            importErrors: action.errors,
-        })),
         on(StoreActions.backendTestSuccessful, (state, action) => ({
             ...state,
             canImport: true,
         })),
-        on(StoreActions.importSuccessful, (state, action) => ({
+        on(StoreActions.setSuceededRows, (state, action) => ({
+            ...state,
+            succeededImports: action.entries,
+        })),
+        on(StoreActions.setSucceededRelations, (state, action) => ({
             ...state,
             cellContents: [],
             rowErrors: [],
             importing: false,
-            importedRows: action.importedRows
+            succeededRelations: action.entries
+        })),
+        on(StoreActions.setImportErrors, (state, action) => ({
+            ...state,
+            importErrors: action.errors,
+        })),
+        on(StoreActions.addImportErrors, (state, action) => ({
+            ...state,
+            importErrors: [...state.importErrors, ...action.errors],
         })),
     )(appState, appAction);
 }

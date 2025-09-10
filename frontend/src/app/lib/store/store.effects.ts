@@ -21,6 +21,7 @@ import { CreateObjectResponse } from '../models/adonis-rest/write/object-respons
 import { RelationOperation, RowOperation } from '../models/table/row-operations.model';
 import { CreateRelationResponse } from '../models/adonis-rest/write/relation.interface';
 import { idToUrl } from '../helpers/url.functions';
+import { SucceededImports, SucceededRelations } from '../models/table/succeeded-operations.model';
 
 const getClasses = (classContainer: AdonisClassContainer) => Object.values(classContainer);
 
@@ -250,6 +251,7 @@ export class StoreEffects {
     importItems$ = createEffect(() => this.actions$.pipe(
         ofType(StoreActions.importRowsInBackend),
         switchMap(action => {
+            this.router.navigate([Constants.import_results_url]);
             const creationOperations: Observable<RowOperation>[] = [];
             action.rowOperations.forEach(op => {
                 if (op.createObject) {
@@ -260,8 +262,18 @@ export class StoreEffects {
                         }),
                     ));
                 } else {
+                    // if edited object has no attributes but only relations, we must prepare a dummy response
                     if (op.editObject!.attributes.length === 0) {
-                        creationOperations.push(of(op));
+                        const importedObject: CreateObjectResponse = {
+                            locale: 'de',
+                            item: {
+                                id: op.editObject!.id,
+                                name: op.editObject!.name,
+                                metaName: op.editObject!.metaName,
+                                attributes: op.editObject!.attributes,
+                            }
+                        };
+                        creationOperations.push(of({...op, importedObject}));
                     } else {
                         creationOperations.push(this.dataAccess.editObject(op.editObject!, op.editObjectId!).pipe(
                             map(importedObject => ({...op, importedObject})),
@@ -274,10 +286,27 @@ export class StoreEffects {
             });
             return forkJoin(creationOperations);
         }),
-        switchMap(operations => {
+        map(operations => {
             const errors: ErrorList[] = operations.filter(o => !!o.error).map(o => ({ row: o.rowNumber, msg: o.error!.status === 403 ? 'Keine Schreibrechte' : o.error!.message}));
             this.store.dispatch(StoreActions.setImportErrors({errors}));
-            const relationOperations = operations.filter(o => !o.error && o.createRelations.length > 0);
+            const succeededOperations = operations.filter(o => !o.error);
+            const entries: SucceededImports[] = succeededOperations.map(o => ({
+                rowNumber: o.rowNumber,
+                id: o.importedObject!.item.id,
+                class: o.importedObject!.item.metaName,
+                className: o.importedObject!.item.type ?? '',
+                name: o.importedObject!.item.name,
+                attributes: o.importedObject!.item.attributes.map(a => ({name: a.metaName, value: a.value})),
+                edited: !!o.editObject && !!o.importedObject!.item.groupId,
+                created: !!o.createObject,
+            }));
+            this.store.dispatch(StoreActions.setSuceededRows({entries}));
+            return succeededOperations.filter(o => o.createRelations.length > 0);
+        }),
+        switchMap(relationOperations => {
+            if (relationOperations.length === 0) {
+                return of([]);
+            }
             const creationOperations: Observable<RelationOperation>[] = [];
             relationOperations.forEach(op => {
                 op.createRelations.forEach(cr => {
@@ -292,7 +321,20 @@ export class StoreEffects {
             return forkJoin(creationOperations);
         }),
         map(operations => {
-            return StoreActions.importSuccessful({importedRows: operations.length});
+            const errors: ErrorList[] = operations.filter(o => !!o.operationError).map(o => ({
+                row: o.rowOperation.rowNumber,
+                msg: o.operationError!.status === 403 ? 'Keine Schreibrechte' : o.operationError!.message
+            }));
+            this.store.dispatch(StoreActions.addImportErrors({errors}));
+            const succeededOperations = operations.filter(o => !o.operationError);
+            const entries: SucceededRelations[] = succeededOperations.map(o => ({
+                rowNumber: o.rowOperation.rowNumber,
+                fromName: o.operationResult!.from.name,
+                fromClassName: o.operationResult!.from.metaName,
+                toName: o.operationResult!.to.name,
+                toClassName: o.operationResult!.to.metaName,
+            }))
+            return StoreActions.setSucceededRelations({entries});
         }),
     ));
 

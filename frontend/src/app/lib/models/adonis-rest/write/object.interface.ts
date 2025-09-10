@@ -1,10 +1,14 @@
-export interface EditObject {
+interface CommonObject {
     attributes: CreateAttribute[];
-}
-
-export interface CreateObject extends EditObject {
     metaName: string;
     name: string;
+};
+
+export interface EditObject extends CommonObject {
+    id: string;
+};
+
+export interface CreateObject extends CommonObject {
     groupId: string;
 };
 

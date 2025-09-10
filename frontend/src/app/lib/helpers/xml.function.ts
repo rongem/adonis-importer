@@ -60,7 +60,7 @@ function getAttributeType(property: AttributeOrRelation, attributes: AdonisAttri
                         '@_type': 'treeenumlist',
                         '@_separator': '@',
                     };
-                case 'BOOL':
+                case Constants.BOOL:
                     return {
                         '@_type': 'bool',
                         '@bool_mapping': 'Ja,Nein'

@@ -131,10 +131,6 @@ export class ImportTable implements OnDestroy, OnInit {
     return this.store.select(StoreSelectors.canImport);
   }
 
-  get importedRows() {
-    return this.store.select(StoreSelectors.importedRows);
-  }
-  
   @HostListener('window:paste', ['$event'])
   async onPaste(event: ClipboardEvent) {
     event.stopPropagation();
@@ -244,6 +240,9 @@ export class ImportTable implements OnDestroy, OnInit {
       }));
       if (existingItem) {
         const editObject: EditObject = {
+          id: existingItem.id,
+          name: existingItem.name,
+          metaName: existingItem.metaName,
           attributes: attributeCells.map(a => ({
             metaName: a.name,
             value: a.value,

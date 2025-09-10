@@ -4,3 +4,16 @@ textarea {
     margin: 0.5rem;
     padding: 0.5rem;
 }
+
+button:active {
+    background-color: greenyellow;
+    box-shadow: 0.25rem 0.1rem 0.1rem #666;
+    translate: -1px -1px;
+}
+
+.content-link {
+    margin: 1rem;
+    background-color: whitesmoke;
+    padding: 0.5rem 1rem;
+    border-radius: 0.3rem;
+}
