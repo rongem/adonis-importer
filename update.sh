@@ -5,7 +5,7 @@ echo Updating other libraries
 #npm install https://cdn.sheetjs.com/xlsx-latest/xlsx-latest.tgz
 npm update
 npm audit fix
-rem grunt bump
+#grunt bump
 npm prune
 npm outdated
 echo Done!
