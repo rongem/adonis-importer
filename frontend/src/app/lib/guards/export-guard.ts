@@ -1,20 +1,10 @@
-import { Injectable, inject } from '@angular/core';
-import { ActivatedRouteSnapshot, RouterStateSnapshot, Router, CanActivateFn } from '@angular/router';
-import { Store } from '@ngrx/store';
-import { map, take } from 'rxjs';
-import * as Selectors from '../store/store.selectors';
+import { inject } from '@angular/core';
+import { ActivatedRouteSnapshot, RouterStateSnapshot, CanActivateFn } from '@angular/router';
 import { ExportAction } from '../enums/export-action.enum';
+import { AdonisStoreService } from '../store/adonis-store.service';
+import { rootPath } from './router.function';
 
-@Injectable({providedIn: 'root'})
-class ExportGuard  {
-
-    constructor(private store: Store, private router: Router) {}
-
-    canActivate() {
-        return this.store.select(Selectors.selectedAction).pipe(
-            take(1),
-            map(action => action === ExportAction.ExportFiles ? true : this.router.createUrlTree(['/'])));
-    }
-}
-
-export const canActivateExport: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => inject(ExportGuard).canActivate();
+export const canActivateExport: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+    const storeService = inject(AdonisStoreService);
+    return storeService.selectedAction() === ExportAction.ExportFiles ? true : rootPath();
+};

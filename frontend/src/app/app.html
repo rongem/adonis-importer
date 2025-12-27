@@ -2,24 +2,24 @@
     <router-outlet></router-outlet>
 </article>
 
-@if ((working | async) === true)
+@if (appState.working() === true)
 {
     <span class="loader"></span>
     <span class="visually-hidden">
         Derzeit werden Daten nachgeladen. Bitte haben Sie ein wenig Geduld.
     </span>
     <div style="position: fixed; top: 0px; left: 0px;">
-        <span class="indicator" [ngClass]="{yellow: (classesState | async) === 1, green: (classesState | async) === 2, red: (classesState | async) === 3}">C</span>
-        <span class="indicator" [ngClass]="{yellow: (notebookState | async) === 1, green: (notebookState | async) === 2, red: (notebookState | async) === 3}">N</span>
-        <span class="indicator" [ngClass]="{yellow: (attributesState | async) === 1, green: (attributesState | async) === 2, red: (attributesState | async) === 3}">A</span>
-        <span class="indicator" [ngClass]="{yellow: (repositoryState | async) === 1, green: (repositoryState | async) === 2, red: (repositoryState | async) === 3}">R</span>
-        <span class="indicator" [ngClass]="{yellow: (objectGroupsState | async) === 1, green: (objectGroupsState | async) === 2, red: (objectGroupsState | async) === 3}">O</span>
-        <span class="indicator" [ngClass]="{yellow: (itemsState | async) === 1, green: (itemsState | async) === 2, red: (itemsState | async) === 3}">I</span>
+        <span class="indicator" [ngClass]="{yellow: appState.classesState() === 1, green: appState.classesState() === 2, red: appState.classesState() === 3}">C</span>
+        <span class="indicator" [ngClass]="{yellow: appState.notebookState() === 1, green: appState.notebookState() === 2, red: appState.notebookState() === 3}">N</span>
+        <span class="indicator" [ngClass]="{yellow: appState.attributesState() === 1, green: appState.attributesState() === 2, red: appState.attributesState() === 3}">A</span>
+        <span class="indicator" [ngClass]="{yellow: appState.repositoryState() === 1, green: appState.repositoryState() === 2, red: appState.repositoryState() === 3}">R</span>
+        <span class="indicator" [ngClass]="{yellow: appState.objectGroupsState() === 1, green: appState.objectGroupsState() === 2, red: appState.objectGroupsState() === 3}">O</span>
+        <span class="indicator" [ngClass]="{yellow: appState.itemsState() === 1, green: appState.itemsState() === 2, red: appState.itemsState() === 3}">I</span>
     </div>
 }
 
-@if ((errorPresent | async) === true) {
+@if (appState.errorPresent() === true) {
     <footer class="error">
-        {{errorMessage | async}}
+        {{appState.errorMessage()}}
     </footer>
 }

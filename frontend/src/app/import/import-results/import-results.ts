@@ -1,26 +1,25 @@
-import { AsyncPipe, NgClass } from '@angular/common';
-import { Component } from '@angular/core';
-import { Store } from '@ngrx/store';
-import * as StoreSelectors from '../../lib/store/store.selectors';
+import { NgClass } from '@angular/common';
+import { Component, inject } from '@angular/core';
+import { AdonisImportStoreService } from '../../lib/store/adonis-import-store.service';
 
 @Component({
   selector: 'app-import-results',
-  imports: [AsyncPipe, NgClass],
+  imports: [NgClass],
   templateUrl: './import-results.html',
   styleUrl: './import-results.scss'
 })
 export class ImportResults {
-  constructor(private store: Store) {}
+  private readonly store = inject(AdonisImportStoreService);
   get importedRows() {
-    return this.store.select(StoreSelectors.importedObjects);
+    return this.store.succeededImports();
   }
 
   getImportedRelationsForRow(row: number) {
-    return this.store.select(StoreSelectors.importedRelationsForRow(row));
+    return this.store.importedRelationsForRow(row)();
   }
 
   getRowErrors(row: number) {
-    return this.store.select(StoreSelectors.importErrorForRow(row));
+    return this.store.importErrorsForRow(row)();
   }
   
 

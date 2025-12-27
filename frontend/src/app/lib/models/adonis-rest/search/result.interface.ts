@@ -5,10 +5,10 @@ export interface AdonisSearchResult extends AdonisRestObject {
     locale: string;
     rangeStart: number;
     rangeEnd: number;
-    items: AdonisItem[];
+    items: AdonisSearchResultItem[];
 }
 
-export interface AdonisItem extends AdonisBasicObject {
+export interface AdonisSearchResultItem extends AdonisBasicObject {
     libraryObjectId: string;
     name: string;
     type: string;

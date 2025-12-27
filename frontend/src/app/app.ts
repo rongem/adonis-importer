@@ -1,57 +1,22 @@
-import { Component, signal } from '@angular/core';
-import { AsyncPipe, NgClass } from '@angular/common';
+import { Component, inject, signal } from '@angular/core';
+import { NgClass } from '@angular/common';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
-import { Store } from '@ngrx/store';
-import * as Selectors from './lib/store/store.selectors';
+import { ApplicationStateService } from './lib/store/application-state.service';
+import { AdonisStoreService } from './lib/store/adonis-store.service';
 
 
 @Component({
   selector: 'app-root',
-  imports: [AsyncPipe, NgClass, ReactiveFormsModule, RouterOutlet],
+  imports: [NgClass, ReactiveFormsModule, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
 export class App {
   protected readonly title = signal('ADONIS Importer');
-  constructor(private store: Store) {}
+  protected readonly appState = inject(ApplicationStateService);
+  protected readonly store = inject(AdonisStoreService)
 
   attributeForm?: FormGroup;
-
-  get working() {
-    return this.store.select(Selectors.working);
-  }
-
-  get classesState() {
-    return this.store.select(Selectors.classesState);
-  }
-
-  get notebookState() {
-    return this.store.select(Selectors.notebookState);
-  }
-
-  get attributesState() {
-    return this.store.select(Selectors.attributesState);
-  }  
-
-  get repositoryState() {
-    return this.store.select(Selectors.repositoryState);
-  }  
-
-  get objectGroupsState() {
-    return this.store.select(Selectors.objectGroupsState);
-  }  
-
-  get itemsState() {
-    return this.store.select(Selectors.itemsState);
-  }  
-
-  get errorPresent() {
-    return this.store.select(Selectors.errorPresent)
-  }
-
-  get errorMessage() {
-    return this.store.select(Selectors.errorMessage)
-  }
 
 }

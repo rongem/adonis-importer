@@ -1,8 +1,7 @@
 import { NgClass } from '@angular/common';
-import { Component, input } from '@angular/core';
-import { Store } from '@ngrx/store';
+import { Component, inject, input } from '@angular/core';
 import { AdonisObjectGroup } from '../../lib/models/adonis-rest/metadata/object-group.interface';
-import * as StoreActions from '../../lib/store/store.actions';
+import { AdonisImportStoreService } from '../../lib/store/adonis-import-store.service';
 
 @Component({
   selector: 'app-choose-objectgroup',
@@ -11,11 +10,11 @@ import * as StoreActions from '../../lib/store/store.actions';
   styleUrl: './choose-objectgroup.scss'
 })
 export class ChooseObjectgroup {
-  constructor(private store: Store) {}
+  protected store = inject(AdonisImportStoreService);
   readonly objectGroups = input.required<AdonisObjectGroup[]>();
   readonly top = input<boolean>(false);
 
   selectObjectGroup(objectGroup: AdonisObjectGroup) {
-    this.store.dispatch(StoreActions.SelectObjectGroup({objectGroup}));
+    this.store.selectObjectGroup(objectGroup);
   }
 }

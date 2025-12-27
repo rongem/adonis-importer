@@ -1,11 +1,11 @@
-@if ((importedRows | async) !== undefined) {
+@if (importedRows !== undefined) {
   <section class="success">
-    {{(importedRows | async)!.length}} Zeilen erfolgreich importiert.
+    {{importedRows!.length}} Zeilen erfolgreich importiert.
   </section>
   <h2>Ergebnisse im Detail</h2>
   <ul>
-    @for (row of (importedRows | async); track row.id) {
-        <li [ngClass]="{error: ((getRowErrors(row.rowNumber) | async)?.length ?? 0) > 0}">
+    @for (row of importedRows; track row.id) {
+        <li [ngClass]="{error: getRowErrors(row.rowNumber).length > 0}">
           <summary style="display: flex;">
             @if(row.edited) {
               <span class="edit">&#10000;</span>
@@ -31,20 +31,20 @@
                 }
               </ul>
             }
-            @if (((getImportedRelationsForRow(row.rowNumber) | async)?.length ?? 0) > 0) {
+            @if (getImportedRelationsForRow(row.rowNumber).length > 0) {
               <h3>Beziehungen</h3>
               <ul>
-                @for (rel of (getImportedRelationsForRow(row.rowNumber) | async); track $index) {
+                @for (rel of getImportedRelationsForRow(row.rowNumber); track $index) {
                   <li>
                     {{rel.fromClassName}}: {{rel.fromName}} &rAarr; {{rel.toClassName}}: {{rel.toName}}
                   </li>
                 }
               </ul>
             }
-            @if (((getRowErrors(row.rowNumber) | async)?.length ?? 0) > 0) {
+            @if (getRowErrors(row.rowNumber).length > 0) {
               <h3>Fehler</h3>
               <ul>
-                @for (error of getRowErrors(row.rowNumber) | async; track $index) {
+                @for (error of getRowErrors(row.rowNumber); track $index) {
                   <li>
                     Spalte {{error.columnIndex}}: {{error.msg}}
                   </li>

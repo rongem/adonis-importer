@@ -10,7 +10,7 @@
     </div>
     @if (fileUrl) {
         <div>
-            <a [href]="fileUrl" class="content-link" [download]="'Import ' + selectedClass().displayNames.de + '.xml'">XML als Datei herunterladen</a>
+            <a [href]="fileUrl" class="content-link" [download]="'Import ' + store.selectedClass()!.displayNames.de + '.xml'">XML als Datei herunterladen</a>
         </div>
     }
 </section>

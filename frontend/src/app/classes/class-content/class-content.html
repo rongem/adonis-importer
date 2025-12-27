@@ -6,7 +6,7 @@
                 <li>
                     {{prop.displayNames.de}}
                     @if (prop.type === RELATIONS) {
-                        : {{(getClassForId(relation(prop).relClass.targetInformations[0].id) | async)?.displayNames?.de}}
+                        : {{(adonisStore.classById(relation(prop).relClass.targetInformations[0].id)).displayNames.de}}
                     }
                 </li>
             }
@@ -21,7 +21,7 @@
                 Wenn Sie Excel- und XML-Datei über die Adminstrationsoberfläche importiert haben, können Sie innerhalb von ADONIS den Import durchführen.
             </p>
         </button>
-        <button class="content-button" (click)="selectImport()" [disabled]="!(repositoriesReady | async)">
+        <button class="content-button" (click)="selectImport()">
             <h3>Direkt aus dieser Anwendung nach ADONIS importieren</h3>
             <p>
                 Sie können direkt in dieser Anwendung nach ADONIS importieren. Voraussetzung ist, dass Sie die Daten in einer Tabelle (z. B. Excel oder ähnliches)
@@ -38,9 +38,9 @@
     </section>
 } @else {
     <section class="content">
-        <h2>{{selectedClass().displayNames.de}} ({{selectedClass().metaName}})</h2>
+        <h2>{{adonisStore.selectedClass()?.displayNames?.de}} ({{adonisStore.selectedClass()?.metaName}})</h2>
         <form [formGroup]="attributeForm()" class="attributelist">
-            @for (chapter of selectedNotebook().chapters; track chapter.id) {
+            @for (chapter of adonisStore.selectedNotebook()!.chapters; track chapter.id) {
                 @if (chapter.children.length > 0) {
                     <ul class="chapter">
                         <li>
@@ -52,7 +52,7 @@
             }
         </form>
         <section class="form-buttons">
-            <button type="submit" (click)="submitForm()" [disabled]="!(attributesReady | async)">Auswählen</button> <button type="reset" (click)="resetForm()">Auswahl löschen</button>
+            <button type="submit" (click)="submitForm()" [disabled]="!appState.attributesReady()">Auswählen</button> <button type="reset" (click)="resetForm()">Auswahl löschen</button>
         </section>
     </section>
 }

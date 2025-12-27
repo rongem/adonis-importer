@@ -1,39 +1,41 @@
 <section class="content">
     <h2>Direkter Import nach ADONIS</h2>
-    @if (!(selectedRepository | async)) {
-        <p>
-            Sie wollen direkt nach ADONIS importieren. Ihr Benutzerkonto hat Zugriff auf mehr als ein Repository.
-            Bitte wählen Sie aus, in welches der unten aufgeführten Repositories Sie importieren möchten
-        </p>
-        <p>
-            <label for="reposelect">Repository zum Importieren:</label>
-            <select id="reposelect" name="reposelect" #reposelect>
-                @for (repo of (repositories | async); track repo.name) {
-                    <option [value]="repo.id">{{repo.name}}</option>
-                }
-            </select>
-            <button (click)="chooseRepository(reposelect.value)">Auswählen</button>
-        </p>
-    } @else {
-        <h3>Repository</h3>
-        <p>{{(selectedRepository | async)?.name}}</p>
-    }
-    @if (!!(objectGroups | async)) {
-        <h3>Objektgruppe auswählen</h3>
-        <section>
+    @if (appState.repositoryReady()) {
+        @if (!adonisImportStore.selectedRepository()) {
             <p>
-                Hinweis: Es ist leider nicht möglich, im Vorhinein herauszufinden, welche Objektgruppen für Ihr Benutzerkonto
-                beschreibbar sind. Sorgen Sie daher bitte selbst dafür, dass Sie beim Import keine Fehler erhalten.
+                Sie wollen direkt nach ADONIS importieren. Ihr Benutzerkonto hat Zugriff auf mehr als ein Repository.
+                Bitte wählen Sie aus, in welches der unten aufgeführten Repositories Sie importieren möchten
             </p>
             <p>
-                Die Zielobjektgruppe gilt nur für während des Imports neu angelegte Objekte.
-                Vorhandene Objekte, die nur aktualisiert werden, verbleiben an ihrem Ort.
+                <label for="reposelect">Repository zum Importieren:</label>
+                <select id="reposelect" name="reposelect" #reposelect>
+                    @for (repo of adonisImportStore.repositories(); track repo.name) {
+                        <option [value]="repo.id">{{repo.name}}</option>
+                    }
+                </select>
+                <button (click)="chooseRepository(reposelect.value)">Auswählen</button>
             </p>
-            <p>Bitte wählen Sie die Objektgruppe für den Import aus:</p>
-            <p>
-                {{(objectGroups | async)?.name}}
-            </p>
-            <app-choose-objectgroup [objectGroups]="(objectGroups | async)!.subgroups" [top]="true"></app-choose-objectgroup>
-        </section>
+        } @else {
+            <h3>Repository</h3>
+            <p>{{adonisImportStore.selectedRepository()!.name}}</p>
+        }
+        @if (!!adonisImportStore.objectGroups()) {
+            <h3>Objektgruppe auswählen</h3>
+            <section>
+                <p>
+                    Hinweis: Es ist leider nicht möglich, im Vorhinein herauszufinden, welche Objektgruppen für Ihr Benutzerkonto
+                    beschreibbar sind. Sorgen Sie daher bitte selbst dafür, dass Sie beim Import keine Fehler erhalten.
+                </p>
+                <p>
+                    Die Zielobjektgruppe gilt nur für während des Imports neu angelegte Objekte.
+                    Vorhandene Objekte, die nur aktualisiert werden, verbleiben an ihrem Ort.
+                </p>
+                <p>Bitte wählen Sie die Objektgruppe für den Import aus:</p>
+                <p>
+                    {{adonisImportStore.objectGroups()!.name}}
+                </p>
+                <app-choose-objectgroup [objectGroups]="(adonisImportStore.objectGroups()!.subgroups)" [top]="true"></app-choose-objectgroup>
+            </section>
+        }
     }
 </section>

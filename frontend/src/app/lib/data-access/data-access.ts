@@ -1,11 +1,10 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { forkJoin, map, mergeMap, Observable, take, tap } from 'rxjs';
 import { AdonisClassList } from '../models/adonis-rest/metadata/lists/list-class.interface';
 import { AdonisClass } from '../models/adonis-rest/metadata/class.interface';
 import { AdonisNoteBook } from '../models/adonis-rest/metadata/notebook.interface';
 import { AdonisClassContainer } from '../models/adonis-rest/metadata/container/container-class.interface';
-import { AppSettings } from '../app-settings';
 import { AdonisNotebookGroup, AttributeOrGroupOrRelation, AttributeOrRelation } from '../models/adonis-rest/metadata/notebook-elements.interface';
 import { AdonisBasicClass } from '../models/adonis-rest/metadata/basic-class.interface';
 import { AdonisNotebookContainer } from '../models/adonis-rest/metadata/container/container-notebook.interface';
@@ -20,13 +19,14 @@ import { CreateObject, EditObject } from '../models/adonis-rest/write/object.int
 import { CreateObjectResponse } from '../models/adonis-rest/write/object-response.interface';
 import { CreateRelationResponse, DirectionType } from '../models/adonis-rest/write/relation.interface';
 import { idToUrl } from '../helpers/url.functions';
+import { AdonisItem } from '../models/adonis-rest/read/item.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DataAccess {
-  constructor(private http: HttpClient) { }
-  private get baseUrl() { return AppSettings.Url };
+  private readonly http = inject(HttpClient);
+  private baseUrl = '';
 
   private retrieveClasslist = () => this.getUrl<AdonisClassList>(this.baseUrl + '4.0/metamodel/classes');
 
@@ -44,7 +44,9 @@ export class DataAccess {
 
   repoId: string = '';
 
-  retrieveClassesWithNotebooks = () => this.retrieveClasslist().pipe(
+  retrieveClassesWithNotebooks = (baseUrl: string) => {
+    this.baseUrl = baseUrl;
+    return this.retrieveClasslist().pipe(
       map(m => {
         const forbiddenNames = ['C_COMMENT_ACTION', 'C_EXTERNAL_CONFIGURATION', 'CLOUD_REPOSITORY', 'C_CLOUD_TASK', 'REPOSITORY'];
         return m.classes.filter(c => c.abstract === false && c.repositoryClass === true && !c.metaName.startsWith('C_UML') && !forbiddenNames.includes(c.metaName));
@@ -59,6 +61,7 @@ export class DataAccess {
         return classContainer;
       }),
     );
+  };
 
   private retrieveClassDetails = (classes: AdonisBasicClass[]) => {
     const classDetails = classes.map(c => {
@@ -134,11 +137,18 @@ export class DataAccess {
 
   searchObjects = (queryString: string) => this.getUrl<AdonisSearchResult>(this.repoUrl + Constants.search_query_url + queryString);
 
+  retrieveSearchObjects = (queryString: string) => this.searchObjects(queryString).pipe(
+    mergeMap(result => {
+      const objectDetails = result.items.map(i => this.getUrl<AdonisItem>(i.rest_links.find(l => l.rel === Constants.self)!.href));
+      return forkJoin(objectDetails);
+    }),
+  );
+
   createObject = (newObject: CreateObject) => this.postUrl<CreateObjectResponse>(this.repoUrl + Constants.objects_url, newObject);
   
   editObject = (existingObject: EditObject, id: string) => this.patchUrl<CreateObjectResponse>(this.repoUrl + Constants.objects_url + '/' + idToUrl(id), existingObject);
 
   createRelation = (sourceId: string, direction: DirectionType, relationClassName: string, relationTargetId: string) => 
     this.postUrl<CreateRelationResponse>(this.repoUrl + Constants.objects_url + '/' + idToUrl(sourceId) + Constants.relations_url + direction + '/' + relationClassName,
-    direction === 'incoming' ? { fromId: relationTargetId } : { toId: relationTargetId });
+    direction.toLocaleLowerCase() === 'incoming' ? { fromId: relationTargetId } : { toId: relationTargetId });
 }

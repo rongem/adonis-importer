@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CloakImportTable } from './cloak-import-table';
+import { ImportTestTable } from './import-test-table';
 
-describe('CloakImportTable', () => {
-  let component: CloakImportTable;
-  let fixture: ComponentFixture<CloakImportTable>;
+describe('ImportTable', () => {
+  let component: ImportTestTable;
+  let fixture: ComponentFixture<ImportTestTable>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CloakImportTable]
+      imports: [ImportTestTable]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(CloakImportTable);
+    fixture = TestBed.createComponent(ImportTestTable);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

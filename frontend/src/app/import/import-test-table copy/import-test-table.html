@@ -10,27 +10,10 @@
         </p>
     </div>
 
-    @if (!adonisImportStore.advancedTestingStarted()) {
-      @if (tableStore.rowNumbers().length === 0) {
-        <section>
-          Wenn Sie eine Tabelle aus einer anderen Anwendung in die Zwischenablage kopiert haben, können Sie sie hier mit Strg+V einfügen.
-        </section>
-      } @else {
-        <section>
-          Ersetzen Sie alle Daten hier mit Strg+V.
-        </section>
-      }
-      <section>
-        Sie können die Spaltenköpfe verschieben, um die Anordnung der Spalten zu verändern, so dass die Zielkonfiguration mit den Ausgangsdaten übereinstimmt.
+    @if (adonisImportStore.canImport() === true) {
+      <section class="button-container">
+        <button type="button" (click)="onImport()">Starte Import</button>
       </section>
-      @if (tableStore.contentsAreTested() === true) {
-        <section class="button-container">
-          <p>
-            Die Datentypen stimmen. Sie können jetzt in Ihrer ADONIS-Instanz prüfen, ob die Daten importiert werden können.
-          </p>
-          <button type="button" (click)="onStartAdvancedTesting()">Backend-Tests starten</button>
-        </section>
-      }
     }
     <table class="table">
       <thead>
@@ -39,12 +22,7 @@
           <th style="padding:0;">#</th>
           @for (column of tableStore.columnMapping(); track column; let i = $index) {
             <th
-              draggable="true"
-              (dragstart)="onDragStart($event, i)"
-              (dragend)="onDragEnd()"
-              (dragover)="onDragOver($event, i)"
-              (drop)="onDrop(i)"
-              [ngClass]="{dragging: sourceIndex === i, target: presumedTargetIndex === i, left: (presumedTargetIndex === i && sourceIndex! > presumedTargetIndex), primary: getColumn(column)?.primary, foreign: getColumn(column)?.relation}"
+              [ngClass]="{ primary: getColumn(column)?.primary, foreign: getColumn(column)?.relation}"
               [attr.title]="getColumnTitle(column)"
               class="position-relative">
               {{getColumn(column)?.displayName}}

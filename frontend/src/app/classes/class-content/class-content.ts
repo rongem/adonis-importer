@@ -1,51 +1,37 @@
-import { AsyncPipe } from '@angular/common';
-import { Component, computed, input, output } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { Store } from '@ngrx/store';
 import { Children } from "../children/children";
-import { AdonisClass } from '../../lib/models/adonis-rest/metadata/class.interface';
-import { AdonisNoteBook } from '../../lib/models/adonis-rest/metadata/notebook.interface';
-import { AdonisNotebookGroup, AdonisNotebookRelations, AttributeOrGroupOrRelation, AttributeOrRelation } from '../../lib/models/adonis-rest/metadata/notebook-elements.interface';
-import { ATTRDEF, GROUP, NAME, rel, RELATIONS } from '../../lib/string.constants';
+import { AdonisNotebookRelations, AttributeOrGroupOrRelation, AttributeOrRelation } from '../../lib/models/adonis-rest/metadata/notebook-elements.interface';
 import { ExportAction } from '../../lib/enums/export-action.enum';
-import * as Selectors from '../../lib/store/store.selectors';
+import { AdonisStoreService } from '../../lib/store/adonis-store.service';
+import { ApplicationStateService } from '../../lib/store/application-state.service';
 import * as Constants from '../../lib/string.constants';
 
 @Component({
   selector: 'app-class-content',
-  imports: [AsyncPipe, Children, ReactiveFormsModule],
+  imports: [Children, ReactiveFormsModule],
   templateUrl: './class-content.html',
   styleUrl: './class-content.scss'
 })
 export class ClassContent {
-  constructor(private store: Store) {}
-  readonly selectedClass = input.required<AdonisClass>();
-  readonly selectedNotebook = input.required<AdonisNoteBook>();
-  readonly propertiesSelected = output<AttributeOrRelation[]>();
-  readonly actionSelected = output<ExportAction>();
-
-  selectedClassesProperties = computed(() => this.selectedNotebook().chapters.map(chapter => {
-      const properties: AttributeOrRelation[] = chapter.children.filter(c => c.type === GROUP).map(g => (g as AdonisNotebookGroup).children).flat();
-      properties.push(...chapter.children.filter(c => c.type !== GROUP).map(p => (p as AttributeOrRelation)));
-      return properties;
-    }).flat()
-  );
+  protected readonly adonisStore = inject(AdonisStoreService);
+  protected readonly appState = inject(ApplicationStateService);
 
   selectedProperties: AttributeOrRelation[] = [];
 
-  readonly RELATIONS = Constants.RELATIONS;
+  protected readonly RELATIONS = Constants.RELATIONS;
   
   attributeForm = computed(() => {
     const formGroupObject: {[key: string]: FormControl | FormGroup} = {};
-    this.selectedClassesProperties().forEach(p => {
-      formGroupObject[p.id] = new FormControl<boolean>({ value: p.metaName === NAME, disabled: p.metaName === NAME });
-      if (p.type === RELATIONS) {
+    this.adonisStore.selectedClassesProperties().forEach(p => {
+      formGroupObject[p.id] = new FormControl<boolean>({ value: p.metaName === Constants.NAME, disabled: p.metaName === Constants.NAME });
+      if (p.type === Constants.RELATIONS) {
         const r = p as AdonisNotebookRelations;
         const innerFormGroupObject: {[key: string]: FormControl} = {};
         r.relClass.targetInformations.forEach(ti => {
           innerFormGroupObject[ti.id] = new FormControl<boolean>(false);
         });
-        formGroupObject[p.id + rel] = new FormGroup(innerFormGroupObject);
+        formGroupObject[p.id + Constants.rel] = new FormGroup(innerFormGroupObject);
       }
     });
     return new FormGroup(formGroupObject);
@@ -53,24 +39,20 @@ export class ClassContent {
 
   relation = (child: AttributeOrGroupOrRelation | AttributeOrRelation) => child as AdonisNotebookRelations;
 
-  getClassForId(id: string) {
-    return this.store.select(Selectors.repositoryClass(id));
-  }
-
-  selectionDone = false;
+  protected selectionDone = false;
 
   submitForm() {
-    const nameProperty = this.selectedClassesProperties().find(a => a.metaName === NAME)!;
+    const nameProperty = this.adonisStore.selectedClassesProperties().find(a => a.metaName === Constants.NAME)!;
     this.attributeForm().get(nameProperty.id)!.enable();
     this.selectedProperties = [nameProperty];
-    this.selectedClassesProperties().forEach(property => {
+    this.adonisStore.selectedClassesProperties().forEach(property => {
       if (property.id !== nameProperty.id && this.attributeForm().value[property.id]) {
         switch(property.type) {
-          case ATTRDEF:
+          case Constants.ATTRDEF:
             this.selectedProperties.push(property);
             break;
-          case RELATIONS:
-            const formGroup = this.attributeForm().get(property.id + rel)!;
+          case Constants.RELATIONS:
+            const formGroup = this.attributeForm().get(property.id + Constants.rel)!;
             const keys = Object.keys(formGroup.value).filter(k => formGroup.value[k] === true);
             const oldProperty = property as AdonisNotebookRelations;
             keys.forEach(k => {
@@ -87,26 +69,19 @@ export class ClassContent {
         }
       }
     });
-    this.propertiesSelected.emit(this.selectedProperties);
+    this.adonisStore.selectProperties(this.selectedProperties);
     this.selectionDone = true;
   };
+
   resetForm() {
     this.attributeForm().reset();
   };
 
-  get attributesReady() {
-    return this.store.select(Selectors.attributesReady);
-  }
-
-  get repositoriesReady() {
-    return this.store.select(Selectors.repositoriesReady);
-  }
-
   selectImport() {
-    this.actionSelected.emit(ExportAction.ImportViaRest);
+    this.adonisStore.selectAction(ExportAction.ImportViaRest);
   }
 
   selectExport() {
-    this.actionSelected.emit(ExportAction.ExportFiles);
+    this.adonisStore.selectAction(ExportAction.ExportFiles);
   }
 }

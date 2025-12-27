@@ -1,25 +1,27 @@
-<section class="content buttonlist">
-    @for (c of classes(); track c.id) {
-        <p>
-            <button
-                [title]="c.infoText ? c.infoText.de : ''"
-                (click)="selectButton_click(c)"
-                class="content-button"
-                [disabled]="notebooksReady() === false"
-            >
-                <h4>
-                    {{c.displayNames.de}}
-                </h4>
-                <p>
-                     ({{ c.metaName }})
-                </p>
-                @if (c.infoText) {
+<section class="content">
+    <h2>Klasse zum Importieren auswählen</h2>
+    <section class="buttonlist">
+        @for (c of store.sortedClasses(); track c.id) {
+            <p>
+                <button
+                    [title]="c.infoText ? c.infoText.de : ''"
+                    (click)="store.selectClass(c)"
+                    class="content-button"
+                    [disabled]="appState.notebooksReady() === false"
+                >
+                    <h4>
+                        {{c.displayNames.de}}
+                    </h4>
                     <p>
-                        {{c.infoText.de}}
+                        ({{ c.metaName }})
                     </p>
-                }
-            </button>
-        </p>
-    }
+                    @if (c.infoText) {
+                        <p>
+                            {{c.infoText.de}}
+                        </p>
+                    }
+                </button>
+            </p>
+        }
+    </section>
 </section>
-

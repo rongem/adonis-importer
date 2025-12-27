@@ -1,5 +1,23 @@
-@if ((working | async) === false) {
-    <app-login></app-login>
+@if (appState.working() === false) {
+    <form [formGroup]="loginForm" class="content login">
+        <div class="formfield">
+            <label for="url">Hostname des ADONIS-Systems: https://</label>
+            <input id="url" type="text" formControlName="url" autofocus>
+            <span>/rest/</span>
+        </div>
+        <div class="formfield">
+            <label for="username">Benutzername: </label>
+            <input id="username" type="text" formControlName="username">
+        </div>
+        <div class="formfield">
+            <label for="password">Kennwort: </label>
+            <input id="password" type="password" formControlName="password">
+        </div>
+        <div class="formfield">
+            <label></label>
+            <button class="content-button" type="submit" [disabled]="!loginForm.valid" (click)="retrieveLoginData()">Start</button>
+        </div>
+    </form>
     <hr>
     <section class="content">
         <h3>ADONIS Importer</h3>

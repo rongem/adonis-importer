@@ -1,5 +1,7 @@
-import { Component, input, output } from '@angular/core';
+import { Component, inject, input, output } from '@angular/core';
 import { AdonisClass } from '../../lib/models/adonis-rest/metadata/class.interface';
+import { AdonisStoreService } from '../../lib/store/adonis-store.service';
+import { ApplicationStateService } from '../../lib/store/application-state.service';
 
 @Component({
   selector: 'app-class-list',
@@ -8,8 +10,9 @@ import { AdonisClass } from '../../lib/models/adonis-rest/metadata/class.interfa
   styleUrl: './class-list.scss'
 })
 export class ClassList {
-  readonly classes = input.required<AdonisClass[]>();
-  readonly notebooksReady = input.required<boolean>();
+  protected readonly store = inject(AdonisStoreService);
+  protected readonly appState = inject(ApplicationStateService);
+
   readonly classSelected = output<AdonisClass>();
 
   selectButton_click(c: AdonisClass) {

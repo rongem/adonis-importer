@@ -1,10 +1,10 @@
-import { AdonisItem } from "../adonis-rest/search/result.interface";
+import { AdonisSearchResultItem } from "../adonis-rest/search/result.interface";
 import { Column } from "./column.model";
 
 export interface RelationTargets {
     column: Column;
     index: number;
-    items?: AdonisItem[],
+    items?: AdonisSearchResultItem[],
     errorMessage?: string;
 }
 

@@ -2,15 +2,9 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ApplicationConfig, importProvidersFrom, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { provideRouter } from '@angular/router';
-import { provideStore, provideState } from '@ngrx/store';
-import { provideEffects } from '@ngrx/effects';
-import { provideStoreDevtools } from '@ngrx/store-devtools';
 
 import { authInterceptor } from './lib/interceptors/auth-interceptor';
 import { routes } from './app.routes';
-import { storeReducer } from './lib/store/store.reducer';
-import { StoreEffects } from './lib/store/store.effects';
-import { STORE } from './lib/string.constants';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -21,9 +15,5 @@ export const appConfig: ApplicationConfig = {
     ),
     provideRouter(routes),
     importProvidersFrom(ReactiveFormsModule),
-    provideStore(),
-    provideStoreDevtools(),
-    provideState({ name: STORE, reducer: storeReducer }),
-    provideEffects(StoreEffects),
   ]
 };
