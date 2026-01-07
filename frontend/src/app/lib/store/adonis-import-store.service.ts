@@ -185,7 +185,6 @@ export class AdonisImportStoreService {
                     }]
                 }));
                 const index = columns.indexOf(c);
-                console.log(index, i);
                 relationPromises.push(firstValueFrom(this.dataAccess.searchObjects(querystring))
                     .then(searchResult => ({column: relationColumns[i], index, items:searchResult.items} as RelationTargets))
                     .catch((error: HttpErrorResponse) => {

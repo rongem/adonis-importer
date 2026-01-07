@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { AdonisStoreService } from '../lib/store/adonis-store.service';
 import { ApplicationStateService } from '../lib/store/application-state.service';
@@ -10,8 +10,8 @@ import { ApplicationStateService } from '../lib/store/application-state.service'
   styleUrl: './login.scss'
 })
 export class Login {
-  adonisStore = inject(AdonisStoreService);
-  appState = inject(ApplicationStateService);
+  protected appState = inject(ApplicationStateService);
+  private adonisStore = inject(AdonisStoreService);
 
   loginForm = new FormGroup({
     url: new FormControl('',
@@ -25,11 +25,15 @@ export class Login {
     username: new FormControl('', {validators: [Validators.required]}),
     password: new FormControl('', {validators: [Validators.required]}),
   });
-  retrieveLoginData() {
-    this.appState.url.set(this.completeHostName(this.loginForm.value.url!));
-    this.appState.basicAuth.set(btoa([this.loginForm.value.username, ':', this.loginForm.value.password].join('')));
+
+  login() {
+    this.setLoginState();
     this.adonisStore.loadClasses();
   }
-
   private completeHostName = (value: string) => 'https://' + value + '/rest/';
+
+  private setLoginState() {
+    this.adonisStore.url.set(this.completeHostName(this.loginForm.value.url!));
+    this.adonisStore.basicAuth.set(btoa([this.loginForm.value.username, ':', this.loginForm.value.password].join('')));
+  }
 }

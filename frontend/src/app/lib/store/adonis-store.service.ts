@@ -26,8 +26,13 @@ export class AdonisStoreService {
     private readonly dataAccess = inject(DataAccess);
 
     // state signals
+    readonly url = signal<string | undefined>(undefined);
+    readonly basicAuth = signal<string | undefined>(undefined);
+
     private readonly _authenticated = signal(false);
     readonly authenticated = this._authenticated.asReadonly();
+    private readonly _primaryLoadingComplete = signal(false);
+    readonly primaryLoadingComplete = this._primaryLoadingComplete.asReadonly();
     private readonly _repositoryClasses = signal<AdonisClassContainer>({});
     readonly repositoryClasses = this._repositoryClasses.asReadonly();
     private readonly _notebooks = signal<AdonisNotebookContainer>({});
@@ -62,10 +67,10 @@ export class AdonisStoreService {
 
     // start by loading all repository classes from ADONIS
     async loadClasses() {
-        this.appState.authenticated.set(true)
+        this._authenticated.set(true)
         this.appState.classesState.set(WorkflowState.Loading);
         this.appState.errorMessage.set(undefined);
-        await firstValueFrom(this.dataAccess.retrieveClassesWithNotebooks(this.appState.url()!).pipe(
+        await firstValueFrom(this.dataAccess.retrieveClassesWithNotebooks(this.url()!).pipe(
             tap((repositoryClasses) => {
                 this._repositoryClasses.set(repositoryClasses);
                 this.appState.classesState.set(WorkflowState.Loaded);
@@ -75,7 +80,7 @@ export class AdonisStoreService {
             }),
             catchError((error: HttpErrorResponse) => {
                 console.error(error);
-                this.appState.authenticated.set(false);
+                this._authenticated.set(false);
                 this.appState.classesState.set(WorkflowState.ErrorOccured);
                 this.appState.errorMessage.set(`Fehler beim Laden der Klassen: ${error.message}`);
                 return of({} as AdonisClassContainer);

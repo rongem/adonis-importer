@@ -3,10 +3,6 @@ import { WorkflowState } from "../enums/workflow-state.enum";
 
 @Injectable({ providedIn: 'root' })
 export class ApplicationStateService {
-    readonly authenticated = signal(false);
-    readonly url = signal<string | undefined>(undefined);
-    readonly basicAuth = signal<string | undefined>(undefined);
-
     // Workflow states
     readonly classesState = signal<WorkflowState>(WorkflowState.NotPresent);
     readonly notebookState = signal<WorkflowState>(WorkflowState.NotPresent);
