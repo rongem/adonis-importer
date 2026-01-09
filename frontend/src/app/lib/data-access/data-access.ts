@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { forkJoin, map, mergeMap, Observable, take, tap } from 'rxjs';
+import { catchError, firstValueFrom, forkJoin, map, mergeMap, Observable, of, switchMap, take, tap } from 'rxjs';
 import { AdonisClassList } from '../models/adonis-rest/metadata/lists/list-class.interface';
 import { AdonisClass } from '../models/adonis-rest/metadata/class.interface';
 import { AdonisNoteBook } from '../models/adonis-rest/metadata/notebook.interface';
@@ -20,6 +20,9 @@ import { CreateObjectResponse } from '../models/adonis-rest/write/object-respons
 import { CreateRelationResponse, DirectionType } from '../models/adonis-rest/write/relation.interface';
 import { idToUrl } from '../helpers/url.functions';
 import { AdonisItem } from '../models/adonis-rest/read/item.interface';
+import { RelationOperation, RowOperation } from '../models/table/row-operations.model';
+import { ErrorList } from '../models/table/errorlist.model';
+import { SucceededImports, SucceededRelations } from '../models/table/succeeded-operations.model';
 
 @Injectable({
   providedIn: 'root'
@@ -151,4 +154,90 @@ export class DataAccess {
   createRelation = (sourceId: string, direction: DirectionType, relationClassName: string, relationTargetId: string) => 
     this.postUrl<CreateRelationResponse>(this.repoUrl + Constants.objects_url + '/' + idToUrl(sourceId) + Constants.relations_url + direction + '/' + relationClassName,
     direction.toLocaleLowerCase() === 'incoming' ? { fromId: relationTargetId } : { toId: relationTargetId });
+
+  importItems = async (rowOperations: RowOperation[]) => {
+    const creationAndEditAttributeOperations: Promise<RowOperation>[] = [];
+    let errors: ErrorList[];
+    rowOperations.forEach(op => {
+        if (op.createObject) {
+          creationAndEditAttributeOperations.push(
+            firstValueFrom(this.createObject(op.createObject).pipe(
+              map(importedObject => ({...op, importedObject})),
+              catchError((error: HttpErrorResponse) => of({...op, error})),
+            ))
+          );
+        } else {
+          // if edited object has no attributes but only relations, we must prepare a dummy response
+          if (op.editObject!.attributes.length === 0) {
+            const importedObject: CreateObjectResponse = {
+              locale: 'de',
+              item: {
+                id: op.editObject!.id,
+                name: op.editObject!.name,
+                metaName: op.editObject!.metaName,
+                attributes: op.editObject!.attributes,
+              }
+            };
+            creationAndEditAttributeOperations.push(new Promise(resolve => resolve({...op, importedObject})));
+          } else {
+            creationAndEditAttributeOperations.push(
+              firstValueFrom(this.editObject(op.editObject!, op.editObjectId!).pipe(
+                map(importedObject => ({...op, importedObject})),
+                catchError((error: HttpErrorResponse) => of({...op, error})),
+              ))
+            );
+          }
+        }
+    });
+    const operations = await Promise.all(creationAndEditAttributeOperations);
+    errors = operations.filter(o => !!o.error).map(o => ({ row: o.rowNumber, msg: o.error!.status === 403 ? 'Keine Schreibrechte' : o.error!.message}));
+    // this.store.dispatch(StoreActions.setImportErrors({errors}));
+    const succeededOperations = operations.filter(o => !o.error);
+    const entries: SucceededImports[] = succeededOperations.map(o => ({
+        rowNumber: o.rowNumber,
+        id: o.importedObject!.item.id,
+        class: o.importedObject!.item.metaName,
+        className: o.importedObject!.item.type ?? '',
+        name: o.importedObject!.item.name,
+        attributes: o.importedObject!.item.attributes.map(a => ({name: a.metaName, value: a.value})),
+        edited: !!o.editObject && !!o.importedObject!.item.groupId,
+        created: !!o.createObject,
+    }));
+    // this.store.dispatch(StoreActions.setSuceededRows({entries}));
+    const relationOperations = succeededOperations.filter(o => o.createRelations.length > 0);
+    const relationsEntries: SucceededRelations[] = [];
+    if (relationOperations.length > 0) {
+      const relationCreationOperations: Promise<RelationOperation>[] = [];
+      relationOperations.forEach(op => {
+          op.createRelations.forEach(cr => {
+              relationCreationOperations.push(
+                firstValueFrom(this.createRelation(idToUrl(op.importedObject!.item.id), cr.direction, cr.relationClass, cr.relationTargetId).pipe(
+                  map(operationResult => ({rowOperation: op, operationResult})),
+                  catchError((error: HttpErrorResponse) => {
+                      return of({rowOperation: op, operationError: error});
+                  })
+              )));
+          });
+      });
+      const finishedRelationOperations = await Promise.all(relationCreationOperations);
+      errors.push(...finishedRelationOperations.filter(o => !!o.operationError).map(o => ({
+          row: o.rowOperation.rowNumber,
+          msg: o.operationError!.status === 403 ? 'Keine Schreibrechte' : o.operationError!.message
+      })));
+      const succeededRelationOperations = finishedRelationOperations.filter(o => !o.operationError);
+      relationsEntries.push(...succeededRelationOperations.map(o => ({
+          rowNumber: o.rowOperation.rowNumber,
+          fromName: o.operationResult!.from.name,
+          fromClassName: o.operationResult!.from.metaName,
+          toName: o.operationResult!.to.name,
+          toClassName: o.operationResult!.to.metaName,
+      })));
+    }
+    return {
+      succeededOperations,
+      entries,
+      errors,
+      relationsEntries,
+    }
+  }
 }

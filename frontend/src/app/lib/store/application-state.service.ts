@@ -26,10 +26,7 @@ export class ApplicationStateService {
     readonly notebooksReady = computed(() => this.notebookState() === WorkflowState.Loaded);
     readonly attributesReady = computed(() => this.attributesState() === WorkflowState.Loaded);
     readonly repositoryReady = computed(() => this.repositoryState() === WorkflowState.Loaded);
-    readonly objectGroupReady = computed(() => this.objectGroupsState() === WorkflowState.Loaded);
-    readonly itemReady = computed(() => this.itemsState() === WorkflowState.Loaded);
-    readonly targetReady = computed(() => this.targetState() === WorkflowState.Loaded);
-
+    
     // Error handling
     readonly errorMessage = signal<string | undefined>(undefined);
     readonly errorPresent = computed(() => this.errorMessage() !== undefined);

@@ -114,7 +114,6 @@ export class ImportTableService {
             });
         });
         this._rowErrors.set(errors);
-        console.error(errors);
         this.contentsAreTested.set(!this.tableContainsErrors());
     });
 
