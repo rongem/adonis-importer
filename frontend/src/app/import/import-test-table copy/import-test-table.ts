@@ -7,11 +7,11 @@ import { AdonisClass } from '../../lib/models/adonis-rest/metadata/class.interfa
 import { CreateObject, EditObject } from '../../lib/models/adonis-rest/write/object.interface';
 import { CreateRelation } from '../../lib/models/adonis-rest/write/relation.interface';
 import { RowOperation } from '../../lib/models/table/row-operations.model';
-import { AdonisSearchResultItem } from '../../lib/models/adonis-rest/search/result.interface';
 import { AdonisStoreService } from '../../lib/store/adonis-store.service';
 import { ImportTableService } from '../../lib/store/import-table.serivce';
 import { ApplicationStateService } from '../../lib/store/application-state.service';
 import { AdonisImportStoreService } from '../../lib/store/adonis-import-store.service';
+import { AdonisItem } from '../../lib/models/adonis-rest/read/item.interface';
 
 @Component({
   selector: 'app-import-test-table',
@@ -85,7 +85,7 @@ export class ImportTestTable {
     // this.adonisImportStore.importRowsInBackend(rowOperations);
   }
 
-  private createRowsForBackend(cellInformations: CellInformation[], rowNumbers: number[], selectedClass: AdonisClass, groupId: string, existingItems: AdonisSearchResultItem[]) {
+  private createRowsForBackend(cellInformations: CellInformation[], rowNumbers: number[], selectedClass: AdonisClass, groupId: string, existingItems: AdonisItem[]) {
     const rows: RowOperation[] = [];
     for (let rowNumber of rowNumbers) {
       const cells = cellInformations.filter(c => c.row === rowNumber);
@@ -103,10 +103,17 @@ export class ImportTestTable {
           id: existingItem.id,
           name: existingItem.name,
           metaName: existingItem.metaName,
-          attributes: attributeCells.map(a => ({
-            metaName: a.name,
-            value: a.value,
-          })),
+          attributes: attributeCells
+            .filter(a => { // filter out all attributes that don't need to be changed
+              const correspondingAttribute = existingItem.attributes.find(at => at.metaName === a.name);
+              if (!correspondingAttribute) return true;
+              if (correspondingAttribute.value === a.typedValue) return false;
+              return true;
+            })
+            .map(a => ({
+              metaName: a.name,
+              value: a.value,
+            })),
         };
         rows[rowNumber] = {
           rowNumber,

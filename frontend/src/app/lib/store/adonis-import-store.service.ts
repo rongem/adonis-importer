@@ -226,7 +226,7 @@ export class AdonisImportStoreService {
 
     async importItems() {
         this._importing.set(true);
-            this.router.navigate([Constants.import_results_url]);
+        this.router.navigate([Constants.import_results_url]);
 
     }
 }

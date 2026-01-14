@@ -156,39 +156,8 @@ export class DataAccess {
     direction.toLocaleLowerCase() === 'incoming' ? { fromId: relationTargetId } : { toId: relationTargetId });
 
   importItems = async (rowOperations: RowOperation[]) => {
-    const creationAndEditAttributeOperations: Promise<RowOperation>[] = [];
     let errors: ErrorList[];
-    rowOperations.forEach(op => {
-        if (op.createObject) {
-          creationAndEditAttributeOperations.push(
-            firstValueFrom(this.createObject(op.createObject).pipe(
-              map(importedObject => ({...op, importedObject})),
-              catchError((error: HttpErrorResponse) => of({...op, error})),
-            ))
-          );
-        } else {
-          // if edited object has no attributes but only relations, we must prepare a dummy response
-          if (op.editObject!.attributes.length === 0) {
-            const importedObject: CreateObjectResponse = {
-              locale: 'de',
-              item: {
-                id: op.editObject!.id,
-                name: op.editObject!.name,
-                metaName: op.editObject!.metaName,
-                attributes: op.editObject!.attributes,
-              }
-            };
-            creationAndEditAttributeOperations.push(new Promise(resolve => resolve({...op, importedObject})));
-          } else {
-            creationAndEditAttributeOperations.push(
-              firstValueFrom(this.editObject(op.editObject!, op.editObjectId!).pipe(
-                map(importedObject => ({...op, importedObject})),
-                catchError((error: HttpErrorResponse) => of({...op, error})),
-              ))
-            );
-          }
-        }
-    });
+    const creationAndEditAttributeOperations = this.createOrEditItems(rowOperations);
     const operations = await Promise.all(creationAndEditAttributeOperations);
     errors = operations.filter(o => !!o.error).map(o => ({ row: o.rowNumber, msg: o.error!.status === 403 ? 'Keine Schreibrechte' : o.error!.message}));
     // this.store.dispatch(StoreActions.setImportErrors({errors}));
@@ -239,5 +208,36 @@ export class DataAccess {
       errors,
       relationsEntries,
     }
+  }
+
+  private createOrEditItems(rowOperations: RowOperation[]) {
+    const creationAndEditAttributeOperations: Promise<RowOperation>[] = [];
+    rowOperations.forEach(op => {
+      if (op.createObject) {
+        creationAndEditAttributeOperations.push(
+          firstValueFrom(this.createObject(op.createObject).pipe(
+            map(importedObject => ({ ...op, importedObject })),
+            catchError((error: HttpErrorResponse) => of({ ...op, error }))
+          ))
+        );
+      } else {
+        // if edited object has no attributes but only relations, we must prepare a dummy response
+        if (op.editObject!.attributes.length === 0) {
+          const importedObject: CreateObjectResponse = {
+            locale: 'de',
+            item: op.editObject!
+          };
+          creationAndEditAttributeOperations.push(new Promise(resolve => resolve({ ...op, importedObject })));
+        } else {
+          creationAndEditAttributeOperations.push(
+            firstValueFrom(this.editObject(op.editObject!, op.editObjectId!).pipe(
+              map(importedObject => ({ ...op, importedObject })),
+              catchError((error: HttpErrorResponse) => of({ ...op, error }))
+            ))
+          );
+        }
+      }
+    });
+    return creationAndEditAttributeOperations;
   }
 }
