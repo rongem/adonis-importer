@@ -37,6 +37,7 @@ export class Children {
     const formControl = this.formGroup().get(id) as FormControl;
     if (formControl.value === true) {
       this.getChildFormGroup(id).enable();
+      console.log(this.getChildFormGroup(id).value);
     } else {
       this.getChildFormGroup(id).disable();
     }

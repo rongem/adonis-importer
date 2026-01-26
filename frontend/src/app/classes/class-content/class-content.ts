@@ -2,7 +2,6 @@ import { Component, computed, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Children } from "../children/children";
 import { AdonisNotebookRelations, AttributeOrGroupOrRelation, AttributeOrRelation } from '../../lib/models/adonis-rest/metadata/notebook-elements.interface';
-import { ExportAction } from '../../lib/enums/export-action.enum';
 import { AdonisStoreService } from '../../lib/store/adonis-store.service';
 import { ApplicationStateService } from '../../lib/store/application-state.service';
 import * as Constants from '../../lib/string.constants';
@@ -77,11 +76,7 @@ export class ClassContent {
     this.attributeForm().reset();
   };
 
-  selectImport() {
-    this.adonisStore.selectAction(ExportAction.ImportViaRest);
-  }
-
-  selectExport() {
-    this.adonisStore.selectAction(ExportAction.ExportFiles);
+  selectAction() {
+    this.adonisStore.selectAction();
   }
 }

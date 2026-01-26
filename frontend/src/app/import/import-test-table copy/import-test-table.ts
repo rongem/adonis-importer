@@ -82,7 +82,7 @@ export class ImportTestTable {
       this.adonisImportStore.selectedObjectGroup()!.id,
       this.adonisImportStore.items(),
     );
-    // this.adonisImportStore.importRowsInBackend(rowOperations);
+    this.adonisImportStore.importItems(rowOperations);
   }
 
   private createRowsForBackend(cellInformations: CellInformation[], rowNumbers: number[], selectedClass: AdonisClass, groupId: string, existingItems: AdonisItem[]) {

@@ -1,7 +1,7 @@
-import { computed, effect, inject, Injectable, signal } from "@angular/core";
+import { computed, inject, Injectable, signal } from "@angular/core";
 import { HttpErrorResponse } from "@angular/common/http";
 import { Router } from "@angular/router";
-import { firstValueFrom, catchError, of, tap } from "rxjs";
+import { firstValueFrom, catchError, of, tap, map } from "rxjs";
 import { ApplicationStateService } from "./application-state.service";
 import { ImportTableService } from "./import-table.serivce";
 import { AdonisStoreService } from "./adonis-store.service";
@@ -13,11 +13,13 @@ import { SucceededImports, SucceededRelations } from "../models/table/succeeded-
 import { WorkflowState } from "../enums/workflow-state.enum";
 import { sortGroup } from "../helpers/group-sorter.functions";
 import * as Constants from '../string.constants';
-import { ExportAction } from "../enums/export-action.enum";
 import { AdonisQuery } from "../models/adonis-rest/search/query.interface";
 import { RelationTargets, RelationTargetsContainer } from "../models/table/relationtargets.model";
 import { Column } from "../models/table/column.model";
 import { AdonisItem } from "../models/adonis-rest/read/item.interface";
+import { RelationOperation, RowOperation } from "../models/table/row-operations.model";
+import { idToUrl } from "../helpers/url.functions";
+import { CreateObjectResponse } from "../models/adonis-rest/write/object-response.interface";
 
 @Injectable({ providedIn: 'root'})
 export class AdonisImportStoreService {
@@ -81,17 +83,8 @@ export class AdonisImportStoreService {
         return this.importErrors().filter(e => e.row === row);
     });
 
-    // effects
-    // start import process after import action is selected
-    readonly importStartEffect = effect(() => {
-        const exportAction = this.adonisStore.selectedAction();
-        if (exportAction === ExportAction.ImportViaRest) {
-            this.loadRepositories();
-        }
-    });
-
     // load repositories from ADONIS. If only one repository is accessible, select it directly.
-    private async loadRepositories() {
+    async loadRepositories() {
         this.appState.repositoryState.set(WorkflowState.Loading);
         await firstValueFrom(this.dataAccess.retrieveRepositories().pipe(
             tap((repositoryList) => {
@@ -224,9 +217,54 @@ export class AdonisImportStoreService {
         this._columnDefinitions.set(columnDefs);
     }
 
-    async importItems() {
+    async importItems(rowOperations: RowOperation[]) {
         this._importing.set(true);
         this.router.navigate([Constants.import_results_url]);
+        let errors: ErrorList[];
+        const creationAndEditAttributeOperations = this.createOrEditItems(rowOperations);
+        const operations = await Promise.all(creationAndEditAttributeOperations);
+        errors = operations.filter(o => !!o.error).map(o => ({ row: o.rowNumber, msg: o.error!.status === 403 ? 'Keine Schreibrechte' : o.error!.message}));
+        const succeededOperations = operations.filter(o => !o.error);
+        const entries: SucceededImports[] = succeededOperations.map(o => ({
+            rowNumber: o.rowNumber,
+            id: o.importedObject!.item.id,
+            class: o.importedObject!.item.metaName,
+            className: o.importedObject!.item.type ?? '',
+            name: o.importedObject!.item.name,
+            attributes: o.importedObject!.item.attributes.map(a => ({name: a.metaName, value: a.value})),
+            edited: !!o.editObject && !!o.importedObject!.item.groupId,
+            created: !!o.createObject,
+        }));
+        return {
+            succeededOperations,
+            entries,
+            errors,
+        };
+    }
+
+    private createOrEditItems(rowOperations: RowOperation[]) {
+        const creationAndEditAttributeOperations: Promise<RowOperation>[] = [];
+        rowOperations.forEach(op => {
+            if (op.createObject) {
+                creationAndEditAttributeOperations.push(
+                    firstValueFrom(this.dataAccess.createObject(op.createObject).pipe(
+                        map(importedObject => ({ ...op, importedObject })),
+                        catchError((error: HttpErrorResponse) => of({ ...op, error }))
+                    ))
+                );
+            } else {
+                // only change attributes that need to be changed
+                if (op.editObject!.attributes.length > 0) {
+                    creationAndEditAttributeOperations.push(
+                        firstValueFrom(this.dataAccess.editObject(op.editObject!, op.editObjectId!).pipe(
+                            map(importedObject => ({ ...op, importedObject })),
+                            catchError((error: HttpErrorResponse) => of({ ...op, error }))
+                        ))
+                    );
+                }
+            }
+        });
+        return creationAndEditAttributeOperations;
 
     }
 }

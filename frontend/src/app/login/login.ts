@@ -24,16 +24,10 @@ export class Login {
     ),
     username: new FormControl('', {validators: [Validators.required]}),
     password: new FormControl('', {validators: [Validators.required]}),
+    purpose: new FormControl<'config' | 'import'>('config', {validators: [Validators.required]})
   });
 
   login() {
-    this.setLoginState();
-    this.adonisStore.loadClasses();
-  }
-  private completeHostName = (value: string) => 'https://' + value + '/rest/';
-
-  private setLoginState() {
-    this.adonisStore.url.set(this.completeHostName(this.loginForm.value.url!));
-    this.adonisStore.basicAuth.set(btoa([this.loginForm.value.username, ':', this.loginForm.value.password].join('')));
+    this.adonisStore.loadClasses(this.loginForm.value.url!, this.loginForm.value.username!, this.loginForm.value.password!, this.loginForm.value.purpose!);
   }
 }

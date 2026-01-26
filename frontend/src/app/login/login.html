@@ -14,6 +14,13 @@
             <input id="password" type="password" formControlName="password">
         </div>
         <div class="formfield">
+            <label for="purpose">Zweck:</label>
+            <select id="purpose" name="purpose" formControlName="purpose">
+                <option value="config">Import-Konfiguration (Excel- und XML-Datei) für ADONIS erstellen</option>
+                <option value="import">Direkter Import von Objekten nach ADONIS über die Zwischenablage</option>
+            </select>
+        </div>
+        <div class="formfield">
             <label></label>
             <button class="content-button" type="submit" [disabled]="!loginForm.valid" (click)="login()">Start</button>
         </div>
@@ -38,7 +45,8 @@
         <p>
             Ein direkter Import aus dieser Anwendung heraus ist ebenfalls möglich. Dazu können Sie die Daten aus 
             einer beliebigen Tabelle über die Zwischenablage einfügen. Durch das Verschieben der Spaltenköpfe lassen 
-            sich die Import-Spalten der Tabelle anpassen.
+            sich die Import-Spalten der Tabelle anpassen. Allerdings können hier nur Attribute importiert werden, aber
+            keine Verknüpfungen zu anderen Objekten.
         </p>
         <p>
             Die Anwendung läuft vollständig in Ihrem Browser, d. h. nach dem Laden findet keine Kommunikation mit

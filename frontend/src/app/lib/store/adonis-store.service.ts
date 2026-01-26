@@ -12,7 +12,6 @@ import { AdonisClassContainer } from '../models/adonis-rest/metadata/container/c
 import { AdonisNotebookContainer } from '../models/adonis-rest/metadata/container/container-notebook.interface';
 import { AdonisNotebookGroup, AttributeOrRelation } from '../models/adonis-rest/metadata/notebook-elements.interface';
 import { DataAccess } from '../data-access/data-access';
-import { ExportAction } from '../enums/export-action.enum';
 import { createColumnsFromProperties } from '../helpers/columns.functions';
 
 import * as Constants from '../string.constants';
@@ -25,9 +24,14 @@ export class AdonisStoreService {
     private readonly router = inject(Router);
     private readonly dataAccess = inject(DataAccess);
 
+    // Purpose of the application usage
+    private readonly _purpose = signal<'config' | 'import' | undefined>(undefined);
+    readonly purpose = this._purpose.asReadonly();
+
     // state signals
-    readonly url = signal<string | undefined>(undefined);
-    readonly basicAuth = signal<string | undefined>(undefined);
+    private readonly url = signal<string | undefined>(undefined);
+    private readonly _basicAuth = signal<string | undefined>(undefined);
+    readonly basicAuth = this._basicAuth.asReadonly();
 
     private readonly _authenticated = signal(false);
     readonly authenticated = this._authenticated.asReadonly();
@@ -43,8 +47,6 @@ export class AdonisStoreService {
     readonly selectedClass = this._selectedClass.asReadonly();
     private readonly _selectedProperties = signal<AttributeOrRelation[]>([]);
     readonly selectedProperties = this._selectedProperties.asReadonly();
-    private readonly _selectedAction = signal<ExportAction | undefined>(undefined);
-    readonly selectedAction = this._selectedAction.asReadonly();
     
     // computed signals
     readonly classes = computed(() => Object.values(this.repositoryClasses()));
@@ -64,9 +66,15 @@ export class AdonisStoreService {
     classById(id: string) {
         return this.repositoryClasses()[id];
     }
+    
+    private completeHostName = (value: string) => 'https://' + value + '/rest/';
 
     // start by loading all repository classes from ADONIS
-    async loadClasses() {
+    async loadClasses(url: string, username: string, password: string, purpose: 'config' | 'import') {
+        this.url.set(this.completeHostName(url));
+        this._basicAuth.set(btoa([username, ':', password].join('')));
+        this._purpose.set(purpose);
+
         this._authenticated.set(true)
         this.appState.classesState.set(WorkflowState.Loading);
         this.appState.errorMessage.set(undefined);
@@ -91,7 +99,7 @@ export class AdonisStoreService {
     // after loading classes, load notebooks, attributes and repositories
     async loadNotebooks() {
         this.appState.notebookState.set(WorkflowState.Loading);
-        await firstValueFrom(this.dataAccess.retrieveNotebooksForClasses(this.classes()).pipe(
+        await firstValueFrom(this.dataAccess.retrieveNotebooksForClasses(this.classes(), this._purpose()!).pipe(
             tap((notebooks) => {
                 const notebookContainer: AdonisNotebookContainer = {};
                 for (const n of notebooks) {
@@ -136,17 +144,15 @@ export class AdonisStoreService {
         this.tableStore.setColumnDefinitions(createColumnsFromProperties(selectedProperties, this.attributes()));
     }
 
-    selectAction(action: ExportAction) {
-        this._selectedAction.set(action);
-        switch (action) {
-            case ExportAction.ExportFiles:
+    selectAction() {
+        switch (this.purpose()) {
+            case 'config':
                 this.router.navigate([Constants.export_files_url]);
                 break;
-            case ExportAction.ImportViaRest:
+            case 'import':
                 this.router.navigate([Constants.choose_import_location_url]);
                 break;
             default:
-                this._selectedAction.set(undefined);
                 this.router.navigateByUrl('/');
         }
     }
