@@ -5,7 +5,6 @@ import { NgClass } from '@angular/common';
 import { ErrorBadge } from '../error-badge/error-badge';
 import { AdonisClass } from '../../lib/models/adonis-rest/metadata/class.interface';
 import { CreateObject, EditObject } from '../../lib/models/adonis-rest/write/object.interface';
-import { CreateRelation } from '../../lib/models/adonis-rest/write/relation.interface';
 import { RowOperation } from '../../lib/models/table/row-operations.model';
 import { AdonisStoreService } from '../../lib/store/adonis-store.service';
 import { ImportTableService } from '../../lib/store/import-table.serivce';
@@ -44,9 +43,6 @@ export class ImportTestTable {
     const content: string[] = [column.internalName];
     if (column.primary) {
       content.push(`Primäerschlüssel`);
-    }
-    if (column.relation) {
-      content.push(`Verweis auf Objekt`);
     }
     if (column.unique) {
       content.push(`Muss eindeutig sein`);
@@ -90,14 +86,8 @@ export class ImportTestTable {
     for (let rowNumber of rowNumbers) {
       const cells = cellInformations.filter(c => c.row === rowNumber);
       const nameCell = cells.find(c => c.isPrimary)!;
-      const attributeCells = cells.filter(c => !c.isPrimary && !c.isRelation);
-      const relationCells = cells.filter(c => c.isRelation);
+      const attributeCells = cells.filter(c => !c.isPrimary);
       const existingItem = existingItems.find(i => i.name === nameCell.stringValue);
-      const createRelations: CreateRelation[] = relationCells.map(c => ({
-        direction: c.relationDirection!,
-        relationClass: c.relationClass!,
-        relationTargetId: c.getRelationTargetByName(c.stringValue!)!.id,
-      }));
       if (existingItem) {
         const editObject: EditObject = {
           id: existingItem.id,
@@ -119,7 +109,6 @@ export class ImportTestTable {
           rowNumber,
           editObject,
           editObjectId: existingItem.id,
-          createRelations,
         }
       } else {
         const createObject: CreateObject = {
@@ -134,7 +123,6 @@ export class ImportTestTable {
         rows[rowNumber] = {
           rowNumber,
           createObject,
-          createRelations,
         };
       }
     }

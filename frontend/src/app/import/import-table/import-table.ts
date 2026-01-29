@@ -41,9 +41,6 @@ export class ImportTable {
     if (column.primary) {
       content.push(`Primäerschlüssel`);
     }
-    if (column.relation) {
-      content.push(`Verweis auf Objekt`);
-    }
     if (column.unique) {
       content.push(`Muss eindeutig sein`);
     }

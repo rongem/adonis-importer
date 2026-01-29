@@ -17,7 +17,6 @@ import * as Constants from '../string.constants';
 import { AdonisSearchResult } from '../models/adonis-rest/search/result.interface';
 import { CreateObject, EditObject } from '../models/adonis-rest/write/object.interface';
 import { CreateObjectResponse } from '../models/adonis-rest/write/object-response.interface';
-import { CreateRelationResponse, DirectionType } from '../models/adonis-rest/write/relation.interface';
 import { idToUrl } from '../helpers/url.functions';
 import { AdonisItem } from '../models/adonis-rest/read/item.interface';
 
@@ -158,9 +157,5 @@ export class DataAccess {
   createObject = (newObject: CreateObject) => this.postUrl<CreateObjectResponse>(this.repoUrl + Constants.objects_url, newObject);
   
   editObject = (existingObject: EditObject, id: string) => this.patchUrl<CreateObjectResponse>(this.repoUrl + Constants.objects_url + '/' + idToUrl(id), existingObject);
-
-  createRelation = (sourceId: string, direction: DirectionType, relationClassName: string, relationTargetId: string) => 
-    this.postUrl<CreateRelationResponse>(this.repoUrl + Constants.objects_url + '/' + idToUrl(sourceId) + Constants.relations_url + direction + '/' + relationClassName,
-    direction.toLocaleLowerCase() === 'incoming' ? { fromId: relationTargetId } : { toId: relationTargetId });
 
 }

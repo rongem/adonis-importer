@@ -11,9 +11,6 @@ export function createColumnsFromProperties(properties: AttributeOrRelation[], a
             case Constants.ATTRDEF:
                 columns.push(createColumnFromAttribute(property as AdonisNotebookAttribute, i, attributes));
                 break;
-            case Constants.RELATIONS:
-                columns.push(createColumnFromRelation(property as AdonisNotebookRelations, i));
-                break;
         }
     }
     return columns;
@@ -27,7 +24,6 @@ const createColumnFromAttribute = (property: AdonisNotebookAttribute, ordinalPos
     isNullable: getAttributeColumnTypes(property).length === 0,
     primary: ordinalPosition === 0,
     unique: ordinalPosition === 0,
-    relation: false,
     allowedTypes: getAttributeColumnTypes(property),
     property: {
         attribute: property,
@@ -35,23 +31,6 @@ const createColumnFromAttribute = (property: AdonisNotebookAttribute, ordinalPos
     },
     enumData: Constants.enumAttributes.includes(property.ctrlType) ? getEnumContent(property, attributes) : undefined,
 });
-
-const createColumnFromRelation = (relation: AdonisNotebookRelations, ordinalPosition: number): Column => {
-    const targetName = relation.relClass.targetInformations[0].metaName;
-    return {
-        displayName: relation.displayNames.de + ' -> ' + targetName,
-        internalName: relation.metaName,
-        ordinalPosition,
-        hasDefaultValue: false,
-        isNullable: true,
-        primary: false,
-        unique: false,
-        relation: true,
-        allowedTypes: ['string'],
-        property: {
-            relation,
-        },
-    }};
 
 const getAttributeColumnTypes = (attribute: AdonisNotebookAttribute) => {
     if (Constants.stringAttributes.includes(attribute.ctrlType)) {

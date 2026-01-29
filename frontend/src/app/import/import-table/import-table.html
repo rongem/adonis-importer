@@ -44,18 +44,13 @@
               (dragend)="onDragEnd()"
               (dragover)="onDragOver($event, i)"
               (drop)="onDrop(i)"
-              [ngClass]="{dragging: sourceIndex === i, target: presumedTargetIndex === i, left: (presumedTargetIndex === i && sourceIndex! > presumedTargetIndex), primary: getColumn(column)?.primary, foreign: getColumn(column)?.relation}"
+              [ngClass]="{dragging: sourceIndex === i, target: presumedTargetIndex === i, left: (presumedTargetIndex === i && sourceIndex! > presumedTargetIndex), primary: getColumn(column)?.primary}"
               [attr.title]="getColumnTitle(column)"
               class="position-relative">
               {{getColumn(column)?.displayName}}
               @if (getColumn(column)?.primary === true) {
                 <span class="visually-hidden">
                     Spalte hält den Primärschlüssel der Tabelle.
-                </span>
-              }
-              @if (getColumn(column)?.relation === true) {
-                <span class="visually-hidden">
-                  Diese Spalte enthält Fremdschlüssel für eine andere Tabelle.
                 </span>
               }
               @if (getColumn(column)?.unique === true) {

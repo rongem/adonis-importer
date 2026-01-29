@@ -52,14 +52,10 @@ export class CellInformation{
     get isNumber() { return this.numberValue !== undefined; }
     get isString() { return this.stringValue !== undefined; }
     get isEmpty() { return this.value === '' || this.value === undefined || this.value === null; }
-    get canBeEmpty() { return this.columnDefinition.isNullable || this.columnDefinition.hasDefaultValue || this.columnDefinition.relation; }
+    get canBeEmpty() { return this.columnDefinition.isNullable || this.columnDefinition.hasDefaultValue; }
     get isPrimary() { return this.columnDefinition.primary; }
     get isEnum() { return !!this.columnDefinition.enumData; }
     get enumMembers() { return this.columnDefinition.enumData?.values ?? []; }
-    get isRelation() { return this.columnDefinition.relation; }
-    get relationTargetNames() { return this.columnDefinition.property.relationTargets?.map(t => t.name); }
-    get relationDirection() { return this.columnDefinition.relation ? this.columnDefinition.property.relation!.incoming ? 'incoming' : 'outgoing' : undefined; }
-    get relationClass() { return this.columnDefinition.property.relation?.metaName; }
 
     get typedValue() {
         if (this.isDate) return this.dateValue;
@@ -72,8 +68,6 @@ export class CellInformation{
     get row() { return this.cellContent.row; }
     get column() { return this.cellContent.column; }
     get ordinalPosition() { return this.columnDefinition.ordinalPosition; }
-
-    getRelationTargetByName = (name: string) => this.columnDefinition.property.relationTargets?.find(t => t.name === name);
 
     private errorDescriptions: string[] = [];
 
@@ -100,9 +94,6 @@ export class CellInformation{
         }
         if (this.isEnum && !this.enumMembers.includes(cellContent.originalValue)) {
             this.errorDescriptions.push('Wert ist nicht in der Enumeration enthalten.');
-        }
-        if (this.isRelation && !this.isEmpty && this.relationTargetNames && !this.relationTargetNames.includes(this.stringValue!)) {
-            this.errorDescriptions.push('Wert ist nicht als Objekt bzw. Diagramm vorhanden.');
         }
     };
 

@@ -14,12 +14,9 @@ import { WorkflowState } from "../enums/workflow-state.enum";
 import { sortGroup } from "../helpers/group-sorter.functions";
 import * as Constants from '../string.constants';
 import { AdonisQuery } from "../models/adonis-rest/search/query.interface";
-import { RelationTargets, RelationTargetsContainer } from "../models/table/relationtargets.model";
 import { Column } from "../models/table/column.model";
 import { AdonisItem } from "../models/adonis-rest/read/item.interface";
-import { RelationOperation, RowOperation } from "../models/table/row-operations.model";
-import { idToUrl } from "../helpers/url.functions";
-import { CreateObjectResponse } from "../models/adonis-rest/write/object-response.interface";
+import { RowOperation } from "../models/table/row-operations.model";
 
 @Injectable({ providedIn: 'root'})
 export class AdonisImportStoreService {
@@ -43,8 +40,6 @@ export class AdonisImportStoreService {
     readonly columnDefinitions = this._columnDefinitions.asReadonly()
     private readonly _items = signal<AdonisItem[]>([]);
     readonly items = this._items.asReadonly();
-    private readonly _relationTargets = signal<RelationTargetsContainer>({})
-    readonly relationTargets = this._relationTargets.asReadonly();
     private readonly _importing = signal(false);
     readonly importing = this._importing.asReadonly();
     private readonly _importErrors = signal<ErrorList[]>([]);
@@ -162,38 +157,6 @@ export class AdonisImportStoreService {
             });
         this.primaryItemsLoaded(items);
 
-        // next, check all related values in the table against the existing items
-        this.appState.targetState.set(WorkflowState.Loading);
-        const relationColumns = columns.filter(c => c.relation);
-        if (relationColumns.length > 0) {
-            const relationPromises: Promise<RelationTargets>[] = [];
-            const queries = relationColumns.map((c, i) => {
-                const querystring = encodeURIComponent(JSON.stringify({
-                    filters: [{
-                        className: c.property.relation!.relClass.targetInformations[0].metaName,
-                    }, {
-                        attrName: Constants.NAME,
-                        op: 'OP_EQ',
-                        values: rows.map(r => r[c.internalName]?.toString()).filter(v => !!v),
-                    }]
-                }));
-                const index = columns.indexOf(c);
-                relationPromises.push(firstValueFrom(this.dataAccess.searchObjects(querystring))
-                    .then(searchResult => ({column: relationColumns[i], index, items:searchResult.items} as RelationTargets))
-                    .catch((error: HttpErrorResponse) => {
-                        console.error(error);
-                        return {column: relationColumns[i], index, errorMessage: error.message} as RelationTargets;
-                    }),
-                );
-            });
-            const relationTargets = await Promise.all(relationPromises);
-            const queryContainer: RelationTargetsContainer = {};
-            relationTargets.forEach(r => {
-                queryContainer[r.index] = r;
-            });
-            this.prepareColumnDefinitions(queryContainer);
-            this._relationTargets.set(queryContainer);
-        }
         this.appState.targetState.set(WorkflowState.Loaded);
         this._canImport.set(true);
     }
@@ -202,19 +165,6 @@ export class AdonisImportStoreService {
     private primaryItemsLoaded(items: AdonisItem[]) {
         this._items.set(items);
         this.appState.itemsState.set(WorkflowState.Loaded);
-    }
-
-    private prepareColumnDefinitions(relationTargets: RelationTargetsContainer) {
-        const columnDefs = this.tableStore.columnDefinitions().map((c, i) => (
-            {
-                ...c,
-                property: {
-                    ...c.property,
-                    relationTargets: relationTargets[i] ? relationTargets[i].items : undefined,
-                }
-            }
-        ));
-        this._columnDefinitions.set(columnDefs);
     }
 
     async importItems(rowOperations: RowOperation[]) {

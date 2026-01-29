@@ -1,6 +1,5 @@
 import { AdonisAttribute } from "../adonis-rest/metadata/attribute.interface";
-import { AdonisNotebookAttribute, AdonisNotebookRelations } from "../adonis-rest/metadata/notebook-elements.interface";
-import { AdonisSearchResultItem } from "../adonis-rest/search/result.interface";
+import { AdonisNotebookAttribute } from "../adonis-rest/metadata/notebook-elements.interface";
 
 export interface Column {
     displayName: string;
@@ -10,13 +9,10 @@ export interface Column {
     isNullable: boolean;
     primary: boolean;
     unique: boolean;
-    relation: boolean;
     allowedTypes: string[];
     property: {
         attribute?: AdonisNotebookAttribute;
         attributeInfo?: AdonisAttribute;
-        relation?: AdonisNotebookRelations;
-        relationTargets?: AdonisSearchResultItem[];
     }
     enumData?: {
         values: string[];
