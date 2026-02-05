@@ -26,7 +26,7 @@
       @if (tableStore.contentsAreTested() === true) {
         <section class="button-container">
           <p>
-            Die Datentypen stimmen. Sie können jetzt in Ihrer ADONIS-Instanz prüfen, ob die Daten importiert werden können.
+            Die Datentypen sind korrekt. Sie können jetzt in Ihrer ADONIS-Instanz prüfen, wie die Daten importiert werden können.
           </p>
           <button type="button" (click)="onStartAdvancedTesting()">Backend-Tests starten</button>
         </section>
@@ -68,14 +68,6 @@
             <td [attr.title]="getRowErrorDescriptions(rowNumber)">
               @if (getRowContainsErrors(rowNumber) === true) {
                 <app-error-badge [errorDescription]="getRowErrorDescriptions(rowNumber)"></app-error-badge>
-              } @else {
-                @if (this.adonisImportStore.rowsWithExistingItems().includes(rowNumber) === true) {
-                  <span class="edit">&#10000;</span>
-                  <span class="visually-hidden">Objekt mit diesem Namen gefunden. Objekt wird geändert.</span>
-                } @else {
-                  <span class="new">+</span>
-                  <span class="visually-hidden">Objekt wird neu erstellt.</span>
-                }
               }
             </td>
             <td class="align-right">
