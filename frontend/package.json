@@ -32,8 +32,8 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-latest/xlsx-latest.tgz"
   },
   "devDependencies": {
-    "@angular/build": "^21.1.2",
-    "@angular/cli": "^21.1.2",
+    "@angular/build": "^21.1.3",
+    "@angular/cli": "^21.1.3",
     "@angular/compiler-cli": "^21.1.3",
     "@types/jasmine": "~5.1.0",
     "karma": "~6.4.0",
