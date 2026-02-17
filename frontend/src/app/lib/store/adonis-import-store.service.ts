@@ -48,7 +48,7 @@ export class AdonisImportStoreService {
     readonly succeededImports = this._succeededImports.asReadonly();
     private readonly _succeededRelations = signal<SucceededRelations[]>([]);
     readonly succeededRelations = this._succeededRelations.asReadonly();
-    readonly advancedTestingStarted = signal(false);
+    private readonly advancedTestingStarted = signal(false);
     private readonly _canImport = signal(false);
     readonly canImport = this._canImport.asReadonly();
 

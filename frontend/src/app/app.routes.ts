@@ -11,7 +11,7 @@ import { canChooseRepository } from './lib/guards/choose-repository-guard';
 import { ImportTable } from './import/import-table/import-table';
 import { ImportResults } from './import/import-results/import-results';
 import * as Constants from './lib/string.constants';
-import { ImportTestTable } from './import/import-test-table copy/import-test-table';
+import { ImportTestTable } from './import/import-test-table/import-test-table';
 
 export const routes: Routes = [
     { path: '', pathMatch: 'full', redirectTo: Constants.login_url },
