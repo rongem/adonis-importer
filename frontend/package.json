@@ -35,7 +35,6 @@
     "@angular/build": "^21.1.4",
     "@angular/cli": "^21.1.4",
     "@angular/compiler-cli": "^21.1.5",
-    "@types/jasmine": "~5.1.0",
     "jsdom": "^28.1.0",
     "typescript": "~5.9.3",
     "vitest": "^4.0.18"
