@@ -1,6 +1,6 @@
 {
   "name": "adonis-importer",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -20,21 +20,21 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/common": "^21.2.10",
-    "@angular/compiler": "^21.2.10",
-    "@angular/core": "^21.2.10",
-    "@angular/forms": "^21.2.10",
-    "@angular/platform-browser": "^21.2.10",
-    "@angular/router": "^21.2.10",
+    "@angular/common": "^21.2.11",
+    "@angular/compiler": "^21.2.11",
+    "@angular/core": "^21.2.11",
+    "@angular/forms": "^21.2.11",
+    "@angular/platform-browser": "^21.2.11",
+    "@angular/router": "^21.2.11",
     "fast-xml-parser": "^5.2.5",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "xlsx": "https://cdn.sheetjs.com/xlsx-latest/xlsx-latest.tgz"
   },
   "devDependencies": {
-    "@angular/build": "^21.2.8",
-    "@angular/cli": "^21.2.8",
-    "@angular/compiler-cli": "^21.2.10",
+    "@angular/build": "^21.2.9",
+    "@angular/cli": "^21.2.9",
+    "@angular/compiler-cli": "^21.2.11",
     "jsdom": "^28.1.0",
     "typescript": "~5.9.3",
     "vitest": "^4.0.18"
