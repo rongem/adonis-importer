@@ -1,6 +1,6 @@
 {
   "name": "adonis-importer",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -20,23 +20,29 @@
   },
   "private": true,
   "dependencies": {
-    "@angular/common": "^21.2.14",
-    "@angular/compiler": "^21.2.14",
-    "@angular/core": "^21.2.14",
-    "@angular/forms": "^21.2.14",
-    "@angular/platform-browser": "^21.2.14",
-    "@angular/router": "^21.2.14",
+    "@angular/common": "^21.2.15",
+    "@angular/compiler": "^21.2.15",
+    "@angular/core": "^21.2.15",
+    "@angular/forms": "^21.2.15",
+    "@angular/platform-browser": "^21.2.15",
+    "@angular/router": "^21.2.15",
     "fast-xml-parser": "^5.2.5",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "xlsx": "https://cdn.sheetjs.com/xlsx-latest/xlsx-latest.tgz"
   },
   "devDependencies": {
-    "@angular/build": "^21.2.12",
-    "@angular/cli": "^21.2.12",
-    "@angular/compiler-cli": "^21.2.14",
+    "@angular/build": "^21.2.13",
+    "@angular/cli": "^21.2.13",
+    "@angular/compiler-cli": "^21.2.15",
     "jsdom": "^28.1.0",
     "typescript": "~5.9.3",
     "vitest": "^4.0.18"
+  },
+  "allowScripts": {
+    "@parcel/watcher@2.5.6": true,
+    "esbuild@0.27.3": true,
+    "lmdb@3.5.1": true,
+    "msgpackr-extract@3.0.4": true
   }
 }
