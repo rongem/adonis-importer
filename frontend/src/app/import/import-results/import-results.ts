@@ -1,11 +1,12 @@
 import { NgClass } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { AdonisImportStoreService } from '../../lib/store/adonis-import-store.service';
 
 @Component({
   selector: 'app-import-results',
   imports: [NgClass],
   templateUrl: './import-results.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './import-results.scss'
 })
 export class ImportResults {

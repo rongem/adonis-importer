@@ -22,7 +22,7 @@
           <th style="padding:0;">#</th>
           @for (column of tableStore.columnMapping(); track column; let i = $index) {
             <th
-              [ngClass]="{ primary: getColumn(column)?.primary}"
+              [ngClass]="{ primary: $safeNavigationMigration(getColumn(column)?.primary)}"
               [attr.title]="getColumnTitle(column)"
               class="position-relative">
               {{getColumn(column)?.displayName}}

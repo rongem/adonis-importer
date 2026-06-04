@@ -10,5 +10,15 @@
   },
   "include": [
     "src/**/*.ts"
-, "src/app/lib/guards/export-guard.ts"  ]
+,
+"src/app/lib/guards/export-guard.ts"
+],
+"angularCompilerOptions": {
+"extendedDiagnostics": {
+  "checks": {
+    "nullishCoalescingNotNullable": "suppress",
+    "optionalChainNotNullable": "suppress"
+  }
+}
+}
 }

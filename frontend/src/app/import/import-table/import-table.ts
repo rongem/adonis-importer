@@ -1,4 +1,4 @@
-import { Component, computed, ElementRef, HostListener, inject, viewChildren } from '@angular/core';
+import { Component, computed, ElementRef, HostListener, inject, viewChildren, ChangeDetectionStrategy } from '@angular/core';
 
 import { getTableContentFromClipboard } from '../../lib/helpers/clipboard.functions';
 import { CellContent } from '../../lib/models/table/cellcontent.model';
@@ -13,6 +13,7 @@ import { AdonisImportStoreService } from '../../lib/store/adonis-import-store.se
   selector: 'app-import-table',
   imports: [NgClass, ErrorBadge],
   templateUrl: './import-table.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './import-table.scss'
 })
 export class ImportTable {

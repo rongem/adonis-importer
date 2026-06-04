@@ -44,7 +44,7 @@
               (dragend)="onDragEnd()"
               (dragover)="onDragOver($event, i)"
               (drop)="onDrop(i)"
-              [ngClass]="{dragging: sourceIndex === i, target: presumedTargetIndex === i, left: (presumedTargetIndex === i && sourceIndex! > presumedTargetIndex), primary: getColumn(column)?.primary}"
+              [ngClass]="{dragging: sourceIndex === i, target: presumedTargetIndex === i, left: (presumedTargetIndex === i && sourceIndex! > presumedTargetIndex), primary: $safeNavigationMigration(getColumn(column)?.primary)}"
               [attr.title]="getColumnTitle(column)"
               class="position-relative">
               {{getColumn(column)?.displayName}}

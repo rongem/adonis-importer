@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { createXML } from '../../lib/helpers/xml.function';
 import { createXLFile } from '../../lib/helpers/xlsx.functions';
@@ -9,6 +9,7 @@ import { ApplicationStateService } from '../../lib/store/application-state.servi
   selector: 'app-export-files',
   imports: [],
   templateUrl: './export-files.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './export-files.scss'
 })
 export class ExportFiles implements OnInit {

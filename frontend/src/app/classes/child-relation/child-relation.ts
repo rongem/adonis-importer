@@ -1,4 +1,4 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, inject, input, ChangeDetectionStrategy } from '@angular/core';
 import { FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { AdonisNotebookRelations } from '../../lib/models/adonis-rest/metadata/notebook-elements.interface';
 import { AdonisStoreService } from '../../lib/store/adonis-store.service';
@@ -7,6 +7,7 @@ import { AdonisStoreService } from '../../lib/store/adonis-store.service';
   selector: 'app-child-relation',
   imports: [ReactiveFormsModule],
   templateUrl: './child-relation.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './child-relation.scss'
 })
 export class ChildRelation {

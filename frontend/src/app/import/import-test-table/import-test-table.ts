@@ -1,4 +1,4 @@
-import { Component, computed, ElementRef, inject, viewChildren } from '@angular/core';
+import { Component, computed, ElementRef, inject, viewChildren, ChangeDetectionStrategy } from '@angular/core';
 
 import { CellInformation } from '../../lib/models/table/cellinformation.model';
 import { NgClass } from '@angular/common';
@@ -16,6 +16,7 @@ import { AdonisItem } from '../../lib/models/adonis-rest/read/item.interface';
   selector: 'app-import-test-table',
   imports: [NgClass, ErrorBadge],
   templateUrl: './import-test-table.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './import-test-table.scss'
 })
 export class ImportTestTable {

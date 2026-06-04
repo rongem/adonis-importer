@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { AdonisStoreService } from '../lib/store/adonis-store.service';
 import { ApplicationStateService } from '../lib/store/application-state.service';
@@ -7,6 +7,7 @@ import { ApplicationStateService } from '../lib/store/application-state.service'
   selector: 'app-login',
   imports: [ReactiveFormsModule],
   templateUrl: './login.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './login.scss'
 })
 export class Login {

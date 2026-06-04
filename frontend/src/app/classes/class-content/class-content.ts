@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { Children } from "../children/children";
 import { AdonisNotebookRelations, AttributeOrGroupOrRelation, AttributeOrRelation } from '../../lib/models/adonis-rest/metadata/notebook-elements.interface';
@@ -10,6 +10,7 @@ import * as Constants from '../../lib/string.constants';
   selector: 'app-class-content',
   imports: [Children, ReactiveFormsModule],
   templateUrl: './class-content.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './class-content.scss'
 })
 export class ClassContent {
