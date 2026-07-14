@@ -2,6 +2,7 @@ FROM node:lts AS build
 WORKDIR /usr/app
 
 COPY ./frontend/package*.json ./
+COPY ./frontend/.npmrc ./
 RUN npm update -g
 RUN npm install
 COPY ./frontend/ ./
