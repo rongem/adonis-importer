@@ -151,6 +151,21 @@ export class ImportTable {
     this.presumedTargetIndex = undefined;
     this.sourceIndex = undefined;
   }
+  moveColumnLeft(index: number) {
+    if (index <= 0) return;
+    const columnMappings = this.tableStore.columnMapping().slice();
+    const val = columnMappings.splice(index, 1)[0];
+    columnMappings.splice(index - 1, 0, val);
+    this.tableStore.changeColumnOrder(columnMappings);
+  }
+
+  moveColumnRight(index: number) {
+    const columnMappings = this.tableStore.columnMapping().slice();
+    if (index >= columnMappings.length - 1) return;
+    const val = columnMappings.splice(index, 1)[0];
+    columnMappings.splice(index + 1, 0, val);
+    this.tableStore.changeColumnOrder(columnMappings);
+  }
   onStartAdvancedTesting() {
     this.adonisImportStore.testPrimaryInBackend();
   }

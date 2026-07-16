@@ -47,7 +47,11 @@
               [ngClass]="{dragging: sourceIndex === i, target: presumedTargetIndex === i, left: (presumedTargetIndex === i && sourceIndex! > presumedTargetIndex), primary: $safeNavigationMigration(getColumn(column)?.primary)}"
               [attr.title]="getColumnTitle(column)"
               class="position-relative">
-              {{getColumn(column)?.displayName}}
+              <span class="column-name">{{getColumn(column)?.displayName}}</span>
+              <span class="column-controls" aria-hidden="false">
+                <button type="button" class="col-move left" (click)="moveColumnLeft(i)" [attr.aria-label]="'Spalte ' + (getColumn(column)?.displayName || ('#'+i)) + ' nach links verschieben'">◀</button>
+                <button type="button" class="col-move right" (click)="moveColumnRight(i)" [attr.aria-label]="'Spalte ' + (getColumn(column)?.displayName || ('#'+i)) + ' nach rechts verschieben'">▶</button>
+              </span>
               @if (getColumn(column)?.primary === true) {
                 <span class="visually-hidden">
                     Spalte hält den Primärschlüssel der Tabelle.

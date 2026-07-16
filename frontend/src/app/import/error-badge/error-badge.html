@@ -1,9 +1,9 @@
-<button class="error-sign" (click)="visibleText = !visibleText" [ngClass]="{visibletext: visibleText}">!</button>
+<button class="error-sign" (click)="toggleVisibleText()" [ngClass]="{visibletext: visibleText}" aria-expanded="{{visibleText}}" aria-controls="error-desc">!</button>
 <span class="visually-hidden">
     Diese Zeile enthält Daten, die Fehler beim Import erzeugen würden.
 </span>
 @if (visibleText) {
-  <section class="error position-absolute" (click)="visibleText = !visibleText">
+  <div id="error-desc" class="error position-absolute" tabindex="0" role="dialog" aria-label="Fehlerbeschreibung" (click)="visibleText = !visibleText" (keydown)="onErrorKeydown($event)">
     {{errorDescription()}}
-  </section>
+  </div>
 }

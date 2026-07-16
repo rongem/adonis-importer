@@ -69,3 +69,27 @@ th {
     position: relative;
 }
 
+.column-name {
+    display: inline-block;
+}
+
+.column-controls {
+    display: inline-flex;
+    gap: 0.25rem;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+}
+
+.col-move {
+    background: transparent;
+    border: 1px solid rgba(0,0,0,0.15);
+    padding: 0.08rem 0.3rem;
+    border-radius: 0.25rem;
+    font-size: 0.85rem;
+    line-height: 1;
+}
+
+.col-move:focus {
+    outline: 3px solid rgba(25,118,210,0.6);
+}
+

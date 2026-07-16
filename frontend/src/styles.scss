@@ -366,3 +366,36 @@ footer {
     white-space: nowrap; 
     width: 1px;
 }
+
+/* Skip link - visible on focus for keyboard users */
+.skip-link {
+    position: absolute;
+    left: 0.5rem;
+    top: -3rem;
+    background: #1976d2;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    z-index: 1000;
+    transition: top 0.2s ease-in-out;
+}
+.skip-link:focus {
+    top: 0.5rem;
+}
+
+/* Column move buttons (global defaults) */
+.column-controls {
+    display: inline-flex;
+    gap: 0.25rem;
+    margin-left: 0.5rem;
+}
+.col-move {
+    background: transparent;
+    border: 1px solid rgba(0,0,0,0.1);
+    padding: 0.125rem 0.35rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+.col-move:focus {
+    outline: 3px solid rgba(25,118,210,0.6);
+}
