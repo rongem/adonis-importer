@@ -1,10 +1,10 @@
 import { computed, inject, Injectable, signal } from "@angular/core";
 import { HttpErrorResponse } from "@angular/common/http";
 import { Router } from "@angular/router";
-import { firstValueFrom, catchError, of, tap, map } from "rxjs";
+import { firstValueFrom, catchError, of, tap } from "rxjs";
 import { ApplicationStateService } from "./application-state.service";
-import { ImportTableService } from "./import-table.serivce";
 import { AdonisStoreService } from "./adonis-store.service";
+import { ImportTableService } from "./import-table.serivce";
 import { DataAccess } from "../data-access/data-access";
 import { AdonisObjectGroup } from "../models/adonis-rest/metadata/object-group.interface";
 import { AdonisRepository } from "../models/adonis-rest/metadata/repository.interface";
@@ -13,16 +13,14 @@ import { SucceededImports, SucceededRelations } from "../models/table/succeeded-
 import { WorkflowState } from "../enums/workflow-state.enum";
 import { sortGroup } from "../helpers/group-sorter.functions";
 import * as Constants from '../string.constants';
-import { AdonisQuery } from "../models/adonis-rest/search/query.interface";
 import { Column } from "../models/table/column.model";
 import { AdonisItem } from "../models/adonis-rest/read/item.interface";
-import { RowOperation } from "../models/table/row-operations.model";
 
 @Injectable({ providedIn: 'root'})
 export class AdonisImportStoreService {
     private readonly appState = inject(ApplicationStateService);
-    private readonly tableStore = inject(ImportTableService);
     private readonly adonisStore = inject(AdonisStoreService);
+    private readonly tableStore = inject(ImportTableService);
     private readonly router = inject(Router);
     private readonly dataAccess = inject(DataAccess);
 
@@ -64,12 +62,10 @@ export class AdonisImportStoreService {
         return this.repositories()!.find(r => r.id === repoId);
     });
     readonly rowsWithExistingItems = computed(() => {
-        const columnDefinitions = this.tableStore.columnDefinitions();
-        const itemNames = this.items().map(i => i.name);
-        const primaryColumn = columnDefinitions.findIndex(c => c.primary);
-        const cellsInPrimaryColumn = this.tableStore.cellInformations().filter(c => c.column === primaryColumn);
-        const retVal = cellsInPrimaryColumn.filter(c => itemNames.includes(c.value)).map(c => c.row);
-        return retVal;
+        const itemNames = this.items().map(item => item.name);
+        const primaryColumnIndex = this.tableStore.columnDefinitions().findIndex(column => column.primary);
+        const cellsInPrimaryColumn = this.tableStore.cellInformations().filter(cell => cell.column === primaryColumnIndex);
+        return cellsInPrimaryColumn.filter(cell => itemNames.includes(cell.value)).map(cell => cell.row);
     });
     readonly importedRelationsForRow = (row: number) => {
         return computed(() => this.succeededRelations().filter(r => r.rowNumber === row));
@@ -137,80 +133,35 @@ export class AdonisImportStoreService {
         this.router.navigate([Constants.import_url]);
     }
 
-    // test if primary key values exist in backend
-    async testPrimaryInBackend() {
-        this.router.navigate([Constants.import_test_url]);
-        this.advancedTestingStarted.set(true);
-        this.appState.itemsState.set(WorkflowState.Loading);
-        const rows = this.tableStore.rows();
-        const columns = this.tableStore.columnDefinitions();
-        const primaryColumn = this.tableStore.primaryColumn()!;
-        const selectedClass = this.adonisStore.selectedClass()!;
-        // first, collect all existing primary key values from the backend
-        const query: AdonisQuery = {
-            filters: [{
-                className: selectedClass.metaName,
-            }, {
-                attrName: Constants.NAME,
-                op: 'OP_EQ',
-                values: rows.map(r => r[primaryColumn.internalName]!.toString())
-            }]
-        };
-        const context = this.getImportContext();
-        if (!context) {
-            return;
-        }
-        const queryString = encodeURIComponent(JSON.stringify(query));
-        const items = await firstValueFrom(this.dataAccess.retrieveSearchObjects(context.baseUrl, context.repositoryId, queryString))
-            .catch((error: HttpErrorResponse) => {
-                console.error(error);
-                this.appState.itemsState.set(WorkflowState.ErrorOccured);
-                this.appState.errorMessage.set(`Fehler beim Überprüfen der Primärschlüssel: ${error.message}`);
-                return [];
-            });
-        this.primaryItemsLoaded(items);
-
-        this.appState.targetState.set(WorkflowState.Loaded);
-        this._canImport.set(true);
-    }
-
-    // primary items have been loaded from backend
-    private primaryItemsLoaded(items: AdonisItem[]) {
+    setItems(items: AdonisItem[]) {
         this._items.set(items);
-        this.appState.itemsState.set(WorkflowState.Loaded);
     }
 
-    async importItems(rowOperations: RowOperation[]) {
-        const context = this.getImportContext();
-        if (!context) {
-            return {
-                succeededOperations: [],
-                entries: [],
-                errors: [{ row: 0, msg: 'Kein gültiger Import-Kontext (Verbindung/Repository) vorhanden.' }],
-            };
-        }
+    setAdvancedTestingStarted(value: boolean) {
+        this.advancedTestingStarted.set(value);
+    }
+
+    setCanImport(value: boolean) {
+        this._canImport.set(value);
+    }
+
+    beginImport() {
         this._importing.set(true);
-        this.router.navigate([Constants.import_results_url]);
-        let errors: ErrorList[];
-        const creationAndEditAttributeOperations = this.createOrEditItems(rowOperations, context.baseUrl, context.repositoryId);
-        const operations = await Promise.all(creationAndEditAttributeOperations);
-        errors = operations.filter(o => !!o.error).map(o => ({ row: o.rowNumber, msg: o.error!.status === 403 ? 'Keine Schreibrechte' : o.error!.message}));
-        const succeededOperations = operations.filter(o => !o.error);
-        const entries: SucceededImports[] = succeededOperations.map(o => ({
-            rowNumber: o.rowNumber,
-            id: o.importedObject!.item.id,
-            class: o.importedObject!.item.metaName,
-            className: o.importedObject!.item.type ?? '',
-            name: o.importedObject!.item.name,
-            attributes: o.importedObject!.item.attributes.map(a => ({name: a.metaName, value: a.value})),
-            edited: !!o.editObject && !!o.importedObject!.item.groupId,
-            created: !!o.createObject,
-        }));
-        return {
-            succeededOperations,
-            entries,
-            errors,
-        };
+        this._importErrors.set([]);
+        this._succeededImports.set([]);
+        this._succeededRelations.set([]);
+    }
+
+    finishImport(entries: SucceededImports[], errors: ErrorList[], relations: SucceededRelations[]) {
+        this._succeededImports.set(entries);
+        this._importErrors.set(errors);
+        this._succeededRelations.set(relations);
+        this._importing.set(false);
+    }
+
+    failImport(errors: ErrorList[]) {
+        this._importErrors.set(errors);
+        this._importing.set(false);
     }
 
     private getImportContext() {
@@ -222,31 +173,5 @@ export class AdonisImportStoreService {
             return undefined;
         }
         return { baseUrl, repositoryId };
-    }
-
-    private createOrEditItems(rowOperations: RowOperation[], baseUrl: string, repositoryId: string) {
-        const creationAndEditAttributeOperations: Promise<RowOperation>[] = [];
-        rowOperations.forEach(op => {
-            if (op.createObject) {
-                creationAndEditAttributeOperations.push(
-                    firstValueFrom(this.dataAccess.createObject(baseUrl, repositoryId, op.createObject).pipe(
-                        map(importedObject => ({ ...op, importedObject })),
-                        catchError((error: HttpErrorResponse) => of({ ...op, error }))
-                    ))
-                );
-            } else {
-                // only change attributes that need to be changed
-                if (op.editObject!.attributes.length > 0) {
-                    creationAndEditAttributeOperations.push(
-                        firstValueFrom(this.dataAccess.editObject(baseUrl, repositoryId, op.editObject!, op.editObjectId!).pipe(
-                            map(importedObject => ({ ...op, importedObject })),
-                            catchError((error: HttpErrorResponse) => of({ ...op, error }))
-                        ))
-                    );
-                }
-            }
-        });
-        return creationAndEditAttributeOperations;
-
     }
 }

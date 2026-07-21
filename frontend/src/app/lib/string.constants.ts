@@ -1,5 +1,3 @@
-export const adonisRequestConcurrency = 6;
-
 export const rel = '-rel';
 export const RELATIONS = 'RELATIONS';
 export const ATTRDEF = 'ATTRDEF';

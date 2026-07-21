@@ -1,7 +1,7 @@
 import { Component, inject, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
-import { AdonisStoreService } from '../lib/store/adonis-store.service';
 import { ApplicationStateService } from '../lib/store/application-state.service';
+import { AdonisMetadataWorkflowService } from '../lib/workflows/adonis-metadata-workflow.service';
 
 @Component({
   selector: 'app-login',
@@ -12,7 +12,7 @@ import { ApplicationStateService } from '../lib/store/application-state.service'
 })
 export class Login {
   protected appState = inject(ApplicationStateService);
-  private adonisStore = inject(AdonisStoreService);
+  private readonly metadataWorkflow = inject(AdonisMetadataWorkflowService);
 
   loginForm = new FormGroup({
     url: new FormControl('',
@@ -29,6 +29,6 @@ export class Login {
   });
 
   login() {
-    this.adonisStore.loadClasses(this.loginForm.value.url!, this.loginForm.value.username!, this.loginForm.value.password!, this.loginForm.value.purpose!);
+    this.metadataWorkflow.initializeSession(this.loginForm.value.url!, this.loginForm.value.username!, this.loginForm.value.password!, this.loginForm.value.purpose!);
   }
 }

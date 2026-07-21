@@ -25,8 +25,8 @@ import { AdonisItem } from '../models/adonis-rest/read/item.interface';
 })
 export class DataAccess {
   private readonly http = inject(HttpClient);
-  private readonly maxConcurrentRequests = Constants.adonisRequestConcurrency;
-  private readonly readRetryCount = 2;
+  private readonly maxConcurrentRequests = 20;
+  private readonly readRetryCount = 0;
   private readonly requestQueue = new Subject<QueuedRequest<unknown>>();
   private readonly inflightReadRequests = new Map<string, Observable<unknown>>();
 

@@ -3,14 +3,11 @@ import { Component, computed, ElementRef, inject, viewChildren, ChangeDetectionS
 import { CellInformation } from '../../lib/models/table/cellinformation.model';
 import { NgClass } from '@angular/common';
 import { ErrorBadge } from '../error-badge/error-badge';
-import { AdonisClass } from '../../lib/models/adonis-rest/metadata/class.interface';
-import { CreateObject, EditObject } from '../../lib/models/adonis-rest/write/object.interface';
-import { RowOperation } from '../../lib/models/table/row-operations.model';
 import { AdonisStoreService } from '../../lib/store/adonis-store.service';
 import { ImportTableService } from '../../lib/store/import-table.serivce';
 import { ApplicationStateService } from '../../lib/store/application-state.service';
 import { AdonisImportStoreService } from '../../lib/store/adonis-import-store.service';
-import { AdonisItem } from '../../lib/models/adonis-rest/read/item.interface';
+import { AdonisImportWorkflowService } from '../../lib/workflows/adonis-import-workflow.service';
 
 @Component({
   selector: 'app-import-test-table',
@@ -24,6 +21,7 @@ export class ImportTestTable {
   protected readonly adonisStore = inject(AdonisStoreService);
   protected readonly tableStore = inject(ImportTableService);
   protected readonly adonisImportStore = inject(AdonisImportStoreService);
+  protected readonly importWorkflow = inject(AdonisImportWorkflowService);
 
   columnDefinitions = this.tableStore.columnDefinitions();
   // table cells for selection
@@ -72,62 +70,7 @@ export class ImportTestTable {
 
 
   onImport() {
-    const rowOperations: RowOperation[] = this.createRowsForBackend(
-      this.tableStore.cellInformations(),
-      this.tableStore.rowNumbers(),
-      this.adonisStore.selectedClass()!,
-      this.adonisImportStore.selectedObjectGroup()!.id,
-      this.adonisImportStore.items(),
-    );
-    this.adonisImportStore.importItems(rowOperations);
-  }
-
-  private createRowsForBackend(cellInformations: CellInformation[], rowNumbers: number[], selectedClass: AdonisClass, groupId: string, existingItems: AdonisItem[]) {
-    const rows: RowOperation[] = [];
-    for (let rowNumber of rowNumbers) {
-      const cells = cellInformations.filter(c => c.row === rowNumber);
-      const nameCell = cells.find(c => c.isPrimary)!;
-      const attributeCells = cells.filter(c => !c.isPrimary);
-      const existingItem = existingItems.find(i => i.name === nameCell.stringValue);
-      if (existingItem) {
-        const editObject: EditObject = {
-          id: existingItem.id,
-          name: existingItem.name,
-          metaName: existingItem.metaName,
-          attributes: attributeCells
-            .filter(a => { // filter out all attributes that don't need to be changed
-              const correspondingAttribute = existingItem.attributes.find(at => at.metaName === a.name);
-              if (!correspondingAttribute) return true;
-              if (correspondingAttribute.value === a.typedValue) return false;
-              return true;
-            })
-            .map(a => ({
-              metaName: a.name,
-              value: a.value,
-            })),
-        };
-        rows[rowNumber] = {
-          rowNumber,
-          editObject,
-          editObjectId: existingItem.id,
-        }
-      } else {
-        const createObject: CreateObject = {
-          metaName: selectedClass.metaName,
-          name: nameCell.value,
-          groupId,
-          attributes: attributeCells.map(a => ({
-            metaName: a.name,
-            value: a.value,
-          })),
-        };
-        rows[rowNumber] = {
-          rowNumber,
-          createObject,
-        };
-      }
-    }
-    return rows;
+    this.importWorkflow.importCurrentTable();
   }
   /*onCellClick(event: FocusEvent) {
     let colIndex = -1;

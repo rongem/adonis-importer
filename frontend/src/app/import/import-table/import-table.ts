@@ -8,6 +8,7 @@ import { AdonisStoreService } from '../../lib/store/adonis-store.service';
 import { ImportTableService } from '../../lib/store/import-table.serivce';
 import { ApplicationStateService } from '../../lib/store/application-state.service';
 import { AdonisImportStoreService } from '../../lib/store/adonis-import-store.service';
+import { AdonisImportWorkflowService } from '../../lib/workflows/adonis-import-workflow.service';
 
 @Component({
   selector: 'app-import-table',
@@ -21,6 +22,7 @@ export class ImportTable {
   protected readonly adonisStore = inject(AdonisStoreService);
   protected readonly tableStore = inject(ImportTableService);
   protected readonly adonisImportStore = inject(AdonisImportStoreService);
+  protected readonly importWorkflow = inject(AdonisImportWorkflowService);
 
   columnDefinitions = this.tableStore.columnDefinitions();
   // table cells for selection
@@ -167,7 +169,7 @@ export class ImportTable {
     this.tableStore.changeColumnOrder(columnMappings);
   }
   onStartAdvancedTesting() {
-    this.adonisImportStore.testPrimaryInBackend();
+    this.importWorkflow.testPrimaryInBackend();
   }
 
 }

@@ -1,17 +1,13 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, firstValueFrom, of, tap } from 'rxjs';
 
-import { ApplicationStateService } from './application-state.service';
 import { ImportTableService } from './import-table.serivce';
-import { WorkflowState } from '../enums/workflow-state.enum';
 import { AdonisClass } from '../models/adonis-rest/metadata/class.interface';
 import { AdonisAttributeContainer } from '../models/adonis-rest/metadata/container/container-attribute.interface';
 import { AdonisClassContainer } from '../models/adonis-rest/metadata/container/container-class.interface';
 import { AdonisNotebookContainer } from '../models/adonis-rest/metadata/container/container-notebook.interface';
 import { AdonisNotebookGroup, AttributeOrRelation } from '../models/adonis-rest/metadata/notebook-elements.interface';
-import { DataAccess } from '../data-access/data-access';
 import { createColumnsFromProperties } from '../helpers/columns.functions';
 
 import * as Constants from '../string.constants';
@@ -19,10 +15,8 @@ import * as Constants from '../string.constants';
 @Injectable({ providedIn: 'root' })
 export class AdonisStoreService {
     // services
-    private readonly appState = inject(ApplicationStateService);
     private readonly tableStore = inject(ImportTableService);
     private readonly router = inject(Router);
-    private readonly dataAccess = inject(DataAccess);
 
     // Purpose of the application usage
     private readonly _purpose = signal<'config' | 'import' | undefined>(undefined);
@@ -68,100 +62,30 @@ export class AdonisStoreService {
         return this.repositoryClasses()[id];
     }
     
-    private completeHostName = (value: string) => 'https://' + value + '/rest/';
+    buildRestBaseUrl(value: string) {
+        return 'https://' + value + '/rest/';
+    }
 
-    // start by loading all repository classes from ADONIS
-    async loadClasses(url: string, username: string, password: string, purpose: 'config' | 'import') {
-        this.url.set(this.completeHostName(url));
+    setSessionContext(baseUrl: string, username: string, password: string, purpose: 'config' | 'import') {
+        this.url.set(baseUrl);
         this._basicAuth.set(btoa([username, ':', password].join('')));
         this._purpose.set(purpose);
-
-        this._authenticated.set(true)
-        this.appState.classesState.set(WorkflowState.Loading);
-        this.appState.errorMessage.set(undefined);
-        await firstValueFrom(this.dataAccess.retrieveClassesWithNotebooks(this.url()!).pipe(
-            tap((repositoryClasses) => {
-                this._repositoryClasses.set(repositoryClasses);
-                this.appState.classesState.set(WorkflowState.Loaded);
-                this.router.navigate([Constants.classes_url]);
-                this.loadNotebooks();
-                this.loadAttributes();
-            }),
-            catchError((error: HttpErrorResponse) => {
-                console.error(error);
-                this._authenticated.set(false);
-                this.appState.classesState.set(WorkflowState.ErrorOccured);
-                this.appState.errorMessage.set(`Fehler beim Laden der Klassen: ${error.message}`);
-                return of({} as AdonisClassContainer);
-            }),
-        ));
     }
 
-    async refreshMetamodel() {
-        const baseUrl = this.url();
-        const purpose = this._purpose();
-        if (!baseUrl || !purpose) {
-            this.appState.errorMessage.set('Kein Metamodell-Refresh möglich: Verbindung nicht initialisiert.');
-            return;
-        }
-        this.appState.classesState.set(WorkflowState.Loading);
-        this.appState.notebookState.set(WorkflowState.Loading);
-        this.appState.attributesState.set(WorkflowState.Loading);
-
-        await firstValueFrom(this.dataAccess.retrieveClassesWithNotebooks(baseUrl).pipe(
-            tap((repositoryClasses) => {
-                this._repositoryClasses.set(repositoryClasses);
-                this.appState.classesState.set(WorkflowState.Loaded);
-                this.loadNotebooks();
-                this.loadAttributes();
-            }),
-            catchError((error: HttpErrorResponse) => {
-                console.error(error);
-                this.appState.classesState.set(WorkflowState.ErrorOccured);
-                this.appState.notebookState.set(WorkflowState.ErrorOccured);
-                this.appState.attributesState.set(WorkflowState.ErrorOccured);
-                this.appState.errorMessage.set(`Fehler beim Aktualisieren des Metamodells: ${error.message}`);
-                return of({} as AdonisClassContainer);
-            }),
-        ));
+    setAuthenticated(value: boolean) {
+        this._authenticated.set(value);
     }
 
-    // after loading classes, load notebooks, attributes and repositories
-    async loadNotebooks() {
-        this.appState.notebookState.set(WorkflowState.Loading);
-        await firstValueFrom(this.dataAccess.retrieveNotebooksForClasses(this.classes(), this._purpose()!).pipe(
-            tap((notebooks) => {
-                const notebookContainer: AdonisNotebookContainer = {};
-                for (const n of notebooks) {
-                    const key = Object.keys(n)[0];
-                    notebookContainer[key] = n[key];
-                };
-                this._notebooks.set(notebookContainer);
-                this.appState.notebookState.set(WorkflowState.Loaded);
-            }),
-            catchError((error: HttpErrorResponse) => {
-                console.error(error);
-                this.appState.notebookState.set(WorkflowState.ErrorOccured);
-                this.appState.errorMessage.set(`Fehler beim Laden der Notizbücher: ${error.message}`);
-                return of({} as AdonisNotebookContainer);
-            }),
-        ));
+    setRepositoryClasses(repositoryClasses: AdonisClassContainer) {
+        this._repositoryClasses.set(repositoryClasses);
     }
-    
-    async loadAttributes() {
-        this.appState.attributesState.set(WorkflowState.Loading);
-        await firstValueFrom(this.dataAccess.retrieveAttributesForClasses(this.classes()).pipe(
-            tap((attributeContainer) => {
-                this._attributes.set(attributeContainer);
-                this.appState.attributesState.set(WorkflowState.Loaded);
-            }),
-            catchError((error: HttpErrorResponse) => {
-                console.error(error);
-                this.appState.attributesState.set(WorkflowState.ErrorOccured);
-                this.appState.errorMessage.set(`Fehler beim Laden der Attribute: ${error.message}`);
-                return of({} as AdonisAttributeContainer);
-            }),
-        ));
+
+    setNotebooks(notebooks: AdonisNotebookContainer) {
+        this._notebooks.set(notebooks);
+    }
+
+    setAttributes(attributes: AdonisAttributeContainer) {
+        this._attributes.set(attributes);
     }
 
     selectClass(selectedClass: AdonisClass) {
