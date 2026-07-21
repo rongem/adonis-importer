@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { EMPTY, catchError, finalize, forkJoin, map, mergeMap, Observable, of, ReplaySubject, retry, shareReplay, Subject, take, tap, timer } from 'rxjs';
 import { AdonisClassList } from '../models/adonis-rest/metadata/lists/list-class.interface';
@@ -26,9 +26,18 @@ import { AdonisItem } from '../models/adonis-rest/read/item.interface';
 export class DataAccess {
   private readonly http = inject(HttpClient);
   private readonly maxConcurrentRequests = 20;
-  private readonly readRetryCount = 0;
+  private readonly readRetryCount = 2;
   private readonly requestQueue = new Subject<QueuedRequest<unknown>>();
   private readonly inflightReadRequests = new Map<string, Observable<unknown>>();
+  private telemetry: DataAccessTelemetry = {
+    queuedReadRequests: 0,
+    queuedWriteRequests: 0,
+    inflightReadHits: 0,
+    readRetryAttempts: 0,
+    readRetryByStatus: {},
+    readRequestFailures: 0,
+    writeRequestFailures: 0,
+  };
 
   constructor() {
     this.requestQueue.pipe(
@@ -44,7 +53,16 @@ export class DataAccess {
       ? source$.pipe(
           retry({
             count: this.readRetryCount,
-            delay: (_error, retryAttempt) => timer(this.retryDelay(retryAttempt)),
+            delay: (error, retryAttempt) => {
+              if (!this.shouldRetryReadRequest(error)) {
+                throw error;
+              }
+              this.telemetry.readRetryAttempts += 1;
+              const status = error instanceof HttpErrorResponse ? error.status : -1;
+              const key = String(status);
+              this.telemetry.readRetryByStatus[key] = (this.telemetry.readRetryByStatus[key] ?? 0) + 1;
+              return timer(this.retryDelay(retryAttempt));
+            },
           }),
         )
       : source$;
@@ -52,7 +70,14 @@ export class DataAccess {
     return request$.pipe(
       tap({
         next: value => queuedRequest.response$.next(value),
-        error: error => queuedRequest.response$.error(error),
+        error: error => {
+          if (queuedRequest.isReadRequest) {
+            this.telemetry.readRequestFailures += 1;
+          } else {
+            this.telemetry.writeRequestFailures += 1;
+          }
+          queuedRequest.response$.error(error)
+        },
         complete: () => queuedRequest.response$.complete(),
       }),
       mergeMap(() => of(void 0)),
@@ -67,7 +92,28 @@ export class DataAccess {
     return baseDelayInMs + jitterInMs;
   };
 
+  private shouldRetryReadRequest(error: unknown) {
+    if (!(error instanceof HttpErrorResponse)) {
+      return false;
+    }
+
+    if (error.status === 0) {
+      return true;
+    }
+
+    if (error.status === 408 || error.status === 429) {
+      return true;
+    }
+
+    return error.status >= 500;
+  }
+
   private queueRequest<T>(createRequest: () => Observable<T>, isReadRequest: boolean): Observable<T> {
+    if (isReadRequest) {
+      this.telemetry.queuedReadRequests += 1;
+    } else {
+      this.telemetry.queuedWriteRequests += 1;
+    }
     const response$ = new ReplaySubject<T>(1);
     this.requestQueue.next({
       createRequest: createRequest as () => Observable<unknown>,
@@ -80,6 +126,7 @@ export class DataAccess {
   private getUrl<T>(url: string): Observable<T> {
     const inflightRequest = this.inflightReadRequests.get(url) as Observable<T> | undefined;
     if (inflightRequest) {
+      this.telemetry.inflightReadHits += 1;
       return inflightRequest;
     }
 
@@ -218,10 +265,39 @@ export class DataAccess {
   
   editObject = (baseUrl: string, repoId: string, existingObject: EditObject, id: string) => this.patchUrl<CreateObjectResponse>(this.repoUrl(baseUrl, repoId) + Constants.objects_url + '/' + idToUrl(id), existingObject);
 
+  resetTelemetry() {
+    this.telemetry = {
+      queuedReadRequests: 0,
+      queuedWriteRequests: 0,
+      inflightReadHits: 0,
+      readRetryAttempts: 0,
+      readRetryByStatus: {},
+      readRequestFailures: 0,
+      writeRequestFailures: 0,
+    };
+  }
+
+  getTelemetrySnapshot(): DataAccessTelemetry {
+    return {
+      ...this.telemetry,
+      readRetryByStatus: { ...this.telemetry.readRetryByStatus },
+    };
+  }
+
 }
 
 interface QueuedRequest<T> {
   createRequest: () => Observable<T>;
   isReadRequest: boolean;
   response$: ReplaySubject<T>;
+}
+
+export interface DataAccessTelemetry {
+  queuedReadRequests: number;
+  queuedWriteRequests: number;
+  inflightReadHits: number;
+  readRetryAttempts: number;
+  readRetryByStatus: Record<string, number>;
+  readRequestFailures: number;
+  writeRequestFailures: number;
 }

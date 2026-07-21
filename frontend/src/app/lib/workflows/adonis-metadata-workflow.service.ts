@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, firstValueFrom, of, tap } from 'rxjs';
 
-import { DataAccess } from '../data-access/data-access';
+import { DataAccess, DataAccessTelemetry } from '../data-access/data-access';
 import { WorkflowState } from '../enums/workflow-state.enum';
 import { AdonisAttributeContainer } from '../models/adonis-rest/metadata/container/container-attribute.interface';
 import { AdonisClassContainer } from '../models/adonis-rest/metadata/container/container-class.interface';
@@ -19,12 +19,42 @@ export class AdonisMetadataWorkflowService {
     private readonly router = inject(Router);
     private readonly dataAccess = inject(DataAccess);
 
+    private telemetryBaseline() {
+        return {
+            startedAt: performance.now(),
+            telemetry: this.dataAccess.getTelemetrySnapshot(),
+        };
+    }
+
+    private telemetryDelta(current: DataAccessTelemetry, baseline: DataAccessTelemetry) {
+        return {
+            queuedReadRequests: current.queuedReadRequests - baseline.queuedReadRequests,
+            queuedWriteRequests: current.queuedWriteRequests - baseline.queuedWriteRequests,
+            inflightReadHits: current.inflightReadHits - baseline.inflightReadHits,
+            readRetryAttempts: current.readRetryAttempts - baseline.readRetryAttempts,
+            readRequestFailures: current.readRequestFailures - baseline.readRequestFailures,
+            writeRequestFailures: current.writeRequestFailures - baseline.writeRequestFailures,
+        };
+    }
+
+    private logPhaseTelemetry(phase: string, baseline: { startedAt: number; telemetry: DataAccessTelemetry; }) {
+        const durationInMs = Math.round(performance.now() - baseline.startedAt);
+        const current = this.dataAccess.getTelemetrySnapshot();
+        const delta = this.telemetryDelta(current, baseline.telemetry);
+        console.info(
+            `[ADONIS][perf] ${phase}: ${durationInMs}ms | reads=${delta.queuedReadRequests} | inflightHits=${delta.inflightReadHits} | retries=${delta.readRetryAttempts} | readFailures=${delta.readRequestFailures}`,
+        );
+    }
+
     async initializeSession(url: string, username: string, password: string, purpose: 'config' | 'import') {
         const baseUrl = this.adonisStore.buildRestBaseUrl(url);
         this.adonisStore.setSessionContext(baseUrl, username, password, purpose);
         this.adonisStore.setAuthenticated(true);
+        this.dataAccess.resetTelemetry();
         this.appState.classesState.set(WorkflowState.Loading);
         this.appState.errorMessage.set(undefined);
+
+        const classesTelemetry = this.telemetryBaseline();
 
         await firstValueFrom(this.dataAccess.retrieveClassesWithNotebooks(baseUrl).pipe(
             tap((repositoryClasses) => {
@@ -42,6 +72,7 @@ export class AdonisMetadataWorkflowService {
                 return of({} as AdonisClassContainer);
             }),
         ));
+        this.logPhaseTelemetry('classes', classesTelemetry);
     }
 
     async refreshMetamodel() {
@@ -55,6 +86,8 @@ export class AdonisMetadataWorkflowService {
         this.appState.classesState.set(WorkflowState.Loading);
         this.appState.notebookState.set(WorkflowState.Loading);
         this.appState.attributesState.set(WorkflowState.Loading);
+
+        const classesTelemetry = this.telemetryBaseline();
 
         await firstValueFrom(this.dataAccess.retrieveClassesWithNotebooks(baseUrl).pipe(
             tap((repositoryClasses) => {
@@ -72,6 +105,7 @@ export class AdonisMetadataWorkflowService {
                 return of({} as AdonisClassContainer);
             }),
         ));
+        this.logPhaseTelemetry('classes-refresh', classesTelemetry);
     }
 
     async loadNotebooks() {
@@ -82,6 +116,7 @@ export class AdonisMetadataWorkflowService {
         }
 
         this.appState.notebookState.set(WorkflowState.Loading);
+        const notebooksTelemetry = this.telemetryBaseline();
         await firstValueFrom(this.dataAccess.retrieveNotebooksForClasses(this.adonisStore.classes(), purpose).pipe(
             tap((notebooks) => {
                 const notebookContainer: AdonisNotebookContainer = {};
@@ -99,10 +134,12 @@ export class AdonisMetadataWorkflowService {
                 return of({} as AdonisNotebookContainer);
             }),
         ));
+        this.logPhaseTelemetry('notebooks', notebooksTelemetry);
     }
 
     async loadAttributes() {
         this.appState.attributesState.set(WorkflowState.Loading);
+        const attributesTelemetry = this.telemetryBaseline();
         await firstValueFrom(this.dataAccess.retrieveAttributesForClasses(this.adonisStore.classes()).pipe(
             tap((attributeContainer) => {
                 this.adonisStore.setAttributes(attributeContainer);
@@ -115,5 +152,6 @@ export class AdonisMetadataWorkflowService {
                 return of({} as AdonisAttributeContainer);
             }),
         ));
+        this.logPhaseTelemetry('attributes', attributesTelemetry);
     }
 }
