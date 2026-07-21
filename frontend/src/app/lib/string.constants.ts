@@ -1,4 +1,4 @@
-export const STORE = 'STORE';
+export const adonisRequestConcurrency = 6;
 
 export const rel = '-rel';
 export const RELATIONS = 'RELATIONS';

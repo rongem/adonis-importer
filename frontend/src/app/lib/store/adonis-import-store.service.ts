@@ -80,8 +80,14 @@ export class AdonisImportStoreService {
 
     // load repositories from ADONIS. If only one repository is accessible, select it directly.
     async loadRepositories() {
+        const baseUrl = this.adonisStore.restBaseUrl();
+        if (!baseUrl) {
+            this.appState.repositoryState.set(WorkflowState.ErrorOccured);
+            this.appState.errorMessage.set('Keine ADONIS-Verbindung vorhanden. Bitte zuerst anmelden.');
+            return;
+        }
         this.appState.repositoryState.set(WorkflowState.Loading);
-        await firstValueFrom(this.dataAccess.retrieveRepositories().pipe(
+        await firstValueFrom(this.dataAccess.retrieveRepositories(baseUrl).pipe(
             tap((repositoryList) => {
                 this.appState.repositoryState.set(WorkflowState.Loaded);
                 this._repositories.set(repositoryList.repos);
@@ -101,14 +107,17 @@ export class AdonisImportStoreService {
     // select repository and load object groups
     selectRepository(repositoryId: string) {
         this._selectedRepositoryId.set(repositoryId);
-        this.dataAccess.repoId = repositoryId;
         this.loadObjectGroups();
     }
 
     // load object groups for selected repository
     private async loadObjectGroups() {
+        const context = this.getImportContext();
+        if (!context) {
+            return;
+        }
         this.appState.objectGroupsState.set(WorkflowState.Loading);
-        await firstValueFrom(this.dataAccess.retrieveObjectGroupStructure().pipe(
+        await firstValueFrom(this.dataAccess.retrieveObjectGroupStructure(context.baseUrl, context.repositoryId).pipe(
             tap((objectGroupList) => {
                 this._objectGroups.set(sortGroup(objectGroupList).group);
                 this.appState.objectGroupsState.set(WorkflowState.Loaded);
@@ -147,8 +156,12 @@ export class AdonisImportStoreService {
                 values: rows.map(r => r[primaryColumn.internalName]!.toString())
             }]
         };
+        const context = this.getImportContext();
+        if (!context) {
+            return;
+        }
         const queryString = encodeURIComponent(JSON.stringify(query));
-        const items = await firstValueFrom(this.dataAccess.retrieveSearchObjects(queryString))
+        const items = await firstValueFrom(this.dataAccess.retrieveSearchObjects(context.baseUrl, context.repositoryId, queryString))
             .catch((error: HttpErrorResponse) => {
                 console.error(error);
                 this.appState.itemsState.set(WorkflowState.ErrorOccured);
@@ -168,10 +181,18 @@ export class AdonisImportStoreService {
     }
 
     async importItems(rowOperations: RowOperation[]) {
+        const context = this.getImportContext();
+        if (!context) {
+            return {
+                succeededOperations: [],
+                entries: [],
+                errors: [{ row: 0, msg: 'Kein gültiger Import-Kontext (Verbindung/Repository) vorhanden.' }],
+            };
+        }
         this._importing.set(true);
         this.router.navigate([Constants.import_results_url]);
         let errors: ErrorList[];
-        const creationAndEditAttributeOperations = this.createOrEditItems(rowOperations);
+        const creationAndEditAttributeOperations = this.createOrEditItems(rowOperations, context.baseUrl, context.repositoryId);
         const operations = await Promise.all(creationAndEditAttributeOperations);
         errors = operations.filter(o => !!o.error).map(o => ({ row: o.rowNumber, msg: o.error!.status === 403 ? 'Keine Schreibrechte' : o.error!.message}));
         const succeededOperations = operations.filter(o => !o.error);
@@ -192,12 +213,23 @@ export class AdonisImportStoreService {
         };
     }
 
-    private createOrEditItems(rowOperations: RowOperation[]) {
+    private getImportContext() {
+        const baseUrl = this.adonisStore.restBaseUrl();
+        const repositoryId = this.selectedRepositoryId();
+        if (!baseUrl || !repositoryId) {
+            this.appState.errorMessage.set('Import-Kontext unvollständig. Bitte Verbindung und Repository prüfen.');
+            this.appState.targetState.set(WorkflowState.ErrorOccured);
+            return undefined;
+        }
+        return { baseUrl, repositoryId };
+    }
+
+    private createOrEditItems(rowOperations: RowOperation[], baseUrl: string, repositoryId: string) {
         const creationAndEditAttributeOperations: Promise<RowOperation>[] = [];
         rowOperations.forEach(op => {
             if (op.createObject) {
                 creationAndEditAttributeOperations.push(
-                    firstValueFrom(this.dataAccess.createObject(op.createObject).pipe(
+                    firstValueFrom(this.dataAccess.createObject(baseUrl, repositoryId, op.createObject).pipe(
                         map(importedObject => ({ ...op, importedObject })),
                         catchError((error: HttpErrorResponse) => of({ ...op, error }))
                     ))
@@ -206,7 +238,7 @@ export class AdonisImportStoreService {
                 // only change attributes that need to be changed
                 if (op.editObject!.attributes.length > 0) {
                     creationAndEditAttributeOperations.push(
-                        firstValueFrom(this.dataAccess.editObject(op.editObject!, op.editObjectId!).pipe(
+                        firstValueFrom(this.dataAccess.editObject(baseUrl, repositoryId, op.editObject!, op.editObjectId!).pipe(
                             map(importedObject => ({ ...op, importedObject })),
                             catchError((error: HttpErrorResponse) => of({ ...op, error }))
                         ))

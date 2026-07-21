@@ -30,6 +30,7 @@ export class AdonisStoreService {
 
     // state signals
     private readonly url = signal<string | undefined>(undefined);
+    readonly restBaseUrl = this.url.asReadonly();
     private readonly _basicAuth = signal<string | undefined>(undefined);
     readonly basicAuth = this._basicAuth.asReadonly();
 
@@ -91,6 +92,35 @@ export class AdonisStoreService {
                 this._authenticated.set(false);
                 this.appState.classesState.set(WorkflowState.ErrorOccured);
                 this.appState.errorMessage.set(`Fehler beim Laden der Klassen: ${error.message}`);
+                return of({} as AdonisClassContainer);
+            }),
+        ));
+    }
+
+    async refreshMetamodel() {
+        const baseUrl = this.url();
+        const purpose = this._purpose();
+        if (!baseUrl || !purpose) {
+            this.appState.errorMessage.set('Kein Metamodell-Refresh möglich: Verbindung nicht initialisiert.');
+            return;
+        }
+        this.appState.classesState.set(WorkflowState.Loading);
+        this.appState.notebookState.set(WorkflowState.Loading);
+        this.appState.attributesState.set(WorkflowState.Loading);
+
+        await firstValueFrom(this.dataAccess.retrieveClassesWithNotebooks(baseUrl).pipe(
+            tap((repositoryClasses) => {
+                this._repositoryClasses.set(repositoryClasses);
+                this.appState.classesState.set(WorkflowState.Loaded);
+                this.loadNotebooks();
+                this.loadAttributes();
+            }),
+            catchError((error: HttpErrorResponse) => {
+                console.error(error);
+                this.appState.classesState.set(WorkflowState.ErrorOccured);
+                this.appState.notebookState.set(WorkflowState.ErrorOccured);
+                this.appState.attributesState.set(WorkflowState.ErrorOccured);
+                this.appState.errorMessage.set(`Fehler beim Aktualisieren des Metamodells: ${error.message}`);
                 return of({} as AdonisClassContainer);
             }),
         ));

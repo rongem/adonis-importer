@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { forkJoin, map, mergeMap, Observable, of, take } from 'rxjs';
+import { EMPTY, catchError, finalize, forkJoin, map, mergeMap, Observable, of, ReplaySubject, retry, shareReplay, Subject, take, tap, timer } from 'rxjs';
 import { AdonisClassList } from '../models/adonis-rest/metadata/lists/list-class.interface';
 import { AdonisClass } from '../models/adonis-rest/metadata/class.interface';
 import { AdonisNoteBook } from '../models/adonis-rest/metadata/notebook.interface';
@@ -25,32 +25,90 @@ import { AdonisItem } from '../models/adonis-rest/read/item.interface';
 })
 export class DataAccess {
   private readonly http = inject(HttpClient);
-  private baseUrl = '';
+  private readonly maxConcurrentRequests = Constants.adonisRequestConcurrency;
+  private readonly readRetryCount = 2;
+  private readonly requestQueue = new Subject<QueuedRequest<unknown>>();
+  private readonly inflightReadRequests = new Map<string, Observable<unknown>>();
 
-  private retrieveClasslist = () => this.getUrl<AdonisClassList>(this.baseUrl + '4.0/metamodel/classes');
+  constructor() {
+    this.requestQueue.pipe(
+      mergeMap(request => this.executeQueuedRequest(request), this.maxConcurrentRequests),
+    ).subscribe();
+  }
+
+  private retrieveClasslist = (baseUrl: string) => this.getUrl<AdonisClassList>(baseUrl + '4.0/metamodel/classes');
+
+  private executeQueuedRequest = (queuedRequest: QueuedRequest<unknown>) => {
+    const source$ = queuedRequest.createRequest();
+    const request$ = queuedRequest.isReadRequest
+      ? source$.pipe(
+          retry({
+            count: this.readRetryCount,
+            delay: (_error, retryAttempt) => timer(this.retryDelay(retryAttempt)),
+          }),
+        )
+      : source$;
+
+    return request$.pipe(
+      tap({
+        next: value => queuedRequest.response$.next(value),
+        error: error => queuedRequest.response$.error(error),
+        complete: () => queuedRequest.response$.complete(),
+      }),
+      mergeMap(() => of(void 0)),
+      // Keep queue processing alive after request failures.
+      catchError(() => EMPTY),
+    );
+  };
+
+  private retryDelay = (retryAttempt: number) => {
+    const baseDelayInMs = Math.min(250 * 2 ** (retryAttempt - 1), 1500);
+    const jitterInMs = Math.floor(Math.random() * 150);
+    return baseDelayInMs + jitterInMs;
+  };
+
+  private queueRequest<T>(createRequest: () => Observable<T>, isReadRequest: boolean): Observable<T> {
+    const response$ = new ReplaySubject<T>(1);
+    this.requestQueue.next({
+      createRequest: createRequest as () => Observable<unknown>,
+      isReadRequest,
+      response$: response$ as ReplaySubject<unknown>,
+    });
+    return response$.asObservable();
+  }
 
   private getUrl<T>(url: string): Observable<T> {
-    return this.http.get<T>(url).pipe(take(1));
+    const inflightRequest = this.inflightReadRequests.get(url) as Observable<T> | undefined;
+    if (inflightRequest) {
+      return inflightRequest;
+    }
+
+    const request$ = this.queueRequest(() => this.http.get<T>(url).pipe(take(1)), true).pipe(
+      finalize(() => {
+        this.inflightReadRequests.delete(url);
+      }),
+      shareReplay({ bufferSize: 1, refCount: true }),
+    );
+
+    this.inflightReadRequests.set(url, request$ as Observable<unknown>);
+    return request$;
   }
 
   private postUrl<T>(url: string, body: any): Observable<T> {
-    return this.http.post<T>(url, body).pipe(take(1));
+    return this.queueRequest(() => this.http.post<T>(url, body).pipe(take(1)), false);
   }
 
   private patchUrl<T>(url: string, body: any): Observable<T> {
-    return this.http.patch<T>(url, body).pipe(take(1));
+    return this.queueRequest(() => this.http.patch<T>(url, body).pipe(take(1)), false);
   }
 
-  repoId: string = '';
-
   retrieveClassesWithNotebooks = (baseUrl: string) => {
-    this.baseUrl = baseUrl;
-    return this.retrieveClasslist().pipe(
+    return this.retrieveClasslist(baseUrl).pipe(
       map(m => {
         const forbiddenNames = ['C_COMMENT_ACTION', 'C_EXTERNAL_CONFIGURATION', 'CLOUD_REPOSITORY', 'C_CLOUD_TASK', 'REPOSITORY'];
         return m.classes.filter(c => c.abstract === false && c.repositoryClass === true && !c.metaName.startsWith('C_UML') && !forbiddenNames.includes(c.metaName));
       }),
-      mergeMap(this.retrieveClassDetails),
+      mergeMap(classes => this.retrieveClassDetails(classes)),
       // mergeMap(this.retrieveNotebooksForClasses),
       map(classes => {
         const classContainer: AdonisClassContainer = {};
@@ -136,15 +194,17 @@ export class DataAccess {
     );
   };
 
-  private get repoUrl() { return this.baseUrl + Constants.repos_url + idToUrl(this.repoId); }
+  private repoUrl(baseUrl: string, repoId: string) {
+    return baseUrl + Constants.repos_url + idToUrl(repoId);
+  }
 
-  retrieveRepositories = () => this.getUrl<AdonisRepoList>(this.baseUrl + Constants.repos_url);
+  retrieveRepositories = (baseUrl: string) => this.getUrl<AdonisRepoList>(baseUrl + Constants.repos_url);
 
-  retrieveObjectGroupStructure = () => this.getUrl<AdonisGroupContainer>(this.repoUrl + Constants.objectgroups_url);
+  retrieveObjectGroupStructure = (baseUrl: string, repoId: string) => this.getUrl<AdonisGroupContainer>(this.repoUrl(baseUrl, repoId) + Constants.objectgroups_url);
 
-  searchObjects = (queryString: string) => this.getUrl<AdonisSearchResult>(this.repoUrl + Constants.search_query_url + queryString);
+  searchObjects = (baseUrl: string, repoId: string, queryString: string) => this.getUrl<AdonisSearchResult>(this.repoUrl(baseUrl, repoId) + Constants.search_query_url + queryString);
 
-  retrieveSearchObjects = (queryString: string) => this.searchObjects(queryString).pipe(
+  retrieveSearchObjects = (baseUrl: string, repoId: string, queryString: string) => this.searchObjects(baseUrl, repoId, queryString).pipe(
     mergeMap(result => {
       const objectDetails = result.items.map(i => this.getUrl<AdonisItem>(i.rest_links.find(l => l.rel === Constants.self)!.href));
       if (objectDetails.length === 0) {
@@ -154,8 +214,14 @@ export class DataAccess {
     }),
   );
 
-  createObject = (newObject: CreateObject) => this.postUrl<CreateObjectResponse>(this.repoUrl + Constants.objects_url, newObject);
+  createObject = (baseUrl: string, repoId: string, newObject: CreateObject) => this.postUrl<CreateObjectResponse>(this.repoUrl(baseUrl, repoId) + Constants.objects_url, newObject);
   
-  editObject = (existingObject: EditObject, id: string) => this.patchUrl<CreateObjectResponse>(this.repoUrl + Constants.objects_url + '/' + idToUrl(id), existingObject);
+  editObject = (baseUrl: string, repoId: string, existingObject: EditObject, id: string) => this.patchUrl<CreateObjectResponse>(this.repoUrl(baseUrl, repoId) + Constants.objects_url + '/' + idToUrl(id), existingObject);
 
+}
+
+interface QueuedRequest<T> {
+  createRequest: () => Observable<T>;
+  isReadRequest: boolean;
+  response$: ReplaySubject<T>;
 }
