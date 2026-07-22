@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { Router } from '@angular/router';
 
 import { AdonisImportStoreService } from '../../lib/store/adonis-import-store.service';
 
@@ -9,6 +10,7 @@ describe('ChooseObjectgroup', () => {
   let component: ChooseObjectgroup;
   let fixture: ComponentFixture<ChooseObjectgroup>;
   let storeMock: { selectObjectGroup: ReturnType<typeof vi.fn> };
+  let routerMock: { navigate: ReturnType<typeof vi.fn> };
 
   const objectGroups = [
     {
@@ -32,9 +34,14 @@ describe('ChooseObjectgroup', () => {
       selectObjectGroup: vi.fn(),
     };
 
+    routerMock = { navigate: vi.fn() };
+
     await TestBed.configureTestingModule({
       imports: [ChooseObjectgroup],
-      providers: [{ provide: AdonisImportStoreService, useValue: storeMock }],
+      providers: [
+        { provide: AdonisImportStoreService, useValue: storeMock },
+        { provide: Router, useValue: routerMock },
+      ],
     })
     .compileComponents();
 

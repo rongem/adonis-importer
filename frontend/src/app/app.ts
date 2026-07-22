@@ -1,9 +1,10 @@
 import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { NgClass } from '@angular/common';
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
 import { ApplicationStateService } from './lib/store/application-state.service';
 import { AdonisStoreService } from './lib/store/adonis-store.service';
+import { WorkflowState } from './lib/enums/workflow-state.enum';
 
 
 @Component({
@@ -16,8 +17,7 @@ import { AdonisStoreService } from './lib/store/adonis-store.service';
 export class App {
   protected readonly title = signal('ADONIS Importer');
   protected readonly appState = inject(ApplicationStateService);
-  protected readonly store = inject(AdonisStoreService)
-
-  attributeForm?: FormGroup;
+  protected readonly store = inject(AdonisStoreService);
+  protected readonly WorkflowState = WorkflowState;
 
 }

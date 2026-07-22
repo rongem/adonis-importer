@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormGroup } from '@angular/forms';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { Router } from '@angular/router';
 
 import * as Constants from '../../lib/string.constants';
 import { AdonisStoreService } from '../../lib/store/adonis-store.service';
@@ -14,8 +15,9 @@ describe('ClassContent', () => {
   let storeMock: {
     selectedClassesProperties: ReturnType<typeof vi.fn>;
     selectProperties: ReturnType<typeof vi.fn>;
-    selectAction: ReturnType<typeof vi.fn>;
+    purpose: ReturnType<typeof vi.fn>;
   };
+  let routerMock: { navigate: ReturnType<typeof vi.fn>; navigateByUrl: ReturnType<typeof vi.fn> };
 
   const nameProperty = {
     id: 'attr-name',
@@ -63,14 +65,17 @@ describe('ClassContent', () => {
     storeMock = {
       selectedClassesProperties: vi.fn(() => [nameProperty, descProperty, relationProperty]),
       selectProperties: vi.fn(),
-      selectAction: vi.fn(),
+      purpose: vi.fn(() => 'config'),
     };
+
+    routerMock = { navigate: vi.fn(), navigateByUrl: vi.fn() };
 
     await TestBed.configureTestingModule({
       imports: [ClassContent],
       providers: [
         { provide: AdonisStoreService, useValue: storeMock },
         { provide: ApplicationStateService, useValue: { attributesReady: vi.fn(() => true) } },
+        { provide: Router, useValue: routerMock },
       ],
     })
     .compileComponents();
@@ -112,8 +117,8 @@ describe('ClassContent', () => {
     expect(form.get('attr-desc')?.value).not.toBe(true);
   });
 
-  it('delegates action selection to store', () => {
+  it('navigates to export-files when purpose is config', () => {
     component.selectAction();
-    expect(storeMock.selectAction).toHaveBeenCalledTimes(1);
+    expect(routerMock.navigate).toHaveBeenCalledWith([Constants.export_files_url]);
   });
 });

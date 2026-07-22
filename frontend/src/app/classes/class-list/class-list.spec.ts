@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { Router } from '@angular/router';
 
 import { AdonisStoreService } from '../../lib/store/adonis-store.service';
 import { ApplicationStateService } from '../../lib/store/application-state.service';
@@ -14,6 +15,7 @@ describe('ClassList', () => {
     selectClass: ReturnType<typeof vi.fn>;
   };
   let appStateMock: { notebooksReady: ReturnType<typeof vi.fn> };
+  let routerMock: { navigate: ReturnType<typeof vi.fn> };
 
   const classes = [
     {
@@ -40,11 +42,14 @@ describe('ClassList', () => {
       notebooksReady: vi.fn(() => true),
     };
 
+    routerMock = { navigate: vi.fn() };
+
     await TestBed.configureTestingModule({
       imports: [ClassList],
       providers: [
         { provide: AdonisStoreService, useValue: storeMock },
         { provide: ApplicationStateService, useValue: appStateMock },
+        { provide: Router, useValue: routerMock },
       ],
     })
     .compileComponents();

@@ -64,9 +64,24 @@ export class AdonisImportWorkflowService {
             });
 
         this.importStore.setItems(items);
+        this.buildPreviewPlan();
         this.appState.itemsState.set(WorkflowState.Loaded);
         this.appState.targetState.set(WorkflowState.Loaded);
         this.importStore.setCanImport(true);
+    }
+
+    buildPreviewPlan() {
+        const selectedClass = this.adonisStore.selectedClass();
+        const selectedObjectGroup = this.importStore.selectedObjectGroup();
+        if (!selectedClass || !selectedObjectGroup) return;
+        const plan = this.createImportPlan(
+            this.tableStore.cellInformations(),
+            this.tableStore.rowNumbers(),
+            selectedClass,
+            selectedObjectGroup.id,
+            this.importStore.items(),
+        );
+        this.importStore.setPreviewPlan(plan);
     }
 
     async importCurrentTable() {

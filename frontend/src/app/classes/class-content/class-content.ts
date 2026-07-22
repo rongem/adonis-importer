@@ -1,5 +1,6 @@
 import { Component, computed, inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Children } from "../children/children";
 import { AdonisNotebookRelations, AttributeOrGroupOrRelation, AttributeOrRelation } from '../../lib/models/adonis-rest/metadata/notebook-elements.interface';
 import { AdonisStoreService } from '../../lib/store/adonis-store.service';
@@ -16,6 +17,7 @@ import * as Constants from '../../lib/string.constants';
 export class ClassContent {
   protected readonly adonisStore = inject(AdonisStoreService);
   protected readonly appState = inject(ApplicationStateService);
+  private readonly router = inject(Router);
 
   selectedProperties: AttributeOrRelation[] = [];
 
@@ -78,6 +80,15 @@ export class ClassContent {
   };
 
   selectAction() {
-    this.adonisStore.selectAction();
+    switch (this.adonisStore.purpose()) {
+      case 'config':
+        this.router.navigate([Constants.export_files_url]);
+        break;
+      case 'import':
+        this.router.navigate([Constants.choose_import_location_url]);
+        break;
+      default:
+        this.router.navigateByUrl('/');
+    }
   }
 }

@@ -9,12 +9,12 @@
         Derzeit werden Daten nachgeladen. Bitte haben Sie ein wenig Geduld.
     </span>
     <div style="position: fixed; top: 0px; left: 0px;">
-        <span class="indicator" [ngClass]="{yellow: appState.classesState() === 1, green: appState.classesState() === 2, red: appState.classesState() === 3}">C</span>
-        <span class="indicator" [ngClass]="{yellow: appState.notebookState() === 1, green: appState.notebookState() === 2, red: appState.notebookState() === 3}">N</span>
-        <span class="indicator" [ngClass]="{yellow: appState.attributesState() === 1, green: appState.attributesState() === 2, red: appState.attributesState() === 3}">A</span>
-        <span class="indicator" [ngClass]="{yellow: appState.repositoryState() === 1, green: appState.repositoryState() === 2, red: appState.repositoryState() === 3}">R</span>
-        <span class="indicator" [ngClass]="{yellow: appState.objectGroupsState() === 1, green: appState.objectGroupsState() === 2, red: appState.objectGroupsState() === 3}">O</span>
-        <span class="indicator" [ngClass]="{yellow: appState.itemsState() === 1, green: appState.itemsState() === 2, red: appState.itemsState() === 3}">I</span>
+        <span class="indicator" [ngClass]="{yellow: appState.classesState() === WorkflowState.Loading, green: appState.classesState() === WorkflowState.Loaded, red: appState.classesState() === WorkflowState.ErrorOccured}">C</span>
+        <span class="indicator" [ngClass]="{yellow: appState.notebookState() === WorkflowState.Loading, green: appState.notebookState() === WorkflowState.Loaded, red: appState.notebookState() === WorkflowState.ErrorOccured}">N</span>
+        <span class="indicator" [ngClass]="{yellow: appState.attributesState() === WorkflowState.Loading, green: appState.attributesState() === WorkflowState.Loaded, red: appState.attributesState() === WorkflowState.ErrorOccured}">A</span>
+        <span class="indicator" [ngClass]="{yellow: appState.repositoryState() === WorkflowState.Loading, green: appState.repositoryState() === WorkflowState.Loaded, red: appState.repositoryState() === WorkflowState.ErrorOccured}">R</span>
+        <span class="indicator" [ngClass]="{yellow: appState.objectGroupsState() === WorkflowState.Loading, green: appState.objectGroupsState() === WorkflowState.Loaded, red: appState.objectGroupsState() === WorkflowState.ErrorOccured}">O</span>
+        <span class="indicator" [ngClass]="{yellow: appState.itemsState() === WorkflowState.Loading, green: appState.itemsState() === WorkflowState.Loaded, red: appState.itemsState() === WorkflowState.ErrorOccured}">I</span>
     </div>
 }
 

@@ -1,6 +1,5 @@
 import { computed, inject, Injectable, signal } from "@angular/core";
 import { HttpErrorResponse } from "@angular/common/http";
-import { Router } from "@angular/router";
 import { firstValueFrom, catchError, of, tap } from "rxjs";
 import { ApplicationStateService } from "./application-state.service";
 import { AdonisStoreService } from "./adonis-store.service";
@@ -12,7 +11,7 @@ import { ErrorList } from "../models/table/errorlist.model";
 import { SucceededImports, SucceededRelations } from "../models/table/succeeded-operations.model";
 import { WorkflowState } from "../enums/workflow-state.enum";
 import { sortGroup } from "../helpers/group-sorter.functions";
-import * as Constants from '../string.constants';
+import { ImportPlan } from "../models/table/import-plan.model";
 import { Column } from "../models/table/column.model";
 import { AdonisItem } from "../models/adonis-rest/read/item.interface";
 
@@ -21,7 +20,6 @@ export class AdonisImportStoreService {
     private readonly appState = inject(ApplicationStateService);
     private readonly adonisStore = inject(AdonisStoreService);
     private readonly tableStore = inject(ImportTableService);
-    private readonly router = inject(Router);
     private readonly dataAccess = inject(DataAccess);
 
     // import signals
@@ -49,6 +47,8 @@ export class AdonisImportStoreService {
     readonly advancedTestingStarted = signal(false);
     private readonly _canImport = signal(false);
     readonly canImport = this._canImport.asReadonly();
+    private readonly _previewPlan = signal<ImportPlan | undefined>(undefined);
+    readonly previewPlan = this._previewPlan.asReadonly();
 
     // computed signals
     readonly sortedRepositories = computed(() => {
@@ -130,7 +130,6 @@ export class AdonisImportStoreService {
     // select object group for import
     selectObjectGroup(objectGroup: AdonisObjectGroup) {
         this._selectedObjectGroup.set(objectGroup);
-        this.router.navigate([Constants.import_url]);
     }
 
     setItems(items: AdonisItem[]) {
@@ -143,6 +142,10 @@ export class AdonisImportStoreService {
 
     setCanImport(value: boolean) {
         this._canImport.set(value);
+    }
+
+    setPreviewPlan(plan: ImportPlan) {
+        this._previewPlan.set(plan);
     }
 
     beginImport() {

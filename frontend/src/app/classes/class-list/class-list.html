@@ -5,7 +5,7 @@
             <p>
                 <button
                     [title]="c.infoText ? c.infoText.de : ''"
-                    (click)="store.selectClass(c)"
+                    (click)="selectButton_click(c)"
                     class="content-button"
                     [disabled]="appState.notebooksReady() === false"
                 >

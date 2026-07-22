@@ -1,74 +1,90 @@
 <section class="content">
-    <div style="display: flex; justify-content: space-between;">
-        <h3>Klasse</h3>
-        <p>{{adonisStore.selectedClass()!.displayNames.de}} ({{adonisStore.selectedClass()!.metaName}})</p>
-        <h3>Repository</h3>
-        <p>{{adonisImportStore.selectedRepository()!.name}}</p>
-        <h3>Objektgruppe</h3>
-        <p>
-            {{adonisImportStore.selectedObjectGroup()!.name}}
-        </p>
+    <div class="context-bar">
+        <span><strong>Klasse:</strong> {{adonisStore.selectedClass()!.displayNames.de}}</span>
+        <span><strong>Repository:</strong> {{adonisImportStore.selectedRepository()!.name}}</span>
+        <span><strong>Objektgruppe:</strong> {{adonisImportStore.selectedObjectGroup()!.name}}</span>
     </div>
 
-    @if (adonisImportStore.canImport() === true) {
-      <section class="button-container">
-        <button type="button" (click)="onImport()">Starte Import</button>
-      </section>
-    }
-    <table class="table">
-      <thead>
-        <tr>
-          <th style="padding:0;"></th>
-          <th style="padding:0;">#</th>
-          @for (column of tableStore.columnMapping(); track column; let i = $index) {
-            <th
-              [ngClass]="{ primary: $safeNavigationMigration(getColumn(column)?.primary)}"
-              [attr.title]="getColumnTitle(column)"
-              class="position-relative">
-              {{getColumn(column)?.displayName}}
-              @if (getColumn(column)?.primary === true) {
-                <span class="visually-hidden">
-                    Spalte hält den Primärschlüssel der Tabelle.
-                </span>
-              }
-              @if (getColumn(column)?.unique === true) {
-                <span class="visually-hidden">
-                  Diese Tabelle muss eindeutige Werte enthalten.
-                </span>
-              }
-            </th>
-          }
-        </tr>
-      </thead>
-      <tbody>
-        @for (rowNumber of tableStore.rowNumbers(); track rowNumber) {
-          <tr [ngClass]="{'position-relative': getRowContainsErrors(rowNumber) === true}">
-            <td [attr.title]="getRowErrorDescriptions(rowNumber)">
-              @if (getRowContainsErrors(rowNumber) === true) {
-                <app-error-badge [errorDescription]="getRowErrorDescriptions(rowNumber)"></app-error-badge>
-              } @else {
-                @if (this.adonisImportStore.rowsWithExistingItems().includes(rowNumber) === true) {
-                  <span class="edit">&#10000;</span>
-                  <span class="visually-hidden">Objekt mit diesem Namen gefunden. Objekt wird geändert.</span>
-                } @else {
-                  <span class="new">+</span>
-                  <span class="visually-hidden">Objekt wird neu erstellt.</span>
-                }
-              }
-            </td>
-            <td class="align-right">
-              {{rowNumber}}
-            </td>
-            @for (column of tableStore.columnMapping(); track column; let i = $index) {
-              <td
-                [ngClass]="{error: getCellInformation(rowNumber, i)?.containsErrors || getCellContainsRowErrors(rowNumber, i) }"
-                [attr.title]="getCellErrorMessages(rowNumber, i)()">
-                {{getCellInformation(rowNumber, i)?.typedValue}}
-              </td>
+    @if (adonisImportStore.previewPlan()) {
+        <div class="summary-bar">
+            @if (summary().create > 0) {
+                <span class="summary-badge create">+ {{summary().create}} neu</span>
             }
-          </tr>
-        }
-      </tbody>
-    </table>
+            @if (summary().edit > 0) {
+                <span class="summary-badge edit">✎ {{summary().edit}} geändert</span>
+            }
+            @if (summary().skip > 0) {
+                <span class="summary-badge skip">= {{summary().skip}} unverändert</span>
+            }
+            @if (summary().error > 0) {
+                <span class="summary-badge error">! {{summary().error}} Fehler</span>
+            }
+        </div>
+    }
 
+    @if (adonisImportStore.canImport()) {
+        <div class="button-container">
+            <button type="button" (click)="onImport()">Import starten</button>
+        </div>
+    }
+
+    <ul class="preview-list">
+        @for (row of previewRows(); track row.rowNumber) {
+            <li [ngClass]="row.action" class="preview-row">
+                @if (row.action === 'error') {
+                    <div class="row-summary">
+                        <span class="action-badge error" aria-label="Fehler">!</span>
+                        <span class="row-number">{{row.rowNumber}}.</span>
+                        <strong class="row-name">{{row.name}}</strong>
+                    </div>
+                    <p class="error-text">{{row.errorText}}</p>
+                } @else if (row.action === 'skip') {
+                    <div class="row-summary">
+                        <span class="action-badge skip" aria-label="Unverändert">=</span>
+                        <span class="row-number">{{row.rowNumber}}.</span>
+                        <span class="row-name">{{row.name}}</span>
+                        <span class="row-hint">Keine Änderungen nötig</span>
+                    </div>
+                } @else if (row.action === 'create') {
+                    <details>
+                        <summary class="row-summary">
+                            <span class="action-badge create" aria-label="Wird neu angelegt">+</span>
+                            <span class="row-number">{{row.rowNumber}}.</span>
+                            <strong class="row-name">{{row.name}}</strong>
+                            <span class="row-hint">Wird neu angelegt</span>
+                        </summary>
+                        @if (row.newAttributes.length > 0) {
+                            <ul class="attr-list">
+                                @for (attr of row.newAttributes; track attr.displayName) {
+                                    <li class="attr-item">
+                                        <span class="attr-label">{{attr.displayName}}</span>
+                                        <span class="attr-value new-value">{{attr.value}}</span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </details>
+                } @else if (row.action === 'edit') {
+                    <details open>
+                        <summary class="row-summary">
+                            <span class="action-badge edit" aria-label="Wird geändert">✎</span>
+                            <span class="row-number">{{row.rowNumber}}.</span>
+                            <strong class="row-name">{{row.name}}</strong>
+                            <span class="row-hint">{{row.changedAttributes.length}} Eigenschaft(en) geändert</span>
+                        </summary>
+                        <ul class="attr-list">
+                            @for (attr of row.changedAttributes; track attr.displayName) {
+                                <li class="attr-item diff">
+                                    <span class="attr-label">{{attr.displayName}}</span>
+                                    <span class="attr-value old-value">{{attr.oldValue}}</span>
+                                    <span class="attr-arrow" aria-hidden="true">→</span>
+                                    <span class="attr-value new-value">{{attr.newValue}}</span>
+                                </li>
+                            }
+                        </ul>
+                    </details>
+                }
+            </li>
+        }
+    </ul>
 </section>

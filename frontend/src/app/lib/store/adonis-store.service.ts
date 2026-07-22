@@ -1,6 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { Router } from '@angular/router';
 
 import { ImportTableService } from './import-table.service';
 import { AdonisClass } from '../models/adonis-rest/metadata/class.interface';
@@ -16,7 +15,6 @@ import * as Constants from '../string.constants';
 export class AdonisStoreService {
     // services
     private readonly tableStore = inject(ImportTableService);
-    private readonly router = inject(Router);
 
     // Purpose of the application usage
     private readonly _purpose = signal<'config' | 'import' | undefined>(undefined);
@@ -90,7 +88,6 @@ export class AdonisStoreService {
 
     selectClass(selectedClass: AdonisClass) {
         this._selectedClass.set(selectedClass);
-        this.router.navigate([Constants.classes_url, selectedClass.metaName]);
     }
 
     selectProperties(selectedProperties: AttributeOrRelation[]) {
@@ -98,16 +95,4 @@ export class AdonisStoreService {
         this.tableStore.setColumnDefinitions(createColumnsFromProperties(selectedProperties, this.attributes()));
     }
 
-    selectAction() {
-        switch (this.purpose()) {
-            case 'config':
-                this.router.navigate([Constants.export_files_url]);
-                break;
-            case 'import':
-                this.router.navigate([Constants.choose_import_location_url]);
-                break;
-            default:
-                this.router.navigateByUrl('/');
-        }
-    }
 }
