@@ -15,7 +15,7 @@ import { ErrorList } from '../models/table/errorlist.model';
 import { CellInformation } from '../models/table/cellinformation.model';
 import { RowOperation } from '../models/table/row-operations.model';
 import { SucceededImports } from '../models/table/succeeded-operations.model';
-import { ImportTableService } from '../store/import-table.serivce';
+import { ImportTableService } from '../store/import-table.service';
 import { AdonisStoreService } from '../store/adonis-store.service';
 import { AdonisImportStoreService } from '../store/adonis-import-store.service';
 import { ApplicationStateService } from '../store/application-state.service';

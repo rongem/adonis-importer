@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AdonisImportStoreService } from '../../lib/store/adonis-import-store.service';
 import { AdonisStoreService } from '../../lib/store/adonis-store.service';
 import { ApplicationStateService } from '../../lib/store/application-state.service';
-import { ImportTableService } from '../../lib/store/import-table.serivce';
+import { ImportTableService } from '../../lib/store/import-table.service';
 import { AdonisImportWorkflowService } from '../../lib/workflows/adonis-import-workflow.service';
 
 import { ImportTestTable } from './import-test-table';

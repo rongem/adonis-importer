@@ -4,7 +4,7 @@ import { CellInformation } from '../../lib/models/table/cellinformation.model';
 import { NgClass } from '@angular/common';
 import { ErrorBadge } from '../error-badge/error-badge';
 import { AdonisStoreService } from '../../lib/store/adonis-store.service';
-import { ImportTableService } from '../../lib/store/import-table.serivce';
+import { ImportTableService } from '../../lib/store/import-table.service';
 import { ApplicationStateService } from '../../lib/store/application-state.service';
 import { AdonisImportStoreService } from '../../lib/store/adonis-import-store.service';
 import { AdonisImportWorkflowService } from '../../lib/workflows/adonis-import-workflow.service';

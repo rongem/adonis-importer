@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { ImportTableService } from './import-table.serivce';
+import { ImportTableService } from './import-table.service';
 import { AdonisClass } from '../models/adonis-rest/metadata/class.interface';
 import { AdonisAttributeContainer } from '../models/adonis-rest/metadata/container/container-attribute.interface';
 import { AdonisClassContainer } from '../models/adonis-rest/metadata/container/container-class.interface';

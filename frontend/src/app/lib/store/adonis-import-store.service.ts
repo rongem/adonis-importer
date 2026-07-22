@@ -4,7 +4,7 @@ import { Router } from "@angular/router";
 import { firstValueFrom, catchError, of, tap } from "rxjs";
 import { ApplicationStateService } from "./application-state.service";
 import { AdonisStoreService } from "./adonis-store.service";
-import { ImportTableService } from "./import-table.serivce";
+import { ImportTableService } from "./import-table.service";
 import { DataAccess } from "../data-access/data-access";
 import { AdonisObjectGroup } from "../models/adonis-rest/metadata/object-group.interface";
 import { AdonisRepository } from "../models/adonis-rest/metadata/repository.interface";
