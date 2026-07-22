@@ -14,7 +14,6 @@ describe('ChildRelation', () => {
 
     fixture = TestBed.createComponent(ChildRelation);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('should create', () => {
