@@ -6,7 +6,7 @@ import { AdonisImportStoreService } from '../../lib/store/adonis-import-store.se
   selector: 'app-import-results',
   imports: [NgClass],
   templateUrl: './import-results.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './import-results.scss'
 })
 export class ImportResults {

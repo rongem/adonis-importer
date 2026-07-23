@@ -6,7 +6,7 @@ import { Component, input, ChangeDetectionStrategy } from '@angular/core';
     selector: 'app-error-badge',
     templateUrl: './error-badge.html',
     styleUrls: ['./error-badge.scss'],
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [NgClass]
 })
 export class ErrorBadge {

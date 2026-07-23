@@ -11,7 +11,7 @@ import * as Constants from '../../lib/string.constants';
   selector: 'app-class-content',
   imports: [Children, ReactiveFormsModule],
   templateUrl: './class-content.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './class-content.scss'
 })
 export class ClassContent {

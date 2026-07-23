@@ -11,7 +11,7 @@ import { WorkflowState } from './lib/enums/workflow-state.enum';
   selector: 'app-root',
   imports: [NgClass, ReactiveFormsModule, RouterOutlet],
   templateUrl: './app.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './app.scss'
 })
 export class App {

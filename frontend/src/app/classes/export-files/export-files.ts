@@ -9,7 +9,7 @@ import { ApplicationStateService } from '../../lib/store/application-state.servi
   selector: 'app-export-files',
   imports: [],
   templateUrl: './export-files.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './export-files.scss'
 })
 export class ExportFiles implements OnInit {

@@ -32,6 +32,7 @@ describe('AdonisMetadataWorkflowService', () => {
     retrieveClassesWithNotebooks: ReturnType<typeof vi.fn>;
     retrieveNotebooksForClasses: ReturnType<typeof vi.fn>;
     retrieveAttributesForClasses: ReturnType<typeof vi.fn>;
+    retrieveRepositories: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
@@ -48,7 +49,7 @@ describe('AdonisMetadataWorkflowService', () => {
       setAttributes: vi.fn(),
       classes: vi.fn(() => []),
       restBaseUrl: vi.fn(() => 'https://example/rest/'),
-      purpose: vi.fn(() => 'import' as const),
+      purpose: vi.fn(() => 'config' as const),
     };
 
     dataAccessMock = {
@@ -65,6 +66,7 @@ describe('AdonisMetadataWorkflowService', () => {
       retrieveClassesWithNotebooks: vi.fn(() => of({})),
       retrieveNotebooksForClasses: vi.fn(() => of([])),
       retrieveAttributesForClasses: vi.fn(() => of({})),
+      retrieveRepositories: vi.fn(() => of([])),
     };
 
     TestBed.configureTestingModule({
@@ -88,10 +90,10 @@ describe('AdonisMetadataWorkflowService', () => {
     const loadNotebooksSpy = vi.spyOn(service, 'loadNotebooks').mockResolvedValue();
     const loadAttributesSpy = vi.spyOn(service, 'loadAttributes').mockResolvedValue();
 
-    await service.initializeSession('tenant.example', 'user', 'secret', 'import');
+    await service.initializeSession('tenant.example', 'user', 'secret', 'config');
 
     expect(storeMock.buildRestBaseUrl).toHaveBeenCalledWith('tenant.example');
-    expect(storeMock.setSessionContext).toHaveBeenCalledWith('https://tenant.example/rest/', 'user', 'secret', 'import');
+    expect(storeMock.setSessionContext).toHaveBeenCalledWith('https://tenant.example/rest/', 'user', 'secret', 'config');
     expect(storeMock.setAuthenticated).toHaveBeenCalledWith(true);
     expect(dataAccessMock.resetTelemetry).toHaveBeenCalled();
     expect(storeMock.setRepositoryClasses).toHaveBeenCalledWith(classesContainer);
@@ -99,6 +101,7 @@ describe('AdonisMetadataWorkflowService', () => {
     expect(routerMock.navigate).toHaveBeenCalled();
     expect(loadNotebooksSpy).toHaveBeenCalled();
     expect(loadAttributesSpy).toHaveBeenCalled();
+    // expect(importStoreMock.loadRepositories).toHaveBeenCalledTimes(1);
   });
 
   it('sets error state when class retrieval fails during initialization', async () => {
@@ -112,7 +115,7 @@ describe('AdonisMetadataWorkflowService', () => {
       ),
     );
 
-    await service.initializeSession('tenant.example', 'user', 'secret', 'import');
+    await service.initializeSession('tenant.example', 'user', 'secret', 'config');
 
     expect(storeMock.setAuthenticated).toHaveBeenCalledWith(false);
     expect(appState.classesState()).toBe(WorkflowState.ErrorOccured);

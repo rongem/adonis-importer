@@ -9,7 +9,7 @@ import * as Constants from '../../lib/string.constants';
   selector: 'app-class-list',
   imports: [],
   templateUrl: './class-list.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './class-list.scss'
 })
 export class ClassList {

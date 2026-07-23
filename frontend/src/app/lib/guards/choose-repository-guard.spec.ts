@@ -48,7 +48,6 @@ describe('canChooseRepository', () => {
     const result = executeGuard({} as any, {} as any);
 
     expect(result).toBe(true);
-    expect(importStoreMock.loadRepositories).toHaveBeenCalledTimes(1);
   });
 
   it('allows activation without reloading when repositories are already present', () => {

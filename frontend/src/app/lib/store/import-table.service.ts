@@ -107,9 +107,10 @@ export class ImportTableService {
         const enumColumns = columns.filter(c => !!c.enumData);
         enumColumns.forEach(c => {
             const enumColumnIndex = columns.indexOf(c);
-            rows.forEach((value, row) => {
-                if (!c.enumData!.values.includes(value.toString())) {
-                    errors.push({msg: 'Wert nicht im erlaubten Bereich', row, columnIndex: enumColumnIndex, rowContent: value})
+            rows.forEach((row, rowIndex) => {
+                const value = row[c.internalName];
+                if (!! value && !c.enumData!.values.includes(value.toString())) {
+                    errors.push({msg: 'Wert nicht im erlaubten Bereich', row: rowIndex, columnIndex: enumColumnIndex, rowContent: row})
                 }
             });
         });

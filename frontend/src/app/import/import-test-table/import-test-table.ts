@@ -29,7 +29,7 @@ interface PreviewRow {
   selector: 'app-import-test-table',
   imports: [NgClass],
   templateUrl: './import-test-table.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './import-test-table.scss'
 })
 export class ImportTestTable {

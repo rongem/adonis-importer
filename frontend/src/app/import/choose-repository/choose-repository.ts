@@ -7,7 +7,7 @@ import { ApplicationStateService } from '../../lib/store/application-state.servi
   selector: 'app-choose-repository',
   imports: [ChooseObjectgroup],
   templateUrl: './choose-repository.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './choose-repository.scss'
 })
 export class ChooseRepository {

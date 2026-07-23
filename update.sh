@@ -7,6 +7,8 @@ npm update
 npm audit fix
 npm version patch
 npm prune
+ng build
+ng test --watch=false
 npm outdated
 echo Done!
 read -n 1

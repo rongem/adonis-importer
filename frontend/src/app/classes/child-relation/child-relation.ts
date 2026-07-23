@@ -7,7 +7,7 @@ import { AdonisStoreService } from '../../lib/store/adonis-store.service';
   selector: 'app-child-relation',
   imports: [ReactiveFormsModule],
   templateUrl: './child-relation.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './child-relation.scss'
 })
 export class ChildRelation {

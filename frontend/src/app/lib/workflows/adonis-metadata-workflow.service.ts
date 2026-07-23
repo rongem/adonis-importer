@@ -10,6 +10,7 @@ import { AdonisClassContainer } from '../models/adonis-rest/metadata/container/c
 import { AdonisNotebookContainer } from '../models/adonis-rest/metadata/container/container-notebook.interface';
 import { AdonisStoreService } from '../store/adonis-store.service';
 import { ApplicationStateService } from '../store/application-state.service';
+import { AdonisImportStoreService } from '../store/adonis-import-store.service';
 import * as Constants from '../string.constants';
 
 @Injectable({ providedIn: 'root' })
@@ -18,6 +19,7 @@ export class AdonisMetadataWorkflowService {
     private readonly adonisStore = inject(AdonisStoreService);
     private readonly router = inject(Router);
     private readonly dataAccess = inject(DataAccess);
+    private readonly importService = inject(AdonisImportStoreService);
 
     private telemetryBaseline() {
         return {
@@ -63,6 +65,9 @@ export class AdonisMetadataWorkflowService {
                 this.router.navigate([Constants.classes_url]);
                 this.loadNotebooks();
                 this.loadAttributes();
+                if (purpose === 'import') {
+                    this.importService.loadRepositories();
+                }
             }),
             catchError((error: HttpErrorResponse) => {
                 console.error(error);

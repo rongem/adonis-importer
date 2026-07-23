@@ -14,7 +14,7 @@ import { AdonisImportWorkflowService } from '../../lib/workflows/adonis-import-w
   selector: 'app-import-table',
   imports: [NgClass, ErrorBadge],
   templateUrl: './import-table.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './import-table.scss'
 })
 export class ImportTable {

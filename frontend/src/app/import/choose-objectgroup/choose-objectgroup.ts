@@ -9,7 +9,7 @@ import * as Constants from '../../lib/string.constants';
   selector: 'app-choose-objectgroup',
   imports: [NgClass],
   templateUrl: './choose-objectgroup.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './choose-objectgroup.scss'
 })
 export class ChooseObjectgroup {

@@ -7,7 +7,7 @@ import { AdonisMetadataWorkflowService } from '../lib/workflows/adonis-metadata-
   selector: 'app-login',
   imports: [ReactiveFormsModule],
   templateUrl: './login.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './login.scss'
 })
 export class Login {

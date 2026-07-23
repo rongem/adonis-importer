@@ -9,9 +9,6 @@ export const canChooseRepository: CanActivateFn = (route: ActivatedRouteSnapshot
     const importService = inject(AdonisImportStoreService);
 
     if(storeService.purpose() === 'import') {
-        if (importService.repositories() === undefined) {
-            importService.loadRepositories();
-        }
         return true;
     }
     return rootPath();

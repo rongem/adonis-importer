@@ -8,7 +8,7 @@ import * as Constants from '../../lib/string.constants';
   selector: 'app-children',
   imports: [ReactiveFormsModule, ChildRelation],
   templateUrl: './children.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './children.scss'
 })
 export class Children {
