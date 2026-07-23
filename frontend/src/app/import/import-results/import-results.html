@@ -6,19 +6,19 @@
   <ul>
     @for (row of importedRows; track row.id) {
         <li [ngClass]="{error: getRowErrors(row.rowNumber).length > 0}">
-          <summary style="display: flex;">
-            @if(row.edited) {
-              <span class="edit">&#10000;</span>
-              <span class="visually-hidden">Objekt wurde geändert.</span>
-            } @else if (row.created) {
-              <span class="new">+</span>
-              <span class="visually-hidden">Objekt wurde neu erstellt.</span>
-            } @else {
-              <span class="visually-hidden">Objekt ist unverändert.</span>
-            }
-            {{row.rowNumber}}. {{row.className}}: {{row.name}}
-          </summary>
           <details>
+            <summary style="display: flex;">
+              @if(row.edited) {
+                <span class="edit">&#10000;</span>
+                <span class="visually-hidden">Objekt wurde geändert.</span>
+              } @else if (row.created) {
+                <span class="new">+</span>
+                <span class="visually-hidden">Objekt wurde neu erstellt.</span>
+              } @else {
+                <span class="visually-hidden">Objekt ist unverändert.</span>
+              }
+              {{row.rowNumber}}. {{row.className}}: {{row.name}}
+            </summary>
             @if (row.attributes.length > 0) {
               <h3>Attribute</h3>
               <ul>
