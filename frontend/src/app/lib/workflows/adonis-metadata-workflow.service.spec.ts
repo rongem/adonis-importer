@@ -32,7 +32,7 @@ describe('AdonisMetadataWorkflowService', () => {
     retrieveClassesWithNotebooks: ReturnType<typeof vi.fn>;
     retrieveNotebooksForClasses: ReturnType<typeof vi.fn>;
     retrieveAttributesForClasses: ReturnType<typeof vi.fn>;
-    retrieveRepositories: ReturnType<typeof vi.fn>;
+    // retrieveRepositories: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
@@ -66,7 +66,7 @@ describe('AdonisMetadataWorkflowService', () => {
       retrieveClassesWithNotebooks: vi.fn(() => of({})),
       retrieveNotebooksForClasses: vi.fn(() => of([])),
       retrieveAttributesForClasses: vi.fn(() => of({})),
-      retrieveRepositories: vi.fn(() => of([])),
+      // retrieveRepositories: vi.fn(() => of([])),
     };
 
     TestBed.configureTestingModule({
