@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DataAccess } from '../data-access/data-access';
 import { WorkflowState } from '../enums/workflow-state.enum';
+import { AdonisImportStoreService } from '../store/adonis-import-store.service';
 import { ApplicationStateService } from '../store/application-state.service';
 import { AdonisStoreService } from '../store/adonis-store.service';
 import { AdonisMetadataWorkflowService } from './adonis-metadata-workflow.service';
@@ -32,7 +33,9 @@ describe('AdonisMetadataWorkflowService', () => {
     retrieveClassesWithNotebooks: ReturnType<typeof vi.fn>;
     retrieveNotebooksForClasses: ReturnType<typeof vi.fn>;
     retrieveAttributesForClasses: ReturnType<typeof vi.fn>;
-    // retrieveRepositories: ReturnType<typeof vi.fn>;
+  };
+  let importStoreMock: {
+    loadRepositories: ReturnType<typeof vi.fn>;
   };
 
   beforeEach(() => {
@@ -66,7 +69,10 @@ describe('AdonisMetadataWorkflowService', () => {
       retrieveClassesWithNotebooks: vi.fn(() => of({})),
       retrieveNotebooksForClasses: vi.fn(() => of([])),
       retrieveAttributesForClasses: vi.fn(() => of({})),
-      // retrieveRepositories: vi.fn(() => of([])),
+    };
+
+    importStoreMock = {
+      loadRepositories: vi.fn(),
     };
 
     TestBed.configureTestingModule({
@@ -76,6 +82,7 @@ describe('AdonisMetadataWorkflowService', () => {
         { provide: Router, useValue: routerMock },
         { provide: AdonisStoreService, useValue: storeMock },
         { provide: DataAccess, useValue: dataAccessMock },
+        { provide: AdonisImportStoreService, useValue: importStoreMock },
       ],
     });
 
@@ -101,7 +108,20 @@ describe('AdonisMetadataWorkflowService', () => {
     expect(routerMock.navigate).toHaveBeenCalled();
     expect(loadNotebooksSpy).toHaveBeenCalled();
     expect(loadAttributesSpy).toHaveBeenCalled();
-    // expect(importStoreMock.loadRepositories).toHaveBeenCalledTimes(1);
+    expect(importStoreMock.loadRepositories).not.toHaveBeenCalled();
+  });
+
+  it('loads repositories when initializing an import session', async () => {
+    dataAccessMock.retrieveClassesWithNotebooks.mockReturnValue(of({ CLASS_1: { id: 'CLASS_1' } }));
+
+    const loadNotebooksSpy = vi.spyOn(service, 'loadNotebooks').mockResolvedValue();
+    const loadAttributesSpy = vi.spyOn(service, 'loadAttributes').mockResolvedValue();
+
+    await service.initializeSession('tenant.example', 'user', 'secret', 'import');
+
+    expect(loadNotebooksSpy).toHaveBeenCalled();
+    expect(loadAttributesSpy).toHaveBeenCalled();
+    expect(importStoreMock.loadRepositories).toHaveBeenCalledTimes(1);
   });
 
   it('sets error state when class retrieval fails during initialization', async () => {
@@ -120,6 +140,7 @@ describe('AdonisMetadataWorkflowService', () => {
     expect(storeMock.setAuthenticated).toHaveBeenCalledWith(false);
     expect(appState.classesState()).toBe(WorkflowState.ErrorOccured);
     expect(appState.errorMessage()).toContain('Fehler beim Laden der Klassen');
+    expect(importStoreMock.loadRepositories).not.toHaveBeenCalled();
   });
 
   it('rejects refresh when session context is missing', async () => {
