@@ -51,19 +51,19 @@ function getAttributeType(property: AttributeOrRelation, attributes: AdonisAttri
                 case Constants.ENUMLIST:
                     return {
                         '@_type': 'enum_list',
-                        '@_separator': '@',
+                        '@_separator': Constants.enumListSeparator,
                         '@_domain_mapping': getEnumContent(property, attributes),
                         '@_separator_domain_mapping': '|',
                     };
                 case Constants.ENUMLIST_TREE:
                     return {
                         '@_type': 'treeenumlist',
-                        '@_separator': '@',
+                        '@_separator': Constants.enumListSeparator,
                     };
                 case Constants.BOOL:
                     return {
                         '@_type': 'bool',
-                        '@bool_mapping': 'Ja,Nein'
+                        '@_bool_mapping': Constants.boolMapping.join(','),
                     };
                 default:
                     return {'@_type': 'error ' + property.ctrlType};

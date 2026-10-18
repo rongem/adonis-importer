@@ -13,5 +13,10 @@
             <a [href]="fileUrl" class="content-link" [download]="'Import ' + store.selectedClass()!.displayNames.de + '.xml'">XML als Datei herunterladen</a>
         </div>
     }
+    @if (xlFileUrl) {
+        <div>
+            <a [href]="xlFileUrl" class="content-link" [download]="xlFileName">Excel-Vorlage herunterladen</a>
+        </div>
+    }
 </section>
 

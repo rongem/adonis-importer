@@ -1,7 +1,8 @@
-import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { createXML } from '../../lib/helpers/xml.function';
-import { createXLFile } from '../../lib/helpers/xlsx.functions';
+import { createXLFile, xlFileName } from '../../lib/helpers/xlsx.functions';
+import { xlsxMimeType } from '../../lib/helpers/xlsx-writer.functions';
 import { AdonisStoreService } from '../../lib/store/adonis-store.service';
 import { ApplicationStateService } from '../../lib/store/application-state.service';
 
@@ -12,24 +13,37 @@ import { ApplicationStateService } from '../../lib/store/application-state.servi
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrl: './export-files.scss'
 })
-export class ExportFiles implements OnInit {
+export class ExportFiles implements OnInit, OnDestroy {
   protected readonly store = inject(AdonisStoreService);
   protected readonly appState = inject(ApplicationStateService);
   protected readonly sanitizer = inject(DomSanitizer);
   xmlText = '';
   fileUrl?: SafeResourceUrl;
-
-  constructor() {}
+  xlFileUrl?: SafeResourceUrl;
+  xlFileName = '';
+  private objectUrls: string[] = [];
 
   ngOnInit(): void {
-    this.xmlText = createXML(this.store.selectedClass()!, this.store.selectedProperties(), this.store.attributes()!);
-    createXLFile(this.store.selectedClass()!, this.store.selectedProperties(), this.store.attributes()!);
-    const blob = new Blob([this.xmlText], { type: 'application/xml' });
+    const selectedClass = this.store.selectedClass()!;
+    this.xmlText = createXML(selectedClass, this.store.selectedProperties(), this.store.attributes()!);
+    this.fileUrl = this.createFileUrl(new Blob([this.xmlText], { type: 'application/xml' }));
 
-    this.fileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(window.URL.createObjectURL(blob));
+    const xlFile = createXLFile(selectedClass, this.store.selectedProperties(), this.store.attributes()!);
+    this.xlFileUrl = this.createFileUrl(new Blob([xlFile], { type: xlsxMimeType }));
+    this.xlFileName = xlFileName(selectedClass);
+  }
+
+  ngOnDestroy(): void {
+    this.objectUrls.forEach(url => window.URL.revokeObjectURL(url));
   }
 
   copyToClipboard() {
     navigator.clipboard.writeText(this.xmlText);
+  }
+
+  private createFileUrl(blob: Blob) {
+    const url = window.URL.createObjectURL(blob);
+    this.objectUrls.push(url);
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 }

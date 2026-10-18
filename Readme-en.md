@@ -143,7 +143,7 @@ The repository includes Docker configuration for containerization:
 - **Styling**: SCSS
 - **HTTP Client**: Angular HttpClient with REST API
 - **XML Processing**: fast-xml-parser
-- **Excel Generation**: XLSX (SheetJS)
+- **Excel Generation**: own minimal XLSX writer (no external dependency)
 - **State Management**: RxJS
 - **Testing**: Vitest with jsdom
 

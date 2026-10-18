@@ -31,7 +31,7 @@ export interface AdonisNotebookRelations extends AttributeOrRelation {
         minOccurrences: number;
         maxOccurrences: number;
         reflexive: boolean;
-        incoming: false
+        incoming: boolean;
     }
 };
 

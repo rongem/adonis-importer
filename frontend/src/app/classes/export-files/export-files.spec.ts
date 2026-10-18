@@ -73,10 +73,23 @@ describe('ExportFiles', () => {
   it('creates xml/xlsx artifacts during initialization', () => {
     component.ngOnInit();
 
-    expect((window.URL.createObjectURL as any).mock.calls.length).toBeGreaterThanOrEqual(1);
+    expect((window.URL.createObjectURL as any).mock.calls.length).toBe(2);
     expect(sanitizerMock.bypassSecurityTrustResourceUrl).toHaveBeenCalledWith('blob:test-url');
     expect(component.xmlText.startsWith('<?xml version="1.0" encoding="UTF-8" ?>')).toBe(true);
     expect(component.fileUrl).toBe('safe-url' as any);
+    expect(component.xlFileUrl).toBe('safe-url' as any);
+    expect(component.xlFileName).toBe('Import Prozess.xlsx');
+  });
+
+  it('revokes the created object urls on destroy', () => {
+    const revokeObjectURL = vi.fn();
+    Object.defineProperty(window.URL, 'revokeObjectURL', { value: revokeObjectURL, configurable: true });
+    component.ngOnInit();
+
+    component.ngOnDestroy();
+
+    expect(revokeObjectURL).toHaveBeenCalledTimes(2);
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:test-url');
   });
 
   it('copies xml text to clipboard', () => {
