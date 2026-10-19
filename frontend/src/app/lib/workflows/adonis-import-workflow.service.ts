@@ -16,6 +16,7 @@ import { CellInformation } from '../models/table/cellinformation.model';
 import { RowOperation } from '../models/table/row-operations.model';
 import { SucceededImports } from '../models/table/succeeded-operations.model';
 import { ImportTableService } from '../store/import-table.service';
+import { cellMatchesAttributeValue } from '../helpers/attribute-compare.functions';
 import { AdonisStoreService } from '../store/adonis-store.service';
 import { AdonisImportStoreService } from '../store/adonis-import-store.service';
 import { ApplicationStateService } from '../store/application-state.service';
@@ -128,7 +129,8 @@ export class AdonisImportWorkflowService {
         for (const rowNumber of rowNumbers) {
             const cells = cellInformations.filter(cell => cell.row === rowNumber);
             const nameCell = cells.find(cell => cell.isPrimary)!;
-            const attributeCells = cells.filter(cell => !cell.isPrimary);
+            // empty cells are not imported, so existing values stay unchanged
+            const attributeCells = cells.filter(cell => !cell.isPrimary && !cell.isEmpty);
             const existingItem = existingItems.find(item => item.name === nameCell.stringValue);
 
             if (existingItem) {
@@ -137,13 +139,7 @@ export class AdonisImportWorkflowService {
                     name: existingItem.name,
                     metaName: existingItem.metaName,
                     attributes: attributeCells
-                        .filter(attributeCell => {
-                            const correspondingAttribute = existingItem.attributes.find(attribute => attribute.metaName === attributeCell.name);
-                            if (!correspondingAttribute) {
-                                return true;
-                            }
-                            return correspondingAttribute.value !== attributeCell.typedValue;
-                        })
+                        .filter(attributeCell => !cellMatchesAttributeValue(attributeCell, existingItem.attributes.find(attribute => attribute.metaName === attributeCell.name)))
                         .map(attributeCell => ({
                             metaName: attributeCell.name,
                             value: attributeCell.value,

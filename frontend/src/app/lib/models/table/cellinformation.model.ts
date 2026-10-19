@@ -1,5 +1,6 @@
 import { CellContent } from "./cellcontent.model";
 import { Column } from "./column.model";
+import { isValidEnumValue } from "../../helpers/columns.functions";
 
 export class CellInformation{
     get value() { return this.cellContent.originalValue }
@@ -31,7 +32,8 @@ export class CellInformation{
     }
     get dateValue() {
         if(!this.canContainDate() || this.isEmpty) return undefined;
-        let value: number | undefined = Date.parse(this.value);
+        // ISO dates without time mean local midnight (Date.parse would use UTC)
+        let value: number | undefined = /^\d{4}-\d{2}-\d{2}$/.test(this.value) ? this.parseDate(this.value) : Date.parse(this.value);
         // German date format
         if (this.hasBrowserGermanLanguageSet && this.value.includes('.')) {
             value = this.parseDate(this.value, 'dd.mm.yyyy');
@@ -55,7 +57,6 @@ export class CellInformation{
     get canBeEmpty() { return this.columnDefinition.isNullable || this.columnDefinition.hasDefaultValue; }
     get isPrimary() { return this.columnDefinition.primary; }
     get isEnum() { return !!this.columnDefinition.enumData; }
-    get enumMembers() { return this.columnDefinition.enumData?.values ?? []; }
 
     get typedValue() {
         if (this.isDate) return this.dateValue;
@@ -92,7 +93,7 @@ export class CellInformation{
                 this.errorDescriptions.push(`Nur Text erlaubt.`);
             }
         }
-        if (this.isEnum && !this.enumMembers.includes(cellContent.originalValue)) {
+        if (this.isEnum && !this.isEmpty && !isValidEnumValue(this.columnDefinition.enumData!, cellContent.originalValue)) {
             this.errorDescriptions.push('Wert ist nicht in der Enumeration enthalten.');
         }
     };

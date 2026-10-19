@@ -21,7 +21,8 @@ const createColumnFromAttribute = (property: AdonisNotebookAttribute, ordinalPos
     internalName: property.metaName,
     ordinalPosition,
     hasDefaultValue: false,
-    isNullable: getAttributeColumnTypes(property).length === 0,
+    // only the name (primary column) is mandatory, empty cells leave existing values unchanged
+    isNullable: ordinalPosition !== 0,
     primary: ordinalPosition === 0,
     unique: ordinalPosition === 0,
     allowedTypes: getAttributeColumnTypes(property),
@@ -55,5 +56,12 @@ function getEnumContent(property: AttributeOrRelation, attributes: AdonisAttribu
     const attribute = attributes[property.id];
     const values = attribute.constraints.de.split('@');
     const aliases = values.map((v, i) => 'v' + i.toString());
-    return {values, aliases};
+    const multiple = property.ctrlType !== Constants.ENUM;
+    return {values, aliases, multiple};
+}
+
+// checks a cell value against an enumeration; enum lists may contain several values separated by enumListSeparator
+export function isValidEnumValue(enumData: NonNullable<Column['enumData']>, value: string) {
+    const values = enumData.multiple ? value.split(Constants.enumListSeparator) : [value];
+    return values.every(v => enumData.values.includes(v));
 }

@@ -4,6 +4,7 @@ import { Column } from "../models/table/column.model";
 import { ErrorList } from "../models/table/errorlist.model";
 import { CellInformation } from "../models/table/cellinformation.model";
 import { Row } from "../models/table/row.model";
+import { isValidEnumValue } from "../helpers/columns.functions";
 
 @Injectable({providedIn: 'root'})
 export class ImportTableService {
@@ -109,13 +110,13 @@ export class ImportTableService {
             const enumColumnIndex = columns.indexOf(c);
             rows.forEach((row, rowIndex) => {
                 const value = row[c.internalName];
-                if (!! value && !c.enumData!.values.includes(value.toString())) {
+                if (!! value && !isValidEnumValue(c.enumData!, value.toString())) {
                     errors.push({msg: 'Wert nicht im erlaubten Bereich', row: rowIndex, columnIndex: enumColumnIndex, rowContent: row})
                 }
             });
         });
         this._rowErrors.set(errors);
-        this.contentsAreTested.set(!this.tableContainsErrors());
+        this.contentsAreTested.set(errors.length === 0 && !this.tableContainsErrors());
     });
 
 

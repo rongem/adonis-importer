@@ -17,5 +17,7 @@ export interface Column {
     enumData?: {
         values: string[];
         aliases: string[];
+        // several values per cell allowed (ENUMLIST, ENUMLIST_TREE)
+        multiple?: boolean;
     }
 }
