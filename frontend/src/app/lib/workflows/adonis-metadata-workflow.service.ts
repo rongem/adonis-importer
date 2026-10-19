@@ -1,25 +1,28 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, firstValueFrom, of, tap } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 
 import { DataAccess, DataAccessTelemetry } from '../data-access/data-access';
 import { WorkflowState } from '../enums/workflow-state.enum';
-import { AdonisAttributeContainer } from '../models/adonis-rest/metadata/container/container-attribute.interface';
-import { AdonisClassContainer } from '../models/adonis-rest/metadata/container/container-class.interface';
 import { AdonisNotebookContainer } from '../models/adonis-rest/metadata/container/container-notebook.interface';
-import { AdonisStoreService } from '../store/adonis-store.service';
+import { AttributeOrRelation } from '../models/adonis-rest/metadata/notebook-elements.interface';
+import { createColumnsFromProperties } from '../helpers/columns.functions';
+import { errorText } from '../helpers/error.functions';
+import { filterNotebook, isImportableClass } from '../helpers/metamodel-filter.functions';
+import { AdonisStoreService, SessionPurpose } from '../store/adonis-store.service';
 import { ApplicationStateService } from '../store/application-state.service';
-import { AdonisImportStoreService } from '../store/adonis-import-store.service';
+import { ImportTableService } from '../store/import-table.service';
+import { AdonisImportWorkflowService } from './adonis-import-workflow.service';
 import * as Constants from '../string.constants';
 
 @Injectable({ providedIn: 'root' })
 export class AdonisMetadataWorkflowService {
     private readonly appState = inject(ApplicationStateService);
     private readonly adonisStore = inject(AdonisStoreService);
+    private readonly tableStore = inject(ImportTableService);
     private readonly router = inject(Router);
     private readonly dataAccess = inject(DataAccess);
-    private readonly importService = inject(AdonisImportStoreService);
+    private readonly importWorkflow = inject(AdonisImportWorkflowService);
 
     private telemetryBaseline() {
         return {
@@ -48,35 +51,29 @@ export class AdonisMetadataWorkflowService {
         );
     }
 
-    async initializeSession(url: string, username: string, password: string, purpose: 'config' | 'import') {
+    async initializeSession(url: string, username: string, password: string, purpose: SessionPurpose) {
         const baseUrl = this.adonisStore.buildRestBaseUrl(url);
         this.adonisStore.setSessionContext(baseUrl, username, password, purpose);
         this.adonisStore.setAuthenticated(true);
         this.dataAccess.resetTelemetry();
-        this.appState.classesState.set(WorkflowState.Loading);
-        this.appState.errorMessage.set(undefined);
+        this.appState.setState('classes', WorkflowState.Loading);
+        this.appState.clearError();
 
         const classesTelemetry = this.telemetryBaseline();
-
-        await firstValueFrom(this.dataAccess.retrieveClassesWithNotebooks(baseUrl).pipe(
-            tap((repositoryClasses) => {
-                this.adonisStore.setRepositoryClasses(repositoryClasses);
-                this.appState.classesState.set(WorkflowState.Loaded);
-                this.router.navigate([Constants.classes_url]);
-                this.loadNotebooks();
-                this.loadAttributes();
-                if (purpose === 'import') {
-                    this.importService.loadRepositories();
-                }
-            }),
-            catchError((error: HttpErrorResponse) => {
-                console.error(error);
-                this.adonisStore.setAuthenticated(false);
-                this.appState.classesState.set(WorkflowState.ErrorOccured);
-                this.appState.errorMessage.set(`Fehler beim Laden der Klassen: ${error.message}`);
-                return of({} as AdonisClassContainer);
-            }),
-        ));
+        try {
+            const repositoryClasses = await firstValueFrom(this.dataAccess.retrieveClasses(baseUrl, isImportableClass));
+            this.adonisStore.setRepositoryClasses(repositoryClasses);
+            this.appState.setState('classes', WorkflowState.Loaded);
+            this.router.navigate([Constants.classes_url]);
+            this.loadNotebooks();
+            this.loadAttributes();
+            if (purpose === 'import') {
+                this.importWorkflow.loadRepositories();
+            }
+        } catch (error) {
+            this.adonisStore.setAuthenticated(false);
+            this.appState.reportError(`Fehler beim Laden der Klassen: ${errorText(error)}`, error, 'classes');
+        }
         this.logPhaseTelemetry('classes', classesTelemetry);
     }
 
@@ -84,79 +81,64 @@ export class AdonisMetadataWorkflowService {
         const baseUrl = this.adonisStore.restBaseUrl();
         const purpose = this.adonisStore.purpose();
         if (!baseUrl || !purpose) {
-            this.appState.errorMessage.set('Kein Metamodell-Refresh möglich: Verbindung nicht initialisiert.');
+            this.appState.setError('Kein Metamodell-Refresh möglich: Verbindung nicht initialisiert.');
             return;
         }
 
-        this.appState.classesState.set(WorkflowState.Loading);
-        this.appState.notebookState.set(WorkflowState.Loading);
-        this.appState.attributesState.set(WorkflowState.Loading);
+        this.appState.setState('classes', WorkflowState.Loading);
+        this.appState.setState('notebooks', WorkflowState.Loading);
+        this.appState.setState('attributes', WorkflowState.Loading);
 
         const classesTelemetry = this.telemetryBaseline();
-
-        await firstValueFrom(this.dataAccess.retrieveClassesWithNotebooks(baseUrl).pipe(
-            tap((repositoryClasses) => {
-                this.adonisStore.setRepositoryClasses(repositoryClasses);
-                this.appState.classesState.set(WorkflowState.Loaded);
-                this.loadNotebooks();
-                this.loadAttributes();
-            }),
-            catchError((error: HttpErrorResponse) => {
-                console.error(error);
-                this.appState.classesState.set(WorkflowState.ErrorOccured);
-                this.appState.notebookState.set(WorkflowState.ErrorOccured);
-                this.appState.attributesState.set(WorkflowState.ErrorOccured);
-                this.appState.errorMessage.set(`Fehler beim Aktualisieren des Metamodells: ${error.message}`);
-                return of({} as AdonisClassContainer);
-            }),
-        ));
+        try {
+            const repositoryClasses = await firstValueFrom(this.dataAccess.retrieveClasses(baseUrl, isImportableClass));
+            this.adonisStore.setRepositoryClasses(repositoryClasses);
+            this.appState.setState('classes', WorkflowState.Loaded);
+            this.loadNotebooks();
+            this.loadAttributes();
+        } catch (error) {
+            this.appState.reportError(`Fehler beim Aktualisieren des Metamodells: ${errorText(error)}`, error, 'classes', 'notebooks', 'attributes');
+        }
         this.logPhaseTelemetry('classes-refresh', classesTelemetry);
     }
 
     async loadNotebooks() {
         const purpose = this.adonisStore.purpose();
         if (!purpose) {
-            this.appState.errorMessage.set('Notizbücher können nicht geladen werden: Zweck der Sitzung fehlt.');
+            this.appState.setError('Notizbücher können nicht geladen werden: Zweck der Sitzung fehlt.');
             return;
         }
 
-        this.appState.notebookState.set(WorkflowState.Loading);
+        this.appState.setState('notebooks', WorkflowState.Loading);
         const notebooksTelemetry = this.telemetryBaseline();
-        await firstValueFrom(this.dataAccess.retrieveNotebooksForClasses(this.adonisStore.classes(), purpose).pipe(
-            tap((notebooks) => {
-                const notebookContainer: AdonisNotebookContainer = {};
-                for (const notebook of notebooks) {
-                    const key = Object.keys(notebook)[0];
-                    notebookContainer[key] = notebook[key];
-                }
-                this.adonisStore.setNotebooks(notebookContainer);
-                this.appState.notebookState.set(WorkflowState.Loaded);
-            }),
-            catchError((error: HttpErrorResponse) => {
-                console.error(error);
-                this.appState.notebookState.set(WorkflowState.ErrorOccured);
-                this.appState.errorMessage.set(`Fehler beim Laden der Notizbücher: ${error.message}`);
-                return of({} as AdonisNotebookContainer);
-            }),
-        ));
+        try {
+            const notebooks = await firstValueFrom(this.dataAccess.retrieveNotebooksForClasses(this.adonisStore.classes()));
+            const filteredNotebooks: AdonisNotebookContainer = {};
+            Object.entries(notebooks).forEach(([classId, notebook]) => filteredNotebooks[classId] = filterNotebook(notebook, purpose));
+            this.adonisStore.setNotebooks(filteredNotebooks);
+            this.appState.setState('notebooks', WorkflowState.Loaded);
+        } catch (error) {
+            this.appState.reportError(`Fehler beim Laden der Notizbücher: ${errorText(error)}`, error, 'notebooks');
+        }
         this.logPhaseTelemetry('notebooks', notebooksTelemetry);
     }
 
     async loadAttributes() {
-        this.appState.attributesState.set(WorkflowState.Loading);
+        this.appState.setState('attributes', WorkflowState.Loading);
         const attributesTelemetry = this.telemetryBaseline();
-        await firstValueFrom(this.dataAccess.retrieveAttributesForClasses(this.adonisStore.classes()).pipe(
-            tap((attributeContainer) => {
-                this.adonisStore.setAttributes(attributeContainer);
-                this.appState.attributesState.set(WorkflowState.Loaded);
-            }),
-            catchError((error: HttpErrorResponse) => {
-                console.error(error);
-                this.appState.attributesState.set(WorkflowState.ErrorOccured);
-                this.appState.errorMessage.set(`Fehler beim Laden der Attribute: ${error.message}`);
-                return of({} as AdonisAttributeContainer);
-            }),
-        ));
+        try {
+            const attributeContainer = await firstValueFrom(this.dataAccess.retrieveAttributesForClasses(this.adonisStore.classes()));
+            this.adonisStore.setAttributes(attributeContainer);
+            this.appState.setState('attributes', WorkflowState.Loaded);
+        } catch (error) {
+            this.appState.reportError(`Fehler beim Laden der Attribute: ${errorText(error)}`, error, 'attributes');
+        }
         this.logPhaseTelemetry('attributes', attributesTelemetry);
+    }
+
+    // remember the selected properties and prepare the import table columns for them
+    selectProperties(properties: AttributeOrRelation[]) {
+        this.adonisStore.selectProperties(properties);
+        this.tableStore.setColumnDefinitions(createColumnsFromProperties(properties, this.adonisStore.attributes()));
     }
 }

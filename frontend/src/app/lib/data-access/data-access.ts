@@ -5,7 +5,6 @@ import { AdonisClassList } from '../models/adonis-rest/metadata/lists/list-class
 import { AdonisClass } from '../models/adonis-rest/metadata/class.interface';
 import { AdonisNoteBook } from '../models/adonis-rest/metadata/notebook.interface';
 import { AdonisClassContainer } from '../models/adonis-rest/metadata/container/container-class.interface';
-import { AdonisNotebookGroup, AttributeOrGroupOrRelation, AttributeOrRelation } from '../models/adonis-rest/metadata/notebook-elements.interface';
 import { AdonisBasicClass } from '../models/adonis-rest/metadata/basic-class.interface';
 import { AdonisNotebookContainer } from '../models/adonis-rest/metadata/container/container-notebook.interface';
 import { AdonisAttribute } from '../models/adonis-rest/metadata/attribute.interface';
@@ -149,14 +148,11 @@ export class DataAccess {
     return this.queueRequest(() => this.http.patch<T>(url, body).pipe(take(1)), false);
   }
 
-  retrieveClassesWithNotebooks = (baseUrl: string) => {
+  // classes matching the filter, with details; the filter runs before loading details to save requests
+  retrieveClasses = (baseUrl: string, classFilter: (adonisClass: AdonisBasicClass) => boolean) => {
     return this.retrieveClasslist(baseUrl).pipe(
-      map(m => {
-        const forbiddenNames = ['C_COMMENT_ACTION', 'C_EXTERNAL_CONFIGURATION', 'CLOUD_REPOSITORY', 'C_CLOUD_TASK', 'REPOSITORY'];
-        return m.classes.filter(c => c.abstract === false && c.repositoryClass === true && !c.metaName.startsWith('C_UML') && !forbiddenNames.includes(c.metaName));
-      }),
+      map(list => list.classes.filter(classFilter)),
       mergeMap(classes => this.retrieveClassDetails(classes)),
-      // mergeMap(this.retrieveNotebooksForClasses),
       map(classes => {
         const classContainer: AdonisClassContainer = {};
         classes.forEach(c => {
@@ -168,6 +164,9 @@ export class DataAccess {
   };
 
   private retrieveClassDetails = (classes: AdonisBasicClass[]) => {
+    if (classes.length === 0) {
+      return of([] as AdonisClass[]);
+    }
     const classDetails = classes.map(c => {
       const classUrl = c.rest_links.find(l => l.rel === Constants.self)!.href;
       return this.getUrl<AdonisClass>(classUrl);
@@ -175,32 +174,21 @@ export class DataAccess {
     return forkJoin(classDetails);
   };
 
-  private filterChildren = (p: AttributeOrRelation) => p.properties.READONLY !== 'true' && p.ctrlType !== Constants.RECORD && p.ctrlType !== Constants.FILE_POINTER;
-  private filterChapterChildren = (p: AttributeOrGroupOrRelation) => p.type === Constants.GROUP || this.filterChildren(p as AttributeOrRelation);
-
-  retrieveNotebooksForClasses = (classes: AdonisClass[], purpose: 'config' | 'import') => {
+  retrieveNotebooksForClasses = (classes: AdonisClass[]) => {
+    if (classes.length === 0) {
+      return of({} as AdonisNotebookContainer);
+    }
     const notebooks = classes.map(c => {
       const notebookUrl = c.rest_links.find(l => l.rel === Constants.notebook)!.href;
-      return this.getUrl<AdonisNoteBook>(notebookUrl).pipe(
-        map(n => {
-          const groups = n.chapters.map(ch => ch.children.filter(chi => chi.type === Constants.GROUP)).flat() as AdonisNotebookGroup[];
-          groups.forEach(g => { // remove non-importable attributes
-            g.children = g.children.filter(this.filterChildren);
-            if (purpose === 'import') { // remove relations for import purpose, because it will be too complex to handle them
-              g.children = g.children.filter(c => c.ctrlType !== Constants.RELATIONS);
-            }
-          })
-          n.chapters.forEach(ch => {
-            ch.children = ch.children.filter(this.filterChapterChildren)
-            if (purpose === 'import') { // remove relations for import purpose, because it will be too complex to handle them
-              ch.children = ch.children.filter(c => c.type === Constants.GROUP || (c as AttributeOrRelation).ctrlType !== Constants.RELATIONS);
-            }
-          });
-          return { [c.id]: n } as AdonisNotebookContainer;
-        }),
-      );
+      return this.getUrl<AdonisNoteBook>(notebookUrl);
     });
-    return forkJoin(notebooks);
+    return forkJoin(notebooks).pipe(
+      map(results => {
+        const container: AdonisNotebookContainer = {};
+        results.forEach((notebook, index) => container[classes[index].id] = notebook);
+        return container;
+      }),
+    );
   };
 
   retrieveAttributesForClasses = (classes: AdonisClass[]) => {

@@ -56,7 +56,7 @@ describe('ExportFiles', () => {
       imports: [ExportFiles],
       providers: [
         { provide: AdonisStoreService, useValue: storeMock },
-        { provide: ApplicationStateService, useValue: { errorMessage: { set: vi.fn() } } },
+        { provide: ApplicationStateService, useValue: { setError: vi.fn() } },
         { provide: DomSanitizer, useValue: sanitizerMock },
       ],
     })

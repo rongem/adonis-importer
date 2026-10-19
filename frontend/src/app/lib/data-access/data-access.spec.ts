@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as Constants from '../string.constants';
+import { isImportableClass } from '../helpers/metamodel-filter.functions';
 import { DataAccess } from './data-access';
 
 describe('DataAccess', () => {
@@ -178,7 +179,7 @@ describe('DataAccess', () => {
       treeFilterRelevant: false,
     };
 
-    const resultPromise = firstValueFrom(service.retrieveClassesWithNotebooks(baseUrl));
+    const resultPromise = firstValueFrom(service.retrieveClasses(baseUrl, isImportableClass));
 
     httpMock.expectOne(baseUrl + '4.0/metamodel/classes').flush(classListResponse);
     httpMock.expectOne('https://example/rest/class-keep').flush(classDetailResponse);

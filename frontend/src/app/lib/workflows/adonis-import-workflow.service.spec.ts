@@ -72,6 +72,7 @@ describe('AdonisImportWorkflowService', () => {
   let tableStore: ImportTableService;
   let routerMock: { navigate: ReturnType<typeof vi.fn> };
   let dataAccessMock: {
+    retrieveRepositories: ReturnType<typeof vi.fn>;
     retrieveObjectGroupStructure: ReturnType<typeof vi.fn>;
     retrieveSearchObjects: ReturnType<typeof vi.fn>;
     createObject: ReturnType<typeof vi.fn>;
@@ -81,6 +82,7 @@ describe('AdonisImportWorkflowService', () => {
   beforeEach(() => {
     routerMock = { navigate: vi.fn() };
     dataAccessMock = {
+      retrieveRepositories: vi.fn(() => NEVER),
       // selecting a repository loads the object groups in the background; not needed here
       retrieveObjectGroupStructure: vi.fn(() => NEVER),
       retrieveSearchObjects: vi.fn(() => of(existingItems)),
@@ -225,7 +227,75 @@ describe('AdonisImportWorkflowService', () => {
     });
   });
 
+  describe('repositories and object groups', () => {
+    const groups = {
+      group: {
+        id: 'root', name: 'Root',
+        subgroups: [{ id: 'g2', name: 'Zentrale', subgroups: [] }, { id: 'g1', name: 'Ämter', subgroups: [] }],
+      },
+    };
+
+    beforeEach(() => {
+      adonisStore.setSessionContext('https://example/rest/', 'user', 'secret', 'import');
+    });
+
+    it('selects the only repository directly and loads its sorted object groups', async () => {
+      dataAccessMock.retrieveRepositories.mockReturnValue(of({ repos: [{ id: 'repo-1', name: 'Main' }] }));
+      dataAccessMock.retrieveObjectGroupStructure.mockReturnValue(of(groups));
+
+      await service.loadRepositories();
+
+      expect(importStore.repositories()).toEqual([{ id: 'repo-1', name: 'Main' }]);
+      expect(importStore.selectedRepositoryId()).toBe('repo-1');
+      expect(dataAccessMock.retrieveObjectGroupStructure).toHaveBeenCalledWith('https://example/rest/', 'repo-1');
+      expect(importStore.objectGroups()!.subgroups.map(g => g.name)).toEqual(['Ämter', 'Zentrale']);
+      expect(appState.repositoryState()).toBe(WorkflowState.Loaded);
+      expect(appState.objectGroupsState()).toBe(WorkflowState.Loaded);
+    });
+
+    it('lets the user choose when several repositories are accessible', async () => {
+      dataAccessMock.retrieveRepositories.mockReturnValue(of({ repos: [{ id: 'repo-1', name: 'A' }, { id: 'repo-2', name: 'B' }] }));
+
+      await service.loadRepositories();
+
+      expect(importStore.selectedRepositoryId()).toBeUndefined();
+      expect(dataAccessMock.retrieveObjectGroupStructure).not.toHaveBeenCalled();
+    });
+
+    it('reports errors while loading repositories', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => undefined);
+      dataAccessMock.retrieveRepositories.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+
+      await service.loadRepositories();
+
+      expect(appState.repositoryState()).toBe(WorkflowState.ErrorOccured);
+      expect(appState.errorMessage()).toContain('Fehler beim Laden der Repositories');
+    });
+
+    it('resets object groups of a previously selected repository', async () => {
+      dataAccessMock.retrieveObjectGroupStructure.mockReturnValue(of(groups));
+      await service.selectRepository('repo-1');
+      importStore.selectObjectGroup(objectGroup);
+      dataAccessMock.retrieveObjectGroupStructure.mockReturnValue(NEVER);
+
+      service.selectRepository('repo-2');
+
+      expect(importStore.objectGroups()).toBeUndefined();
+      expect(importStore.selectedObjectGroup()).toBeUndefined();
+      expect(appState.objectGroupsState()).toBe(WorkflowState.Loading);
+    });
+  });
+
   describe('testPrimaryInBackend', () => {
+    it('does nothing without import context', async () => {
+      await service.testPrimaryInBackend();
+
+      expect(routerMock.navigate).not.toHaveBeenCalled();
+      expect(appState.itemsState()).toBe(WorkflowState.NotPresent);
+      expect(appState.errorMessage()).toContain('Import-Kontext unvollständig');
+      expect(dataAccessMock.retrieveSearchObjects).not.toHaveBeenCalled();
+    });
+
     it('searches existing objects by name and builds the preview plan', async () => {
       prepareImportContext();
 
@@ -253,7 +323,11 @@ describe('AdonisImportWorkflowService', () => {
       await service.testPrimaryInBackend();
 
       expect(appState.errorMessage()).toContain('Fehler beim Überprüfen der Primärschlüssel');
+      expect(appState.itemsState()).toBe(WorkflowState.ErrorOccured);
       expect(importStore.items()).toEqual([]);
+      // without the existing objects an import would create duplicates
+      expect(importStore.canImport()).toBe(false);
+      expect(importStore.previewPlan()).toBeUndefined();
     });
   });
 });

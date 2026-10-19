@@ -1,23 +1,20 @@
-import { HttpErrorResponse } from '@angular/common/http';
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, Injectable, signal } from '@angular/core';
 
-import { ImportTableService } from './import-table.service';
 import { AdonisClass } from '../models/adonis-rest/metadata/class.interface';
 import { AdonisAttributeContainer } from '../models/adonis-rest/metadata/container/container-attribute.interface';
 import { AdonisClassContainer } from '../models/adonis-rest/metadata/container/container-class.interface';
 import { AdonisNotebookContainer } from '../models/adonis-rest/metadata/container/container-notebook.interface';
 import { AdonisNotebookGroup, AttributeOrRelation } from '../models/adonis-rest/metadata/notebook-elements.interface';
-import { createColumnsFromProperties } from '../helpers/columns.functions';
 
 import * as Constants from '../string.constants';
 
+// what the application is used for in the current session
+export type SessionPurpose = 'config' | 'import';
+
 @Injectable({ providedIn: 'root' })
 export class AdonisStoreService {
-    // services
-    private readonly tableStore = inject(ImportTableService);
-
     // Purpose of the application usage
-    private readonly _purpose = signal<'config' | 'import' | undefined>(undefined);
+    private readonly _purpose = signal<SessionPurpose | undefined>(undefined);
     readonly purpose = this._purpose.asReadonly();
 
     // state signals
@@ -28,8 +25,6 @@ export class AdonisStoreService {
 
     private readonly _authenticated = signal(false);
     readonly authenticated = this._authenticated.asReadonly();
-    private readonly _primaryLoadingComplete = signal(false);
-    readonly primaryLoadingComplete = this._primaryLoadingComplete.asReadonly();
     private readonly _repositoryClasses = signal<AdonisClassContainer>({});
     readonly repositoryClasses = this._repositoryClasses.asReadonly();
     private readonly _notebooks = signal<AdonisNotebookContainer>({});
@@ -65,7 +60,7 @@ export class AdonisStoreService {
         return 'https://' + value + '/rest/';
     }
 
-    setSessionContext(baseUrl: string, username: string, password: string, purpose: 'config' | 'import') {
+    setSessionContext(baseUrl: string, username: string, password: string, purpose: SessionPurpose) {
         this.url.set(baseUrl);
         this._basicAuth.set(btoa([username, ':', password].join('')));
         this._purpose.set(purpose);
@@ -93,7 +88,6 @@ export class AdonisStoreService {
 
     selectProperties(selectedProperties: AttributeOrRelation[]) {
         this._selectedProperties.set(selectedProperties);
-        this.tableStore.setColumnDefinitions(createColumnsFromProperties(selectedProperties, this.attributes()));
     }
 
 }

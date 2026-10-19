@@ -6,9 +6,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DataAccess } from '../data-access/data-access';
 import { WorkflowState } from '../enums/workflow-state.enum';
-import { AdonisImportStoreService } from '../store/adonis-import-store.service';
 import { ApplicationStateService } from '../store/application-state.service';
 import { AdonisStoreService } from '../store/adonis-store.service';
+import { ImportTableService } from '../store/import-table.service';
+import { AdonisImportWorkflowService } from './adonis-import-workflow.service';
 import { AdonisMetadataWorkflowService } from './adonis-metadata-workflow.service';
 
 describe('AdonisMetadataWorkflowService', () => {
@@ -26,15 +27,17 @@ describe('AdonisMetadataWorkflowService', () => {
     classes: ReturnType<typeof vi.fn>;
     restBaseUrl: ReturnType<typeof vi.fn>;
     purpose: ReturnType<typeof vi.fn>;
+    selectProperties: ReturnType<typeof vi.fn>;
+    attributes: ReturnType<typeof vi.fn>;
   };
   let dataAccessMock: {
     resetTelemetry: ReturnType<typeof vi.fn>;
     getTelemetrySnapshot: ReturnType<typeof vi.fn>;
-    retrieveClassesWithNotebooks: ReturnType<typeof vi.fn>;
+    retrieveClasses: ReturnType<typeof vi.fn>;
     retrieveNotebooksForClasses: ReturnType<typeof vi.fn>;
     retrieveAttributesForClasses: ReturnType<typeof vi.fn>;
   };
-  let importStoreMock: {
+  let importWorkflowMock: {
     loadRepositories: ReturnType<typeof vi.fn>;
   };
 
@@ -53,6 +56,8 @@ describe('AdonisMetadataWorkflowService', () => {
       classes: vi.fn(() => []),
       restBaseUrl: vi.fn(() => 'https://example/rest/'),
       purpose: vi.fn(() => 'config' as const),
+      selectProperties: vi.fn(),
+      attributes: vi.fn(() => ({})),
     };
 
     dataAccessMock = {
@@ -66,12 +71,12 @@ describe('AdonisMetadataWorkflowService', () => {
         readRequestFailures: 0,
         writeRequestFailures: 0,
       })),
-      retrieveClassesWithNotebooks: vi.fn(() => of({})),
-      retrieveNotebooksForClasses: vi.fn(() => of([])),
+      retrieveClasses: vi.fn(() => of({})),
+      retrieveNotebooksForClasses: vi.fn(() => of({})),
       retrieveAttributesForClasses: vi.fn(() => of({})),
     };
 
-    importStoreMock = {
+    importWorkflowMock = {
       loadRepositories: vi.fn(),
     };
 
@@ -82,7 +87,7 @@ describe('AdonisMetadataWorkflowService', () => {
         { provide: Router, useValue: routerMock },
         { provide: AdonisStoreService, useValue: storeMock },
         { provide: DataAccess, useValue: dataAccessMock },
-        { provide: AdonisImportStoreService, useValue: importStoreMock },
+        { provide: AdonisImportWorkflowService, useValue: importWorkflowMock },
       ],
     });
 
@@ -92,7 +97,7 @@ describe('AdonisMetadataWorkflowService', () => {
 
   it('initializes session and loads metadata on success', async () => {
     const classesContainer = { CLASS_1: { id: 'CLASS_1' } };
-    dataAccessMock.retrieveClassesWithNotebooks.mockReturnValue(of(classesContainer));
+    dataAccessMock.retrieveClasses.mockReturnValue(of(classesContainer));
 
     const loadNotebooksSpy = vi.spyOn(service, 'loadNotebooks').mockResolvedValue();
     const loadAttributesSpy = vi.spyOn(service, 'loadAttributes').mockResolvedValue();
@@ -108,11 +113,11 @@ describe('AdonisMetadataWorkflowService', () => {
     expect(routerMock.navigate).toHaveBeenCalled();
     expect(loadNotebooksSpy).toHaveBeenCalled();
     expect(loadAttributesSpy).toHaveBeenCalled();
-    expect(importStoreMock.loadRepositories).not.toHaveBeenCalled();
+    expect(importWorkflowMock.loadRepositories).not.toHaveBeenCalled();
   });
 
   it('loads repositories when initializing an import session', async () => {
-    dataAccessMock.retrieveClassesWithNotebooks.mockReturnValue(of({ CLASS_1: { id: 'CLASS_1' } }));
+    dataAccessMock.retrieveClasses.mockReturnValue(of({ CLASS_1: { id: 'CLASS_1' } }));
 
     const loadNotebooksSpy = vi.spyOn(service, 'loadNotebooks').mockResolvedValue();
     const loadAttributesSpy = vi.spyOn(service, 'loadAttributes').mockResolvedValue();
@@ -121,11 +126,11 @@ describe('AdonisMetadataWorkflowService', () => {
 
     expect(loadNotebooksSpy).toHaveBeenCalled();
     expect(loadAttributesSpy).toHaveBeenCalled();
-    expect(importStoreMock.loadRepositories).toHaveBeenCalledTimes(1);
+    expect(importWorkflowMock.loadRepositories).toHaveBeenCalledTimes(1);
   });
 
   it('sets error state when class retrieval fails during initialization', async () => {
-    dataAccessMock.retrieveClassesWithNotebooks.mockReturnValue(
+    dataAccessMock.retrieveClasses.mockReturnValue(
       throwError(() =>
         new HttpErrorResponse({
           status: 500,
@@ -140,7 +145,7 @@ describe('AdonisMetadataWorkflowService', () => {
     expect(storeMock.setAuthenticated).toHaveBeenCalledWith(false);
     expect(appState.classesState()).toBe(WorkflowState.ErrorOccured);
     expect(appState.errorMessage()).toContain('Fehler beim Laden der Klassen');
-    expect(importStoreMock.loadRepositories).not.toHaveBeenCalled();
+    expect(importWorkflowMock.loadRepositories).not.toHaveBeenCalled();
   });
 
   it('rejects refresh when session context is missing', async () => {
@@ -150,7 +155,7 @@ describe('AdonisMetadataWorkflowService', () => {
     await service.refreshMetamodel();
 
     expect(appState.errorMessage()).toContain('Verbindung nicht initialisiert');
-    expect(dataAccessMock.retrieveClassesWithNotebooks).not.toHaveBeenCalled();
+    expect(dataAccessMock.retrieveClasses).not.toHaveBeenCalled();
   });
 
   it('does not load notebooks when session purpose is missing', async () => {
@@ -160,5 +165,34 @@ describe('AdonisMetadataWorkflowService', () => {
 
     expect(appState.errorMessage()).toContain('Zweck der Sitzung fehlt');
     expect(dataAccessMock.retrieveNotebooksForClasses).not.toHaveBeenCalled();
+  });
+
+  it('loads notebooks and keeps only importable properties for the session purpose', async () => {
+    storeMock.purpose.mockReturnValue('import');
+    storeMock.classes.mockReturnValue([{ id: 'CLASS_1' }]);
+    dataAccessMock.retrieveNotebooksForClasses.mockReturnValue(of({
+      CLASS_1: { chapters: [{ id: 'ch', children: [
+        { id: 'name', type: 'ATTRDEF', ctrlType: 'STRING', properties: {} },
+        { id: 'relation', type: 'RELATIONS', ctrlType: 'RELATIONS', properties: {} },
+      ] }] },
+    }));
+
+    await service.loadNotebooks();
+
+    const notebooks = storeMock.setNotebooks.mock.calls[0][0];
+    expect(notebooks.CLASS_1.chapters[0].children.map((c: { id: string }) => c.id)).toEqual(['name']);
+    expect(appState.notebookState()).toBe(WorkflowState.Loaded);
+  });
+
+  it('prepares the import table columns for the selected properties', () => {
+    const properties = [
+      { id: 'a-name', metaName: 'NAME', type: 'ATTRDEF', ctrlType: 'STRING', properties: {}, displayNames: { de: 'Name' } },
+      { id: 'a-count', metaName: 'A_COUNT', type: 'ATTRDEF', ctrlType: 'INTEGER', properties: {}, displayNames: { de: 'Anzahl' } },
+    ] as any[];
+
+    service.selectProperties(properties);
+
+    expect(storeMock.selectProperties).toHaveBeenCalledWith(properties);
+    expect(TestBed.inject(ImportTableService).columnDefinitions().map(c => c.internalName)).toEqual(['NAME', 'A_COUNT']);
   });
 });

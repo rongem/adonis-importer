@@ -20,6 +20,8 @@ import { cellMatchesAttributeValue } from '../helpers/attribute-compare.function
 import { AdonisStoreService } from '../store/adonis-store.service';
 import { AdonisImportStoreService } from '../store/adonis-import-store.service';
 import { ApplicationStateService } from '../store/application-state.service';
+import { errorText } from '../helpers/error.functions';
+import { sortGroup } from '../helpers/group-sorter.functions';
 import * as Constants from '../string.constants';
 
 const relationsUnsupportedReason = 'Relationen sind deaktiviert, weil die ADONIS-REST-API weder Kardinalitäten noch brauchbare Fehlermeldungen bereitstellt.';
@@ -33,17 +35,53 @@ export class AdonisImportWorkflowService {
     private readonly router = inject(Router);
     private readonly dataAccess = inject(DataAccess);
 
-    async testPrimaryInBackend() {
-        this.router.navigate([Constants.import_test_url]);
-        this.importStore.setAdvancedTestingStarted(true);
-        this.appState.itemsState.set(WorkflowState.Loading);
+    // load repositories from ADONIS. If only one repository is accessible, select it directly.
+    async loadRepositories() {
+        const baseUrl = this.adonisStore.restBaseUrl();
+        if (!baseUrl) {
+            this.appState.reportError('Keine ADONIS-Verbindung vorhanden. Bitte zuerst anmelden.', undefined, 'repositories');
+            return;
+        }
+        this.appState.setState('repositories', WorkflowState.Loading);
+        try {
+            const repositoryList = await firstValueFrom(this.dataAccess.retrieveRepositories(baseUrl));
+            this.importStore.setRepositories(repositoryList.repos);
+            this.appState.setState('repositories', WorkflowState.Loaded);
+            if (repositoryList.repos.length === 1) {
+                await this.selectRepository(repositoryList.repos[0].id);
+            }
+        } catch (error) {
+            this.appState.reportError(`Fehler beim Laden der Repositories: ${errorText(error)}`, error, 'repositories');
+        }
+    }
 
+    // select repository and load its object groups
+    async selectRepository(repositoryId: string) {
+        this.importStore.selectRepository(repositoryId);
+        const context = this.getImportContext();
+        if (!context) return;
+        this.appState.setState('objectGroups', WorkflowState.Loading);
+        try {
+            const objectGroupList = await firstValueFrom(this.dataAccess.retrieveObjectGroupStructure(context.baseUrl, context.repositoryId));
+            this.importStore.setObjectGroups(sortGroup(objectGroupList).group);
+            this.appState.setState('objectGroups', WorkflowState.Loaded);
+        } catch (error) {
+            this.appState.reportError(`Fehler beim Laden der Objektgruppen: ${errorText(error)}`, error, 'objectGroups');
+        }
+    }
+
+    async testPrimaryInBackend() {
         const context = this.getImportContext();
         const primaryColumn = this.tableStore.primaryColumn();
         const selectedClass = this.adonisStore.selectedClass();
         if (!context || !primaryColumn || !selectedClass) {
             return;
         }
+
+        this.router.navigate([Constants.import_test_url]);
+        this.importStore.setAdvancedTestingStarted(true);
+        this.importStore.setCanImport(false);
+        this.appState.setState('items', WorkflowState.Loading);
 
         const query: AdonisQuery = {
             filters: [{
@@ -56,18 +94,20 @@ export class AdonisImportWorkflowService {
         };
 
         const queryString = encodeURIComponent(JSON.stringify(query));
-        const items = await firstValueFrom(this.dataAccess.retrieveSearchObjects(context.baseUrl, context.repositoryId, queryString))
-            .catch((error: HttpErrorResponse) => {
-                console.error(error);
-                this.appState.itemsState.set(WorkflowState.ErrorOccured);
-                this.appState.errorMessage.set(`Fehler beim Überprüfen der Primärschlüssel: ${error.message}`);
-                return [];
-            });
+        let items: AdonisItem[];
+        try {
+            items = await firstValueFrom(this.dataAccess.retrieveSearchObjects(context.baseUrl, context.repositoryId, queryString));
+        } catch (error) {
+            // without knowing the existing objects, an import would create duplicates
+            this.importStore.setItems([]);
+            this.appState.reportError(`Fehler beim Überprüfen der Primärschlüssel: ${errorText(error)}`, error, 'items');
+            return;
+        }
 
         this.importStore.setItems(items);
         this.buildPreviewPlan();
-        this.appState.itemsState.set(WorkflowState.Loaded);
-        this.appState.targetState.set(WorkflowState.Loaded);
+        this.appState.setState('items', WorkflowState.Loaded);
+        this.appState.setState('target', WorkflowState.Loaded);
         this.importStore.setCanImport(true);
     }
 
@@ -89,7 +129,7 @@ export class AdonisImportWorkflowService {
         const selectedClass = this.adonisStore.selectedClass();
         const selectedObjectGroup = this.importStore.selectedObjectGroup();
         if (!selectedClass || !selectedObjectGroup) {
-            this.appState.errorMessage.set('Import-Kontext unvollständig. Bitte Klasse und Zielordner prüfen.');
+            this.appState.setError('Import-Kontext unvollständig. Bitte Klasse und Zielordner prüfen.');
             return;
         }
 
@@ -231,8 +271,7 @@ export class AdonisImportWorkflowService {
         const baseUrl = this.adonisStore.restBaseUrl();
         const repositoryId = this.importStore.selectedRepositoryId();
         if (!baseUrl || !repositoryId) {
-            this.appState.errorMessage.set('Import-Kontext unvollständig. Bitte Verbindung und Repository prüfen.');
-            this.appState.targetState.set(WorkflowState.ErrorOccured);
+            this.appState.reportError('Import-Kontext unvollständig. Bitte Verbindung und Repository prüfen.', undefined, 'target');
             return undefined;
         }
         return { baseUrl, repositoryId };

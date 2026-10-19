@@ -80,7 +80,7 @@
             @for (column of tableStore.columnMapping(); track column; let i = $index) {
               <td
                 [ngClass]="{error: getCellInformation(rowNumber, i)?.containsErrors || getCellContainsRowErrors(rowNumber, i) }"
-                [attr.title]="getCellErrorMessages(rowNumber, i)()">
+                [attr.title]="getCellErrorMessages(rowNumber, i)">
                 {{getCellInformation(rowNumber, i)?.typedValue}}
               </td>
             }

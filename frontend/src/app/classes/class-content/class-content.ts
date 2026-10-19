@@ -5,6 +5,7 @@ import { Children } from "../children/children";
 import { AdonisNotebookRelations, AttributeOrGroupOrRelation, AttributeOrRelation } from '../../lib/models/adonis-rest/metadata/notebook-elements.interface';
 import { AdonisStoreService } from '../../lib/store/adonis-store.service';
 import { ApplicationStateService } from '../../lib/store/application-state.service';
+import { AdonisMetadataWorkflowService } from '../../lib/workflows/adonis-metadata-workflow.service';
 import * as Constants from '../../lib/string.constants';
 
 @Component({
@@ -18,6 +19,7 @@ export class ClassContent {
   protected readonly adonisStore = inject(AdonisStoreService);
   protected readonly appState = inject(ApplicationStateService);
   private readonly router = inject(Router);
+  private readonly metadataWorkflow = inject(AdonisMetadataWorkflowService);
 
   selectedProperties: AttributeOrRelation[] = [];
 
@@ -72,7 +74,7 @@ export class ClassContent {
         }
       }
     });
-    this.adonisStore.selectProperties(this.selectedProperties);
+    this.metadataWorkflow.selectProperties(this.selectedProperties);
     this.selectionDone = true;
   };
 

@@ -1,4 +1,4 @@
-import { Component, computed, ElementRef, HostListener, inject, viewChildren, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, viewChildren, ChangeDetectionStrategy } from '@angular/core';
 
 import { getTableContentFromClipboard } from '../../lib/helpers/clipboard.functions';
 import { CellContent } from '../../lib/models/table/cellcontent.model';
@@ -24,7 +24,6 @@ export class ImportTable {
   protected readonly adonisImportStore = inject(AdonisImportStoreService);
   protected readonly importWorkflow = inject(AdonisImportWorkflowService);
 
-  columnDefinitions = this.tableStore.columnDefinitions();
   // table cells for selection
   protected readonly cells = viewChildren<ElementRef<HTMLTableCellElement>>('td');
   // dragging source
@@ -33,9 +32,9 @@ export class ImportTable {
   protected presumedTargetIndex: number | undefined;
   schema: string = '';
 
-  getColumn = (columnIndex: number) => this.tableStore.columnDefinitionByOriginalPosition(columnIndex)();
+  getColumn = (columnIndex: number) => this.tableStore.columnByOrdinalPosition(columnIndex);
 
-  getCellInformation = (rowIndex: number, columIndex: number) => this.tableStore.cellInformation(rowIndex, columIndex)();
+  getCellInformation = (rowIndex: number, columIndex: number) => this.tableStore.cellInformation(rowIndex, columIndex);
 
   getColumnTitle = (columnPosition: number) => {
     const column = this.getColumn(columnPosition);
@@ -57,17 +56,17 @@ export class ImportTable {
     return content.join(`, `);
   };
 
-  getRowContainsErrors = (rowIndex: number) => this.tableStore.rowContainsErrors(rowIndex)();
+  getRowContainsErrors = (rowIndex: number) => this.tableStore.rowContainsErrors(rowIndex);
 
-  getRowErrorDescriptions = (rowIndex: number) => this.tableStore.errorsInRow(rowIndex)().join('; ');
+  getRowErrorDescriptions = (rowIndex: number) => this.tableStore.errorsInRow(rowIndex).join('; ');
 
-  getCellRowErrors = (rowIndex: number, columnIndex: number) => this.tableStore.cellContainsRowError(rowIndex, columnIndex)();
+  getCellRowErrors = (rowIndex: number, columnIndex: number) => this.tableStore.rowErrorsInCell(rowIndex, columnIndex);
   getCellContainsRowErrors = (rowIndex: number, columnIndex: number) => this.getCellRowErrors(rowIndex, columnIndex).length > 0;
-  getCellErrorMessages = (rowIndex: number, columIndex: number) => computed(() => {
+  getCellErrorMessages = (rowIndex: number, columIndex: number) => {
     const cellErrors = this.getCellRowErrors(rowIndex, columIndex);
     const cellinformation = this.getCellInformation(rowIndex, columIndex);
-    return [...cellErrors, cellinformation?.errorText].join(';');
-  });
+    return [...cellErrors, cellinformation?.errorText].filter(text => !!text).join('; ');
+  };
 
   // columns for drag and drop column order change
 
@@ -83,7 +82,7 @@ export class ImportTable {
       }
     } catch (error: any) {
       console.error(error.message, error.toString());
-      this.state.errorMessage.set('Fehler beim Einfügen der Daten aus der Zwischenablage: ' + (error.message ?? error.toString()));
+      this.state.setError('Fehler beim Einfügen der Daten aus der Zwischenablage: ' + (error.message ?? error.toString()));
     }
   }
 

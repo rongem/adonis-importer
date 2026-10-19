@@ -2,6 +2,7 @@ import { Component, inject, OnDestroy, OnInit, signal, ChangeDetectionStrategy }
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { ApplicationStateService } from '../lib/store/application-state.service';
 import { AdonisMetadataWorkflowService } from '../lib/workflows/adonis-metadata-workflow.service';
+import { SessionPurpose } from '../lib/store/adonis-store.service';
 
 @Component({
   selector: 'app-login',
@@ -25,7 +26,7 @@ export class Login {
     ),
     username: new FormControl('', {validators: [Validators.required]}),
     password: new FormControl('', {validators: [Validators.required]}),
-    purpose: new FormControl<'config' | 'import'>('config', {validators: [Validators.required]})
+    purpose: new FormControl<SessionPurpose>('config', {validators: [Validators.required]})
   });
 
   login() {

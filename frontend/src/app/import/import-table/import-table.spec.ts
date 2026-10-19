@@ -15,11 +15,11 @@ describe('ImportTable', () => {
   let columnMappings: number[];
   let tableStoreMock: {
     columnDefinitions: ReturnType<typeof vi.fn>;
-    columnDefinitionByOriginalPosition: ReturnType<typeof vi.fn>;
+    columnByOrdinalPosition: ReturnType<typeof vi.fn>;
     cellInformation: ReturnType<typeof vi.fn>;
     rowContainsErrors: ReturnType<typeof vi.fn>;
     errorsInRow: ReturnType<typeof vi.fn>;
-    cellContainsRowError: ReturnType<typeof vi.fn>;
+    rowErrorsInCell: ReturnType<typeof vi.fn>;
     columnMapping: ReturnType<typeof vi.fn>;
     changeColumnOrder: ReturnType<typeof vi.fn>;
     rowNumbers: ReturnType<typeof vi.fn>;
@@ -61,11 +61,11 @@ describe('ImportTable', () => {
     columnMappings = [0, 1, 2];
     tableStoreMock = {
       columnDefinitions: vi.fn(() => columns),
-      columnDefinitionByOriginalPosition: vi.fn((columnPosition: number) => () => columns[columnPosition]),
-      cellInformation: vi.fn(() => () => undefined),
-      rowContainsErrors: vi.fn(() => () => false),
-      errorsInRow: vi.fn(() => () => []),
-      cellContainsRowError: vi.fn(() => () => []),
+      columnByOrdinalPosition: vi.fn((columnPosition: number) => columns[columnPosition]),
+      cellInformation: vi.fn(() => undefined),
+      rowContainsErrors: vi.fn(() => false),
+      errorsInRow: vi.fn(() => []),
+      rowErrorsInCell: vi.fn(() => []),
       columnMapping: vi.fn(() => columnMappings),
       changeColumnOrder: vi.fn((mappings: number[]) => {
         columnMappings = mappings;
@@ -81,7 +81,7 @@ describe('ImportTable', () => {
     await TestBed.configureTestingModule({
       imports: [ImportTable],
       providers: [
-        { provide: ApplicationStateService, useValue: { errorMessage: { set: vi.fn() } } },
+        { provide: ApplicationStateService, useValue: { setError: vi.fn() } },
         { provide: AdonisStoreService, useValue: { selectedClass: vi.fn(() => ({ displayNames: { de: 'Klasse' }, metaName: 'C_TEST' })) } },
         { provide: AdonisImportStoreService, useValue: { selectedRepository: vi.fn(() => ({ name: 'Repo' })), selectedObjectGroup: vi.fn(() => ({ name: 'Group' })), advancedTestingStarted: vi.fn(() => false) } },
         { provide: ImportTableService, useValue: tableStoreMock },

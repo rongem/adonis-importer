@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import * as Constants from '../../lib/string.constants';
 import { AdonisStoreService } from '../../lib/store/adonis-store.service';
 import { ApplicationStateService } from '../../lib/store/application-state.service';
+import { AdonisMetadataWorkflowService } from '../../lib/workflows/adonis-metadata-workflow.service';
 
 import { ClassContent } from './class-content';
 
@@ -14,9 +15,9 @@ describe('ClassContent', () => {
   let fixture: ComponentFixture<ClassContent>;
   let storeMock: {
     selectedClassesProperties: ReturnType<typeof vi.fn>;
-    selectProperties: ReturnType<typeof vi.fn>;
     purpose: ReturnType<typeof vi.fn>;
   };
+  let metadataWorkflowMock: { selectProperties: ReturnType<typeof vi.fn> };
   let routerMock: { navigate: ReturnType<typeof vi.fn>; navigateByUrl: ReturnType<typeof vi.fn> };
 
   const nameProperty = {
@@ -64,11 +65,11 @@ describe('ClassContent', () => {
   beforeEach(async () => {
     storeMock = {
       selectedClassesProperties: vi.fn(() => [nameProperty, descProperty, relationProperty]),
-      selectProperties: vi.fn(),
       purpose: vi.fn(() => 'config'),
     };
 
     routerMock = { navigate: vi.fn(), navigateByUrl: vi.fn() };
+    metadataWorkflowMock = { selectProperties: vi.fn() };
 
     await TestBed.configureTestingModule({
       imports: [ClassContent],
@@ -76,6 +77,7 @@ describe('ClassContent', () => {
         { provide: AdonisStoreService, useValue: storeMock },
         { provide: ApplicationStateService, useValue: { attributesReady: vi.fn(() => true) } },
         { provide: Router, useValue: routerMock },
+        { provide: AdonisMetadataWorkflowService, useValue: metadataWorkflowMock },
       ],
     })
     .compileComponents();
@@ -97,8 +99,8 @@ describe('ClassContent', () => {
 
     component.submitForm();
 
-    expect(storeMock.selectProperties).toHaveBeenCalledTimes(1);
-    const selected = storeMock.selectProperties.mock.calls[0][0] as any[];
+    expect(metadataWorkflowMock.selectProperties).toHaveBeenCalledTimes(1);
+    const selected = metadataWorkflowMock.selectProperties.mock.calls[0][0] as any[];
     expect(selected.length).toBe(3);
     expect(selected[0].id).toBe('attr-name');
     expect(selected[1].id).toBe('attr-desc');

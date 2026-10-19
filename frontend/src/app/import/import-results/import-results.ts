@@ -16,11 +16,11 @@ export class ImportResults {
   }
 
   getImportedRelationsForRow(row: number) {
-    return this.store.importedRelationsForRow(row)();
+    return this.store.importedRelationsForRow(row);
   }
 
   getRowErrors(row: number) {
-    return this.store.importErrorsForRow(row)();
+    return this.store.importErrorsForRow(row);
   }
   
 

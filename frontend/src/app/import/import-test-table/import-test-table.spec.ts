@@ -146,7 +146,7 @@ describe('ImportTestTable', () => {
     await TestBed.configureTestingModule({
       imports: [ImportTestTable],
       providers: [
-        { provide: ApplicationStateService, useValue: { errorMessage: { set: vi.fn() } } },
+        { provide: ApplicationStateService, useValue: { setError: vi.fn() } },
         { provide: AdonisStoreService, useValue: adonisStoreMock },
         { provide: AdonisImportStoreService, useValue: importStoreMock },
         { provide: ImportTableService, useValue: tableStoreMock },

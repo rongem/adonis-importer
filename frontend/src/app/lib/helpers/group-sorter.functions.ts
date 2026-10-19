@@ -13,6 +13,6 @@ const sortSubGroups = (groups: AdonisGroup[]) => {
             g.subgroups = sortSubGroups(g.subgroups);
         }
     });
-    groups = groups.sort((a, b) => a.name > b.name ? 1 : -1);
+    groups = groups.sort((a, b) => a.name.localeCompare(b.name, 'de'));
     return groups;
 }

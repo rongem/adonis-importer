@@ -32,14 +32,14 @@ describe('canActivateClasses', () => {
   });
 
   it('allows activation when classes are loaded', () => {
-    appState.classesState.set(WorkflowState.Loaded);
+    appState.setState('classes', WorkflowState.Loaded);
 
     const result = executeGuard({} as any, {} as any);
     expect(result).toBe(true);
   });
 
   it('redirects to root when classes are not loaded', () => {
-    appState.classesState.set(WorkflowState.Loading);
+    appState.setState('classes', WorkflowState.Loading);
 
     const result = executeGuard({} as any, {} as any);
     expect(result).toBe(fallbackTree);

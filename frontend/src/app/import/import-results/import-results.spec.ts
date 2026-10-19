@@ -38,10 +38,10 @@ describe('ImportResults', () => {
   beforeEach(async () => {
     storeMock = {
       succeededImports: vi.fn(() => importedRows),
-      importedRelationsForRow: vi.fn((row: number) => () => row === 2
+      importedRelationsForRow: vi.fn((row: number) => row === 2
         ? [{ fromClassName: 'A', fromName: 'One', toClassName: 'B', toName: 'Two', rowNumber: 2 }]
         : []),
-      importErrorsForRow: vi.fn((row: number) => () => row === 2
+      importErrorsForRow: vi.fn((row: number) => row === 2
         ? [{ row: 2, columnIndex: 3, msg: 'Ungültiger Wert' }]
         : []),
     };
@@ -98,8 +98,8 @@ describe('ImportResults', () => {
   });
 
   it('omits relation and error sections when stores return empty arrays', () => {
-    storeMock.importedRelationsForRow.mockReturnValue(() => []);
-    storeMock.importErrorsForRow.mockReturnValue(() => []);
+    storeMock.importedRelationsForRow.mockReturnValue([]);
+    storeMock.importErrorsForRow.mockReturnValue([]);
     fixture.detectChanges();
 
     const text = (fixture.nativeElement as HTMLElement).textContent ?? '';

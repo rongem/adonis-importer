@@ -1,31 +1,27 @@
-import { computed, effect, Injectable, signal } from "@angular/core";
+import { computed, Injectable, signal } from "@angular/core";
 import { CellContent } from "../models/table/cellcontent.model";
 import { Column } from "../models/table/column.model";
 import { ErrorList } from "../models/table/errorlist.model";
 import { CellInformation } from "../models/table/cellinformation.model";
 import { Row } from "../models/table/row.model";
-import { isValidEnumValue } from "../helpers/columns.functions";
+
+const cellKey = (row: number, column: number) => row + ':' + column;
 
 @Injectable({providedIn: 'root'})
 export class ImportTableService {
     // signals
-    private _columnDefinitions = signal<Column[]>([]);
-    readonly columnDefinitions = this._columnDefinitions.asReadonly()
-    private _cellContents = signal<CellContent[]>([]);
+    private readonly _columnDefinitions = signal<Column[]>([]);
+    readonly columnDefinitions = this._columnDefinitions.asReadonly();
+    private readonly _cellContents = signal<CellContent[]>([]);
     readonly cellContents = this._cellContents.asReadonly();
-    private _columnMapping = signal<number[]>([]);
+    private readonly _columnMapping = signal<number[]>([]);
     readonly columnMapping = this._columnMapping.asReadonly();
-    private _rowErrors = signal<ErrorList[]>([]);
-    readonly rowErrors = this._rowErrors.asReadonly();
-    readonly contentsAreTested = signal(false);
-    
+
     // computed signals
     readonly sortedColumnDefinitions = computed(() => {
         return this.columnDefinitions().slice().sort((a, b) => a.ordinalPosition - b.ordinalPosition);
     });
-    readonly columnDefinitionByOriginalPosition = (columnPosition: number) => {
-        return computed(() => this.columnDefinitions().find(c => c.ordinalPosition === columnPosition));
-    };
+    private readonly columnsByOrdinalPosition = computed(() => new Map(this.columnDefinitions().map(c => [c.ordinalPosition, c])));
     readonly primaryColumn = computed(() => {
         return this.columnDefinitions().find(c => c.primary);
     });
@@ -37,34 +33,24 @@ export class ImportTableService {
     readonly cellInformations = computed(() => {
         return this.cellContents().map(c => new CellInformation(c, this.sortedColumnDefinitions()[this.columnMapping()[c.column]]));
     });
-    readonly cellInformation = (rowIndex: number, columIndex: number) => {
-        return computed(() => this.cellInformations().find(c => c.row === rowIndex && c.column === columIndex))
-    };
-    readonly rowNumbers = computed(() => {
-        return [...new Set(this.cellContents().map(c => c.row))];
+    private readonly cellInformationsByPosition = computed(() => new Map(this.cellInformations().map(c => [cellKey(c.row, c.column), c])));
+    private readonly cellInformationsByRow = computed(() => {
+        const result = new Map<number, CellInformation[]>();
+        for (const cell of this.cellInformations()) {
+            result.set(cell.row, [...(result.get(cell.row) ?? []), cell]);
+        }
+        return result;
     });
+    readonly rowNumbers = computed(() => [...this.cellInformationsByRow().keys()]);
     readonly tableContainsErrors = computed(() => {
         return this.cellInformations().some(c => c.containsErrors);
     });
-    readonly rowContainsErrors = (rowIndex: number) => {
-        return computed(() => this.rowErrors().some(e => e.row === rowIndex) || this.cellInformations().some(c => c.row === rowIndex && c.containsErrors));
-    }
-    readonly errorsInRow = (rowIndex: number) => {
-        return computed(() => [
-            ...this.rowErrors().filter(e => e.row === rowIndex).map(e => e.msg),
-            ...this.cellInformations().filter(c => c.row === rowIndex && c.containsErrors).map(c => `Spalte: ` + c.name + ': ' + c.errors.join(`, `)),
-        ]);
-    }
-    readonly cellContainsRowError = (rowIndex: number, columIndex: number) => {
-        return computed(() => this.rowErrors().filter(e => e.row === rowIndex && e.columnIndex === columIndex).map(e => e.msg));
-    };
     // compute rows for testing and import
     readonly rows = computed(() => {
         const rows: Row[] = [];
-        for (let rowNumber of this.rowNumbers()) {
-            const cells = this.cellInformations().filter(c => c.row === rowNumber);
+        for (const [rowNumber, cells] of this.cellInformationsByRow()) {
             rows[rowNumber] = {};
-            for (let cell of cells) {
+            for (const cell of cells) {
                 if (!!cell.typedValue || !cell.canBeEmpty) {
                     rows[rowNumber][cell.name] = cell.typedValue;
                 }
@@ -73,74 +59,83 @@ export class ImportTableService {
         return rows;
     });
 
-    // effects
-
-    // test table contents for basic errors:
-    // 1. check for duplicate primary keys
-    // 2. check for enum violations
-    private readonly testRows = effect(() => {
-        const columns = this.columnDefinitions();
-        if (columns.length === 0) {
-            this._rowErrors.set([]);
-            this.contentsAreTested.set(false);
-            return;
-        }
+    // errors that affect a row as a whole (cell type errors are part of the cell informations):
+    // 1. missing primary key column
+    // 2. duplicate primary keys
+    readonly rowErrors = computed<ErrorList[]>(() => {
+        if (this.columnDefinitions().length === 0) return [];
         const primaryColumn = this.primaryColumn();
         if (!primaryColumn) {
-            this._rowErrors.set([{msg: 'Kein Primärschlüssel definiert', row: -1, columnIndex: -1}]);
-            this.contentsAreTested.set(false);
-            return;
+            return [{msg: 'Kein Primärschlüssel definiert', row: -1, columnIndex: -1}];
         }
-        const primaryColumnIndex = this.primaryColumnIndex();
         const rows = this.rows();
-        if (rows.length === 0) {
-            this._rowErrors.set([]);
-            this.contentsAreTested.set(false);
-            return;
-        }
         const primaryValues = rows.map(r => r[primaryColumn.internalName]);
+        const counts = new Map<unknown, number>();
+        primaryValues.forEach(value => counts.set(value, (counts.get(value) ?? 0) + 1));
         const errors: ErrorList[] = [];
         primaryValues.forEach((value, row) => {
-            if (primaryValues.filter(v1 => v1 === value).length > 1) {
-                errors.push({msg: 'Doppelter Primärschlüssel', row, columnIndex: primaryColumnIndex, rowContent: rows[row]});
+            // empty names are reported as cell errors already
+            if (value !== undefined && value !== '' && counts.get(value)! > 1) {
+                errors.push({msg: 'Doppelter Primärschlüssel', row, columnIndex: this.primaryColumnIndex(), rowContent: rows[row]});
             }
         });
-        const enumColumns = columns.filter(c => !!c.enumData);
-        enumColumns.forEach(c => {
-            const enumColumnIndex = columns.indexOf(c);
-            rows.forEach((row, rowIndex) => {
-                const value = row[c.internalName];
-                if (!! value && !isValidEnumValue(c.enumData!, value.toString())) {
-                    errors.push({msg: 'Wert nicht im erlaubten Bereich', row: rowIndex, columnIndex: enumColumnIndex, rowContent: row})
-                }
-            });
-        });
-        this._rowErrors.set(errors);
-        this.contentsAreTested.set(errors.length === 0 && !this.tableContainsErrors());
+        return errors;
     });
+    private readonly errorMessagesByRow = computed(() => {
+        const result = new Map<number, string[]>();
+        const add = (row: number, message: string) => result.set(row, [...(result.get(row) ?? []), message]);
+        this.rowErrors().forEach(e => add(e.row, e.msg));
+        this.cellInformations().filter(c => c.containsErrors).forEach(c => add(c.row, `Spalte: ` + c.name + ': ' + c.errors.join(`, `)));
+        return result;
+    });
+    private readonly rowErrorsByCell = computed(() => {
+        const result = new Map<string, string[]>();
+        this.rowErrors().forEach(e => {
+            const key = cellKey(e.row, e.columnIndex ?? -1);
+            result.set(key, [...(result.get(key) ?? []), e.msg]);
+        });
+        return result;
+    });
+    // all local checks passed, contents can be tested against ADONIS
+    readonly contentsAreTested = computed(() =>
+        this.columnDefinitions().length > 0 &&
+        this.rowNumbers().length > 0 &&
+        this.rowErrors().length === 0 &&
+        !this.tableContainsErrors()
+    );
 
+    // lookups; they read signals, so they are reactive when used in templates or computed signals
+    columnByOrdinalPosition(columnPosition: number) {
+        return this.columnsByOrdinalPosition().get(columnPosition);
+    }
+
+    cellInformation(rowIndex: number, columnIndex: number) {
+        return this.cellInformationsByPosition().get(cellKey(rowIndex, columnIndex));
+    }
+
+    rowContainsErrors(rowIndex: number) {
+        return this.errorMessagesByRow().has(rowIndex);
+    }
+
+    errorsInRow(rowIndex: number) {
+        return this.errorMessagesByRow().get(rowIndex) ?? [];
+    }
+
+    rowErrorsInCell(rowIndex: number, columnIndex: number) {
+        return this.rowErrorsByCell().get(cellKey(rowIndex, columnIndex)) ?? [];
+    }
 
     // methods to update signals
     setColumnDefinitions(columns: Column[]) {
         this._columnDefinitions.set(columns);
         this._columnMapping.set(Array.from(Array(columns.length).keys()));
     }
-    
-    // reset errors and tested flag
-    private clearErrorsAndTestresults() {
-        this._rowErrors.set([]);
-        this.contentsAreTested.set(false);
-    }
 
-    // set cell contents and reset status
     setCellContents(contents: CellContent[]) {
-        this.clearErrorsAndTestresults();
         this._cellContents.set(contents);
     }
 
-    // set column order and reset status
     changeColumnOrder(columnMappings: number[]) {
-        this.clearErrorsAndTestresults();
         this._columnMapping.set(columnMappings);
     }
 }

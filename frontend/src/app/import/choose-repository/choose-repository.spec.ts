@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AdonisImportStoreService } from '../../lib/store/adonis-import-store.service';
 import { ApplicationStateService } from '../../lib/store/application-state.service';
+import { AdonisImportWorkflowService } from '../../lib/workflows/adonis-import-workflow.service';
 
 import { ChooseRepository } from './choose-repository';
 
@@ -14,8 +15,8 @@ describe('ChooseRepository', () => {
     selectedRepository: ReturnType<typeof vi.fn>;
     repositories: ReturnType<typeof vi.fn>;
     objectGroups: ReturnType<typeof vi.fn>;
-    selectRepository: ReturnType<typeof vi.fn>;
   };
+  let importWorkflowMock: { selectRepository: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     appStateMock = {
@@ -29,14 +30,15 @@ describe('ChooseRepository', () => {
         { id: 'repo-2', name: 'Beta' },
       ]),
       objectGroups: vi.fn(() => undefined),
-      selectRepository: vi.fn(),
     };
+    importWorkflowMock = { selectRepository: vi.fn() };
 
     await TestBed.configureTestingModule({
       imports: [ChooseRepository],
       providers: [
         { provide: ApplicationStateService, useValue: appStateMock },
         { provide: AdonisImportStoreService, useValue: importStoreMock },
+        { provide: AdonisImportWorkflowService, useValue: importWorkflowMock },
       ],
     })
     .compileComponents();
@@ -49,9 +51,9 @@ describe('ChooseRepository', () => {
     expect(component).toBeTruthy();
   });
 
-  it('delegates repository selection to the import store', () => {
+  it('delegates repository selection to the import workflow', () => {
     component.chooseRepository('repo-2');
-    expect(importStoreMock.selectRepository).toHaveBeenCalledWith('repo-2');
+    expect(importWorkflowMock.selectRepository).toHaveBeenCalledWith('repo-2');
   });
 
   it('renders repository options and triggers selection on button click', () => {
@@ -67,7 +69,7 @@ describe('ChooseRepository', () => {
     select.value = 'repo-2';
     button.click();
 
-    expect(importStoreMock.selectRepository).toHaveBeenCalledWith('repo-2');
+    expect(importWorkflowMock.selectRepository).toHaveBeenCalledWith('repo-2');
   });
 
   it('hides repository selector when repository state is not ready', () => {
