@@ -8,7 +8,7 @@ export function createXML(adonisClass: AdonisClass, properties: AttributeOrRelat
     const b = new XMLBuilder({ignoreAttributes: false, format: true, });
     const out = {
         adoxx: {
-            '@_platformversion': '28.1.54525',
+            '@_platformversion': Constants.adoxxPlatformVersion,
             conf: {
                 sheet: {
                     '@_name': adonisClass.displayNames.de,

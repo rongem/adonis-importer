@@ -30,6 +30,8 @@ export const enumAttributes = [ENUM, ENUMLIST, ENUMLIST_TREE];
 // separator between multiple values in one Excel cell (attribute "separator" in the XML configuration).
 // ADONIS itself separates enum values with @, so no value can contain it.
 export const enumListSeparator = '@';
+// platform version written into the XML import configuration (<adoxx platformversion="...">)
+export const adoxxPlatformVersion = '28.1.54525';
 export const BOOL = 'BOOL';
 // values for true and false in the Excel template, used for bool_mapping in the XML configuration
 export const boolMapping = ['ja', 'nein'];
