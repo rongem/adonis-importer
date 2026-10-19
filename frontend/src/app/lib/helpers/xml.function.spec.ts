@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { AdonisClass } from '../models/adonis-rest/metadata/class.interface';
 import { AdonisAttributeContainer } from '../models/adonis-rest/metadata/container/container-attribute.interface';
 import { AttributeOrRelation } from '../models/adonis-rest/metadata/notebook-elements.interface';
-import { createXML } from './xml.function';
+import { createXML, getTimeZoneOffset } from './xml.function';
 
 const adonisClass = { id: 'c1', metaName: 'C_APPLICATION', displayNames: { de: 'Anwendungen' } } as AdonisClass;
 
@@ -53,6 +53,20 @@ describe('createXML', () => {
     expect(enumList['@_separator']).toBe('@');
     expect(enumList['@_domain_mapping']).toBe('offen|v0|fertig|v1');
     expect(enumList['@_separator_domain_mapping']).toBe('|');
+  });
+
+  it('splits the time zone offset into hours and minutes with the same sign', () => {
+    const offset = (timezoneOffset: number) => {
+      const result = getTimeZoneOffset({ getTimezoneOffset: () => timezoneOffset } as Date);
+      return [result['@_utc_offset_hours'], result['@_utc_offset_minutes']];
+    };
+
+    expect(offset(0)).toEqual(['0', '0']);
+    expect(offset(-60)).toEqual(['1', '0']);     // CET
+    expect(offset(-120)).toEqual(['2', '0']);    // CEST
+    expect(offset(-330)).toEqual(['5', '30']);   // India
+    expect(offset(300)).toEqual(['-5', '0']);    // New York
+    expect(offset(210)).toEqual(['-3', '-30']);  // Newfoundland
   });
 
   it('derives the relation direction from the property', () => {

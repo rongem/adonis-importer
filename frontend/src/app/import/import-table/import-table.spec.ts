@@ -102,7 +102,7 @@ describe('ImportTable', () => {
     const title = component.getColumnTitle(0);
 
     expect(title).toContain('id');
-    expect(title).toContain('Primäerschlüssel');
+    expect(title).toContain('Primärschlüssel');
     expect(title).toContain('Muss eindeutig sein');
     expect(title).toContain('Erlaubte Datentypen: STRING');
   });

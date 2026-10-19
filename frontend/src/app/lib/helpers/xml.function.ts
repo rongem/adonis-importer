@@ -90,11 +90,13 @@ function getAttributeType(property: AttributeOrRelation, attributes: AdonisAttri
     }
 }
 
-function getTimeZoneOffset() {
-    const offset = -(new Date().getTimezoneOffset());
-    const offSetHours = Math.abs(offset / 60);
-    const offsetMinutes = offset - 60 * offSetHours;
-    return { '@_utc_offset_hours': offSetHours.toString(), '@_utc_offset_minutes': offsetMinutes.toString() };
+// offset of the local time zone to UTC, split into hours and minutes with the same sign (e.g. UTC-3:30 -> -3 / -30)
+export function getTimeZoneOffset(date = new Date()) {
+    const offset = -date.getTimezoneOffset();
+    const sign = offset < 0 ? -1 : 1;
+    const offsetHours = sign * Math.floor(Math.abs(offset) / 60);
+    const offsetMinutes = sign * (Math.abs(offset) % 60);
+    return { '@_utc_offset_hours': offsetHours.toString(), '@_utc_offset_minutes': offsetMinutes.toString() };
 }
 
 function getEnumContent(property: AttributeOrRelation, attributes: AdonisAttributeContainer) {

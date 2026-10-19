@@ -35,9 +35,9 @@ export class CellInformation{
         // German date format
         if (this.hasBrowserGermanLanguageSet && this.value.includes('.')) {
             value = this.parseDate(this.value, 'dd.mm.yyyy');
-            if (!!value && this.value.match(/ \d{1,2}:\d{2}(:\d{2})?/g)){
-                value += Date.parse(this.value.split(' ')[1]) ?? 0;
-                console.log(value);
+            const time = this.value.match(/ (\d{1,2}):(\d{2})(?::(\d{2}))?/);
+            if (!!value && time) {
+                value = new Date(value).setHours(+time[1], +time[2], +(time[3] ?? 0));
             }
         }
         
@@ -86,7 +86,7 @@ export class CellInformation{
                 this.errorDescriptions.push(`Nur Datumswerte erlaubt`);
             }
             if (this.canContainBoolean() && !this.isBoolean) {
-                this.errorDescriptions.push(`Nur Wahr/Falsch-Werkte erlaubt.`);
+                this.errorDescriptions.push(`Nur Wahr/Falsch-Werte erlaubt.`);
             }
             if (this.canContainString() && !this.stringValue) {
                 this.errorDescriptions.push(`Nur Text erlaubt.`);

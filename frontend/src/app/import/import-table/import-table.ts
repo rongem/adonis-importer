@@ -42,7 +42,7 @@ export class ImportTable {
     if (!column) return '';
     const content: string[] = [column.internalName];
     if (column.primary) {
-      content.push(`Primäerschlüssel`);
+      content.push(`Primärschlüssel`);
     }
     if (column.unique) {
       content.push(`Muss eindeutig sein`);

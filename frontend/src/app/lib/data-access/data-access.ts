@@ -184,13 +184,6 @@ export class DataAccess {
       return this.getUrl<AdonisNoteBook>(notebookUrl).pipe(
         map(n => {
           const groups = n.chapters.map(ch => ch.children.filter(chi => chi.type === Constants.GROUP)).flat() as AdonisNotebookGroup[];
-          groups.forEach(g => { // remove duplicate values, because of error in ADONIS REST API
-            g.children.forEach((ch, index) => {
-              if (g.children.filter(chi => chi.id === ch.id).length > 1) {
-                g.children.splice(index, 1);
-              }
-            });
-          });
           groups.forEach(g => { // remove non-importable attributes
             g.children = g.children.filter(this.filterChildren);
             if (purpose === 'import') { // remove relations for import purpose, because it will be too complex to handle them

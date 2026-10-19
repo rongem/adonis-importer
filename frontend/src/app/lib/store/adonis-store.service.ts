@@ -43,13 +43,14 @@ export class AdonisStoreService {
     
     // computed signals
     readonly classes = computed(() => Object.values(this.repositoryClasses()));
-    readonly sortedClasses = computed(() => this.classes().sort((a, b) => a.displayNames.de > b.displayNames.de ? 1 : -1));
+    readonly sortedClasses = computed(() => this.classes().slice().sort((a, b) => a.displayNames.de.localeCompare(b.displayNames.de, 'de')));
     readonly selectedNotebook = computed(() => {
         const cls = this.selectedClass();
         if (!cls || !this.notebooks()[cls.id]) return undefined;
         return this.notebooks()[cls.id];
     });
-    readonly selectedClassesProperties = computed(() => this.selectedNotebook()!.chapters.map(chapter => {
+    // empty as long as the notebook of the selected class is not loaded
+    readonly selectedClassesProperties = computed(() => (this.selectedNotebook()?.chapters ?? []).map(chapter => {
         const properties: AttributeOrRelation[] = chapter.children.filter(c => c.type === Constants.GROUP).map(g => (g as AdonisNotebookGroup).children).flat();
         properties.push(...chapter.children.filter(c => c.type !== Constants.GROUP).map(p => (p as AttributeOrRelation)));
         return properties;

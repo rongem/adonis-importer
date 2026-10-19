@@ -44,7 +44,8 @@ export class ClassContent {
   protected selectionDone = false;
 
   submitForm() {
-    const nameProperty = this.adonisStore.selectedClassesProperties().find(a => a.metaName === Constants.NAME)!;
+    const nameProperty = this.adonisStore.selectedClassesProperties().find(a => a.metaName === Constants.NAME);
+    if (!nameProperty) return;
     this.attributeForm().get(nameProperty.id)!.enable();
     this.selectedProperties = [nameProperty];
     this.adonisStore.selectedClassesProperties().forEach(property => {
