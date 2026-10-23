@@ -40,6 +40,29 @@ describe('CellInformation with German browser language', () => {
     expect(dateCell('15.01.2024 12:30').containsErrors).toBe(false);
   });
 
+  it('parses German numbers with thousands separators and currency signs', () => {
+    const numberColumn = { ...dateColumn, allowedTypes: ['number'] } as Column;
+    const numberCell = (value: string) => new CellInformation(new CellContent(value, 0, 0), numberColumn);
+
+    expect(numberCell('3,5').numberValue).toBe(3.5);
+    expect(numberCell('1.234.567,89').numberValue).toBe(1234567.89);
+    expect(numberCell('12,50 €').numberValue).toBe(12.5);
+    expect(numberCell('drei').errors).toEqual(['Nur Zahlen erlaubt']);
+  });
+
+  it('uses the format passed by the caller instead of the browser language', () => {
+    const numberColumn = { ...dateColumn, allowedTypes: ['number'] } as Column;
+
+    expect(new CellInformation(new CellContent('3.5', 0, 0), numberColumn, false).numberValue).toBe(3.5);
+  });
+
+  it('prefers date, boolean and number over text for the typed value', () => {
+    const boolColumn = { ...dateColumn, allowedTypes: ['boolean', 'string'] } as Column;
+
+    expect(new CellInformation(new CellContent('nein', 0, 0), boolColumn).typedValue).toBe(false);
+    expect(new CellInformation(new CellContent('vielleicht', 0, 0), boolColumn).typedValue).toBe('vielleicht');
+  });
+
   it('reports invalid dates', () => {
     const cell = dateCell('kein Datum');
 

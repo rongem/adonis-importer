@@ -17,7 +17,8 @@ describe('ImportTestTable', () => {
     columnDefinitions: ReturnType<typeof vi.fn>;
     sortedColumnDefinitions: ReturnType<typeof vi.fn>;
     rowNumbers: ReturnType<typeof vi.fn>;
-    rowErrors: ReturnType<typeof vi.fn>;
+    rowContainsErrors: ReturnType<typeof vi.fn>;
+    errorsInRow: ReturnType<typeof vi.fn>;
     cellInformations: ReturnType<typeof vi.fn>;
   };
   let importStoreMock: {
@@ -98,7 +99,8 @@ describe('ImportTestTable', () => {
       columnDefinitions: vi.fn(() => columns),
       sortedColumnDefinitions: vi.fn(() => columns),
       rowNumbers: vi.fn(() => [0, 1, 2]),
-      rowErrors: vi.fn(() => []),
+      rowContainsErrors: vi.fn(() => false),
+      errorsInRow: vi.fn(() => []),
       cellInformations: vi.fn(() => []),
     };
 
@@ -240,6 +242,17 @@ describe('ImportTestTable', () => {
     (button as HTMLButtonElement).click();
 
     expect(importWorkflowMock.importCurrentTable).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows rows with errors from the table checks', () => {
+    tableStoreMock.rowContainsErrors.mockImplementation((row: number) => row === 1);
+    tableStoreMock.errorsInRow.mockImplementation((row: number) => row === 1 ? ['Doppelter Primärschlüssel', 'Spalte: A_COUNT: Nur Zahlen erlaubt'] : []);
+
+    const errorRow = component.previewRows()[1];
+
+    expect(errorRow.action).toBe('error');
+    expect(errorRow.errorText).toBe('Doppelter Primärschlüssel; Spalte: A_COUNT: Nur Zahlen erlaubt');
+    expect(component.summary().error).toBe(1);
   });
 });
 

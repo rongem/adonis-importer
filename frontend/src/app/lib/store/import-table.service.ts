@@ -4,6 +4,7 @@ import { Column } from "../models/table/column.model";
 import { ErrorList } from "../models/table/errorlist.model";
 import { CellInformation } from "../models/table/cellinformation.model";
 import { Row } from "../models/table/row.model";
+import { usesGermanFormat } from "../helpers/locale.functions";
 
 const cellKey = (row: number, column: number) => row + ':' + column;
 
@@ -31,7 +32,10 @@ export class ImportTableService {
         return this.columnDefinitions().indexOf(primary);
     });
     readonly cellInformations = computed(() => {
-        return this.cellContents().map(c => new CellInformation(c, this.sortedColumnDefinitions()[this.columnMapping()[c.column]]));
+        const columns = this.sortedColumnDefinitions();
+        const columnMapping = this.columnMapping();
+        const germanFormat = usesGermanFormat();
+        return this.cellContents().map(c => new CellInformation(c, columns[columnMapping[c.column]], germanFormat));
     });
     private readonly cellInformationsByPosition = computed(() => new Map(this.cellInformations().map(c => [cellKey(c.row, c.column), c])));
     private readonly cellInformationsByRow = computed(() => {

@@ -15,7 +15,14 @@ export class ChooseRepository {
     protected appState = inject(ApplicationStateService);
     protected adonisImportStore = inject(AdonisImportStoreService);
     private readonly importWorkflow = inject(AdonisImportWorkflowService);
-    
+
+    constructor() {
+      // the import part of the application loads its data only when it is used
+      if (this.adonisImportStore.repositories() === undefined) {
+        this.importWorkflow.loadRepositories();
+      }
+    }
+
     chooseRepository(repositoryId: string) {
       this.importWorkflow.selectRepository(repositoryId);
     }

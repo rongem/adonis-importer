@@ -16,7 +16,7 @@ describe('ChooseRepository', () => {
     repositories: ReturnType<typeof vi.fn>;
     objectGroups: ReturnType<typeof vi.fn>;
   };
-  let importWorkflowMock: { selectRepository: ReturnType<typeof vi.fn> };
+  let importWorkflowMock: { selectRepository: ReturnType<typeof vi.fn>; loadRepositories: ReturnType<typeof vi.fn> };
 
   beforeEach(async () => {
     appStateMock = {
@@ -31,7 +31,7 @@ describe('ChooseRepository', () => {
       ]),
       objectGroups: vi.fn(() => undefined),
     };
-    importWorkflowMock = { selectRepository: vi.fn() };
+    importWorkflowMock = { selectRepository: vi.fn(), loadRepositories: vi.fn() };
 
     await TestBed.configureTestingModule({
       imports: [ChooseRepository],
@@ -49,6 +49,18 @@ describe('ChooseRepository', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('does not reload repositories that are already loaded', () => {
+    expect(importWorkflowMock.loadRepositories).not.toHaveBeenCalled();
+  });
+
+  it('loads repositories when the page is opened for the first time', () => {
+    importStoreMock.repositories.mockReturnValue(undefined);
+
+    TestBed.createComponent(ChooseRepository);
+
+    expect(importWorkflowMock.loadRepositories).toHaveBeenCalledTimes(1);
   });
 
   it('delegates repository selection to the import workflow', () => {

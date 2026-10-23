@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, isDevMode } from '@angular/core';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
@@ -12,7 +12,6 @@ import { filterNotebook, isImportableClass } from '../helpers/metamodel-filter.f
 import { AdonisStoreService, SessionPurpose } from '../store/adonis-store.service';
 import { ApplicationStateService } from '../store/application-state.service';
 import { ImportTableService } from '../store/import-table.service';
-import { AdonisImportWorkflowService } from './adonis-import-workflow.service';
 import * as Constants from '../string.constants';
 
 @Injectable({ providedIn: 'root' })
@@ -22,7 +21,6 @@ export class AdonisMetadataWorkflowService {
     private readonly tableStore = inject(ImportTableService);
     private readonly router = inject(Router);
     private readonly dataAccess = inject(DataAccess);
-    private readonly importWorkflow = inject(AdonisImportWorkflowService);
 
     private telemetryBaseline() {
         return {
@@ -42,7 +40,9 @@ export class AdonisMetadataWorkflowService {
         };
     }
 
+    // performance figures are only logged during development
     private logPhaseTelemetry(phase: string, baseline: { startedAt: number; telemetry: DataAccessTelemetry; }) {
+        if (!isDevMode()) return;
         const durationInMs = Math.round(performance.now() - baseline.startedAt);
         const current = this.dataAccess.getTelemetrySnapshot();
         const delta = this.telemetryDelta(current, baseline.telemetry);
@@ -69,38 +69,10 @@ export class AdonisMetadataWorkflowService {
             this.router.navigate([Constants.classes_url]);
             this.loadNotebooks();
             this.loadAttributes();
-            if (purpose === 'import') {
-                this.importWorkflow.loadRepositories();
-            }
         } catch (error) {
             this.appState.reportError(`Fehler beim Laden der Klassen: ${errorText(error)}`, error, 'classes');
         }
         this.logPhaseTelemetry('classes', classesTelemetry);
-    }
-
-    async refreshMetamodel() {
-        const baseUrl = this.adonisStore.restBaseUrl();
-        const purpose = this.adonisStore.purpose();
-        if (!baseUrl || !purpose) {
-            this.appState.setError('Kein Metamodell-Refresh möglich: Verbindung nicht initialisiert.');
-            return;
-        }
-
-        this.appState.setState('classes', WorkflowState.Loading);
-        this.appState.setState('notebooks', WorkflowState.Loading);
-        this.appState.setState('attributes', WorkflowState.Loading);
-
-        const classesTelemetry = this.telemetryBaseline();
-        try {
-            const repositoryClasses = await firstValueFrom(this.dataAccess.retrieveClasses(baseUrl, isImportableClass));
-            this.adonisStore.setRepositoryClasses(repositoryClasses);
-            this.appState.setState('classes', WorkflowState.Loaded);
-            this.loadNotebooks();
-            this.loadAttributes();
-        } catch (error) {
-            this.appState.reportError(`Fehler beim Aktualisieren des Metamodells: ${errorText(error)}`, error, 'classes', 'notebooks', 'attributes');
-        }
-        this.logPhaseTelemetry('classes-refresh', classesTelemetry);
     }
 
     async loadNotebooks() {

@@ -44,27 +44,16 @@ export class ImportTestTable {
     const rowNumbers = this.tableStore.rowNumbers();
     const items = this.adonisImportStore.items();
     const columns = this.tableStore.sortedColumnDefinitions();
-    const rowErrors = this.tableStore.rowErrors();
     const cellInfos = this.tableStore.cellInformations();
 
-    const hasErrors = (rowNumber: number) =>
-      rowErrors.some(e => e.row === rowNumber) ||
-      cellInfos.some(c => c.row === rowNumber && c.containsErrors);
-
-    const errorText = (rowNumber: number) =>
-      [
-        ...rowErrors.filter(e => e.row === rowNumber).map(e => e.msg),
-        ...cellInfos.filter(c => c.row === rowNumber && c.containsErrors).map(c => `${c.name}: ${c.errorText}`),
-      ].join('; ');
-
     return rowNumbers.map(rowNumber => {
-      if (hasErrors(rowNumber)) {
+      if (this.tableStore.rowContainsErrors(rowNumber)) {
         const primaryCell = cellInfos.find(c => c.row === rowNumber && c.isPrimary);
         return {
           rowNumber,
           action: 'error' as const,
           name: primaryCell?.value ?? `Zeile ${rowNumber}`,
-          errorText: errorText(rowNumber),
+          errorText: this.tableStore.errorsInRow(rowNumber).join('; '),
           changedAttributes: [],
           newAttributes: [],
         };
