@@ -5,18 +5,13 @@
     <div>
         <textarea id="xmlContent" [textContent]="xmlText" class="xml-result" readonly></textarea>
     </div>
-    <div>
-        <button class="content-button" type="button" (click)="copyToClipboard()">XML in die Zwischenablage kopieren</button>
+    <div class="file-actions">
+        <button class="file-action" type="button" (click)="copyToClipboard()">XML in die Zwischenablage kopieren</button>
+        @if (fileUrl) {
+            <a [href]="fileUrl" class="file-action" [download]="'Import ' + store.selectedClass()!.displayNames.de + '.xml'">XML als Datei herunterladen</a>
+        }
+        @if (xlFileUrl) {
+            <a [href]="xlFileUrl" class="file-action" [download]="xlFileName">Excel-Vorlage herunterladen</a>
+        }
     </div>
-    @if (fileUrl) {
-        <div>
-            <a [href]="fileUrl" class="content-link" [download]="'Import ' + store.selectedClass()!.displayNames.de + '.xml'">XML als Datei herunterladen</a>
-        </div>
-    }
-    @if (xlFileUrl) {
-        <div>
-            <a [href]="xlFileUrl" class="content-link" [download]="xlFileName">Excel-Vorlage herunterladen</a>
-        </div>
-    }
 </section>
-
