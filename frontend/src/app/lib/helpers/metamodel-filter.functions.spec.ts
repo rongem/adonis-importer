@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { AdonisBasicClass } from '../models/adonis-rest/metadata/basic-class.interface';
 import { AdonisNoteBook } from '../models/adonis-rest/metadata/notebook.interface';
+import { features } from '../features';
 import { filterNotebook, isImportableClass } from './metamodel-filter.functions';
 
 const adonisClass = (metaName: string, abstract = false, repositoryClass = true) =>
@@ -42,12 +43,22 @@ describe('isImportableClass', () => {
 });
 
 describe('filterNotebook', () => {
+  afterEach(() => {
+    features.relationImport = false;
+  });
+
   it('keeps writable attributes and relations for configurations', () => {
     expect(ids(filterNotebook(notebook(), 'config'))).toEqual(['name', 'relation', 'group(in-group,group-relation)']);
   });
 
   it('removes relations for the direct import', () => {
     expect(ids(filterNotebook(notebook(), 'import'))).toEqual(['name', 'group(in-group)']);
+  });
+
+  it('keeps relations for the direct import when the feature is switched on', () => {
+    features.relationImport = true;
+
+    expect(ids(filterNotebook(notebook(), 'import'))).toEqual(['name', 'relation', 'group(in-group,group-relation)']);
   });
 
   it('does not change the original notebook', () => {

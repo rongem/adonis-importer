@@ -54,7 +54,7 @@ export class AdonisMetadataWorkflowService {
     async initializeSession(url: string, username: string, password: string, purpose: SessionPurpose) {
         const baseUrl = this.adonisStore.buildRestBaseUrl(url);
         this.adonisStore.setSessionContext(baseUrl, username, password, purpose);
-        this.adonisStore.setAuthenticated(true);
+        this.adonisStore.setAuthenticated(false);
         this.dataAccess.resetTelemetry();
         this.appState.setState('classes', WorkflowState.Loading);
         this.appState.clearError();
@@ -62,6 +62,8 @@ export class AdonisMetadataWorkflowService {
         const classesTelemetry = this.telemetryBaseline();
         try {
             const repositoryClasses = await firstValueFrom(this.dataAccess.retrieveClasses(baseUrl, isImportableClass));
+            // the first successful answer confirms the credentials
+            this.adonisStore.setAuthenticated(true);
             this.adonisStore.setRepositoryClasses(repositoryClasses);
             this.appState.setState('classes', WorkflowState.Loaded);
             this.router.navigate([Constants.classes_url]);
@@ -71,7 +73,6 @@ export class AdonisMetadataWorkflowService {
                 this.importWorkflow.loadRepositories();
             }
         } catch (error) {
-            this.adonisStore.setAuthenticated(false);
             this.appState.reportError(`Fehler beim Laden der Klassen: ${errorText(error)}`, error, 'classes');
         }
         this.logPhaseTelemetry('classes', classesTelemetry);

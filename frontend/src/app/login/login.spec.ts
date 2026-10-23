@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ApplicationStateService } from '../lib/store/application-state.service';
 import { AdonisMetadataWorkflowService } from '../lib/workflows/adonis-metadata-workflow.service';
+import { features } from '../lib/features';
 
 import { Login } from './login';
 
@@ -55,6 +56,23 @@ describe('Login', () => {
     startButton = (fixture.nativeElement as HTMLElement).querySelector('button[type="submit"]') as HTMLButtonElement;
     expect(component.loginForm.valid).toBe(true);
     expect(startButton.disabled).toBe(false);
+  });
+
+  it('offers the direct import only when the feature is switched on', () => {
+    const importOption = () => (fixture.nativeElement as HTMLElement).querySelector('option[value="import"]') as HTMLOptionElement;
+    expect(importOption().disabled).toBe(true);
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('solange deaktiviert');
+
+    features.objectImport = true;
+    try {
+      fixture = TestBed.createComponent(Login);
+      fixture.detectChanges();
+
+      expect(importOption().disabled).toBe(false);
+      expect((fixture.nativeElement as HTMLElement).textContent).not.toContain('solange deaktiviert');
+    } finally {
+      features.objectImport = false;
+    }
   });
 
   it('rejects invalid hostnames by pattern validator', () => {

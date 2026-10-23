@@ -17,7 +17,7 @@
             <label for="purpose">Zweck:</label>
             <select id="purpose" name="purpose" formControlName="purpose">
                 <option value="config">Import-Konfiguration (Excel- und XML-Datei) für ADONIS erstellen</option>
-                <option value="import" disabled="true">Direkter Import von Objekten nach ADONIS über die Zwischenablage</option>
+                <option value="import" [disabled]="!features.objectImport">Direkter Import von Objekten nach ADONIS über die Zwischenablage</option>
             </select>
         </div>
         <div class="formfield">
@@ -43,9 +43,13 @@
             und können so die passenden Konfigurationen schnell und zielgenau erstellen.
         </p>
         <p>
-            Ein direkter Import aus dieser Anwendung heraus ist theoretisch ebenfalls möglich, aber solange deaktiviert,
-            bis ADONIS eine REST-API mit allen benötigten Funktionen zur Verfügung stellt.
-            Dann können Sie die Daten aus einer beliebigen Tabelle über die Zwischenablage einfügen. Durch das 
+            @if (features.objectImport) {
+                Sie können Objekte auch direkt aus dieser Anwendung heraus nach ADONIS importieren.
+            } @else {
+                Ein direkter Import aus dieser Anwendung heraus ist theoretisch ebenfalls möglich, aber solange deaktiviert,
+                bis ADONIS eine REST-API mit allen benötigten Funktionen zur Verfügung stellt.
+            }
+            Dabei können Sie die Daten aus einer beliebigen Tabelle über die Zwischenablage einfügen. Durch das 
             Verschieben der Spaltenköpfe lassen sich die Import-Spalten der Tabelle anpassen. Allerdings können hier nur 
             Attribute importiert werden, aber keine Verknüpfungen zu anderen Objekten.
         </p>
@@ -55,8 +59,8 @@
             erreichen, das Ihr PC erreichen kann.
         </p>
         <p>
-            Damit die Anwendung funktioniert, müssen REST mit Basic-Authentifzierung und CORS aktiviert sein. Eine 
-            Anleitund dazu finden Sie im
+            Damit die Anwendung funktioniert, müssen REST mit Basic-Authentifizierung und CORS aktiviert sein. Eine 
+            Anleitung dazu finden Sie im
             <a href="https://docs.boc-group.com/adonis/de/docs/17.1/admin_page/compset-00000/#compset-R0000">Administrationshandbuch</a>.
             Außerdem benötigen Sie ein lokales Benutzerkonto (LDAP-Konten funktionieren nicht) und müssen die
             IP-Adresse Ihres Clients freigeschaltet haben. Sind diese Voraussetzungen erfüllt, können Sie oben

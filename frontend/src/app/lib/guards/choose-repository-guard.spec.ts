@@ -1,8 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { CanActivateFn, Router, UrlTree } from '@angular/router';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AdonisStoreService } from '../store/adonis-store.service';
+import { features } from '../features';
 import { canChooseRepository } from './choose-repository-guard';
 
 describe('canChooseRepository', () => {
@@ -12,7 +13,12 @@ describe('canChooseRepository', () => {
   let storeMock: { purpose: ReturnType<typeof vi.fn> };
   let fallbackTree: UrlTree;
 
+  afterEach(() => {
+    features.objectImport = false;
+  });
+
   beforeEach(() => {
+    features.objectImport = true;
     fallbackTree = {} as UrlTree;
     storeMock = {
       purpose: vi.fn(),
@@ -35,6 +41,13 @@ describe('canChooseRepository', () => {
     storeMock.purpose.mockReturnValue('import');
 
     expect(executeGuard({} as any, {} as any)).toBe(true);
+  });
+
+  it('redirects to root while the direct import is switched off', () => {
+    features.objectImport = false;
+    storeMock.purpose.mockReturnValue('import');
+
+    expect(executeGuard({} as any, {} as any)).toBe(fallbackTree);
   });
 
   it('redirects to root for non-import purpose', () => {

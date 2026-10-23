@@ -143,6 +143,7 @@ describe('AdonisMetadataWorkflowService', () => {
     await service.initializeSession('tenant.example', 'user', 'secret', 'config');
 
     expect(storeMock.setAuthenticated).toHaveBeenCalledWith(false);
+    expect(storeMock.setAuthenticated).not.toHaveBeenCalledWith(true);
     expect(appState.classesState()).toBe(WorkflowState.ErrorOccured);
     expect(appState.errorMessage()).toContain('Fehler beim Laden der Klassen');
     expect(importWorkflowMock.loadRepositories).not.toHaveBeenCalled();

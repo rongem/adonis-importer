@@ -3,6 +3,7 @@ import { AdonisBasicClass } from '../models/adonis-rest/metadata/basic-class.int
 import { AdonisNoteBook } from '../models/adonis-rest/metadata/notebook.interface';
 import { AdonisNotebookGroup, AttributeOrGroupOrRelation, AttributeOrRelation } from '../models/adonis-rest/metadata/notebook-elements.interface';
 import { SessionPurpose } from '../store/adonis-store.service';
+import { features } from '../features';
 import * as Constants from '../string.constants';
 
 const forbiddenClassNames = ['C_COMMENT_ACTION', 'C_EXTERNAL_CONFIGURATION', 'CLOUD_REPOSITORY', 'C_CLOUD_TASK', 'REPOSITORY'];
@@ -15,12 +16,12 @@ export function isImportableClass(adonisClass: AdonisBasicClass) {
         !forbiddenClassNames.includes(adonisClass.metaName);
 }
 
-// writable attributes; relations only for configurations, because they are too complex for the direct import
+// writable attributes; relations for the direct import only if the feature is switched on
 function isImportableProperty(property: AttributeOrRelation, purpose: SessionPurpose) {
     return property.properties.READONLY !== 'true' &&
         property.ctrlType !== Constants.RECORD &&
         property.ctrlType !== Constants.FILE_POINTER &&
-        (purpose === 'config' || property.ctrlType !== Constants.RELATIONS);
+        (purpose === 'config' || features.relationImport || property.ctrlType !== Constants.RELATIONS);
 }
 
 // copy of the notebook that contains only importable properties

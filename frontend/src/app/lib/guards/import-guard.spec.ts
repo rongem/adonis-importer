@@ -1,8 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { CanActivateFn, Router, UrlTree } from '@angular/router';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AdonisImportStoreService } from '../store/adonis-import-store.service';
+import { features } from '../features';
 import { canActivateImport } from './import-guard';
 
 describe('canActivateImport', () => {
@@ -12,7 +13,12 @@ describe('canActivateImport', () => {
   let importStoreMock: { selectedObjectGroup: ReturnType<typeof vi.fn> };
   let fallbackTree: UrlTree;
 
+  afterEach(() => {
+    features.objectImport = false;
+  });
+
   beforeEach(() => {
+    features.objectImport = true;
     fallbackTree = {} as UrlTree;
     importStoreMock = {
       selectedObjectGroup: vi.fn(),
@@ -36,6 +42,13 @@ describe('canActivateImport', () => {
 
     const result = executeGuard({} as any, {} as any);
     expect(result).toBe(true);
+  });
+
+  it('redirects to root while the direct import is switched off', () => {
+    features.objectImport = false;
+    importStoreMock.selectedObjectGroup.mockReturnValue({ id: 'grp-1' });
+
+    expect(executeGuard({} as any, {} as any)).toBe(fallbackTree);
   });
 
   it('redirects to root when no object group is selected', () => {

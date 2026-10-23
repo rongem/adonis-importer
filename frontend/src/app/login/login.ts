@@ -1,8 +1,9 @@
-import { Component, inject, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { ApplicationStateService } from '../lib/store/application-state.service';
 import { AdonisMetadataWorkflowService } from '../lib/workflows/adonis-metadata-workflow.service';
 import { SessionPurpose } from '../lib/store/adonis-store.service';
+import { features } from '../lib/features';
 
 @Component({
   selector: 'app-login',
@@ -14,6 +15,7 @@ import { SessionPurpose } from '../lib/store/adonis-store.service';
 export class Login {
   protected appState = inject(ApplicationStateService);
   private readonly metadataWorkflow = inject(AdonisMetadataWorkflowService);
+  protected readonly features = features;
 
   loginForm = new FormGroup({
     url: new FormControl('',

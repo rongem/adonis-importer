@@ -11,10 +11,19 @@ describe('authInterceptor', () => {
   const interceptor: HttpInterceptorFn = (req, next) =>
     TestBed.runInInjectionContext(() => authInterceptor(req, next));
 
-  let storeMock: { basicAuth: ReturnType<typeof vi.fn> };
+  let storeMock: { restBaseUrl: ReturnType<typeof vi.fn>; basicAuth: ReturnType<typeof vi.fn> };
+
+  // returns the request as it reaches the next handler
+  const send = async (url: string) => {
+    const next = vi.fn((request: HttpRequest<unknown>) => of(new HttpResponse({ status: 200, body: request })));
+    const response = await firstValueFrom(interceptor(new HttpRequest('GET', url), next));
+    expect(next).toHaveBeenCalledTimes(1);
+    return (response as HttpResponse<HttpRequest<unknown>>).body as HttpRequest<unknown>;
+  };
 
   beforeEach(() => {
     storeMock = {
+      restBaseUrl: vi.fn(() => 'https://adonis.example/rest/'),
       basicAuth: vi.fn(() => 'dXNlcjpzZWNyZXQ='),
     };
 
@@ -23,29 +32,30 @@ describe('authInterceptor', () => {
     });
   });
 
-  it('passes through connection requests without Authorization header', async () => {
-    const req = new HttpRequest('GET', 'https://example/rest/connection');
-    const next = vi.fn((request: HttpRequest<unknown>) => of(new HttpResponse({ status: 200, body: request })));
+  it('adds the Authorization header for requests to the ADONIS system', async () => {
+    const request = await send('https://adonis.example/rest/4.0/repos/');
 
-    const response = await firstValueFrom(interceptor(req, next));
-    expect(response instanceof HttpResponse).toBe(true);
-    const requestAtNext = (response as HttpResponse<HttpRequest<unknown>>).body as HttpRequest<unknown>;
-
-    expect(next).toHaveBeenCalledTimes(1);
-    expect(requestAtNext.headers.has('Authorization')).toBe(false);
-    expect(storeMock.basicAuth).not.toHaveBeenCalled();
+    expect(request.headers.get('Authorization')).toBe('Basic dXNlcjpzZWNyZXQ=');
   });
 
-  it('adds Authorization header for non-connection requests', async () => {
-    const req = new HttpRequest('GET', 'https://example/rest/4.0/repos/');
-    const next = vi.fn((request: HttpRequest<unknown>) => of(new HttpResponse({ status: 200, body: request })));
+  it('accepts links from ADONIS with a different spelling of the host', async () => {
+    const request = await send('https://ADONIS.example:443/rest/4.0/metamodel/classes/C_PROCESS');
 
-    const response = await firstValueFrom(interceptor(req, next));
-    expect(response instanceof HttpResponse).toBe(true);
-    const requestAtNext = (response as HttpResponse<HttpRequest<unknown>>).body as HttpRequest<unknown>;
+    expect(request.headers.get('Authorization')).toBe('Basic dXNlcjpzZWNyZXQ=');
+  });
 
-    expect(next).toHaveBeenCalledTimes(1);
-    expect(requestAtNext.headers.get('Authorization')).toBe('Basic dXNlcjpzZWNyZXQ=');
-    expect(storeMock.basicAuth).toHaveBeenCalledTimes(1);
+  it('does not send credentials to other hosts', async () => {
+    expect((await send('https://cdn.example/script.js')).headers.has('Authorization')).toBe(false);
+    expect((await send('http://adonis.example/rest/4.0/repos/')).headers.has('Authorization')).toBe(false);
+    expect((await send('https://adonis.example.evil.com/rest/')).headers.has('Authorization')).toBe(false);
+  });
+
+  it('does not add a header before login', async () => {
+    storeMock.restBaseUrl.mockReturnValue(undefined);
+    storeMock.basicAuth.mockReturnValue(undefined);
+
+    const request = await send('https://adonis.example/rest/4.0/repos/');
+
+    expect(request.headers.has('Authorization')).toBe(false);
   });
 });
