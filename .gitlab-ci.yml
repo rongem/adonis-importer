@@ -7,11 +7,12 @@ stages:
 build_job:
   stage: build
   script:
-    - npm install
+    - cd frontend
+    - npm ci
     - npx ng build --configuration production --base-href /
   artifacts:
     paths:
-      - dist/adonis-importer/browser/
+      - frontend/dist/adonis-importer/browser/
     expire_in: 1 week
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
@@ -25,7 +26,7 @@ pages:
     - mkdir -p public
     
     # 2. Kopiere die gebaute Angular-App in das Pages-Verzeichnis
-    - cp -r dist/adonis-importer/browser/* public/
+    - cp -r frontend/dist/adonis-importer/browser/* public/
     
     # 3. FIX FÜR ANGULAR ROUTING & GUARDS:
     # Kopiere die index.html als 404.html, damit der openCode-Server bei 
