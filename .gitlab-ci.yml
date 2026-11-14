@@ -1,0 +1,38 @@
+image: node:26-alpine
+
+stages:
+  - build
+  - deploy
+
+build_job:
+  stage: build
+  script:
+    - npm ci
+    - npx ng build --configuration production --base-href /
+  artifacts:
+    paths:
+      - dist/adonis-importer/browser/
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+pages:
+  stage: deploy
+  dependencies:
+    - build_job
+  script:
+    # 1. Erstelle das finale Zielverzeichnis
+    - mkdir -p public
+    
+    # 2. Kopiere die gebaute Angular-App in das Pages-Verzeichnis
+    - cp -r dist/adonis-importer/browser/* public/
+    
+    # 3. FIX FÜR ANGULAR ROUTING & GUARDS:
+    # Kopiere die index.html als 404.html, damit der openCode-Server bei 
+    # einem Seiten-Refresh (F5) die Anfrage an den Angular-Router übergibt.
+    - cp public/index.html public/404.html
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
